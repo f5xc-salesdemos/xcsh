@@ -197,7 +197,7 @@ const MAX_FILES_FOR_INLINE_DIFF = 20; // Don't include diff if more files than t
 /**
  * Build the full review prompt with diff stats and distribution guidance.
  */
-function buildReviewPrompt(mode: string, stats: DiffStats, rawDiff: string, additionalInstructions?: string): string {
+function buildReviewPrompt(mode: string, stats: DiffStats, rawDiff: string): string {
 	const agentCount = getRecommendedAgentCount(stats);
 	const skipDiff = rawDiff.length > MAX_DIFF_CHARS || stats.files.length > MAX_FILES_FOR_INLINE_DIFF;
 	const totalLines = stats.totalAdded + stats.totalRemoved;
@@ -221,8 +221,16 @@ function buildReviewPrompt(mode: string, stats: DiffStats, rawDiff: string, addi
 		skipDiff,
 		rawDiff: rawDiff.trim(),
 		linesPerFile,
-		additionalInstructions,
 	});
+}
+
+/**
+ * Append extra instructions to a review prompt, if any were provided.
+ * Returns the prompt unchanged when instructions is undefined.
+ */
+function appendInstructions(prompt: string, instructions: string | undefined): string {
+	if (!instructions) return prompt;
+	return `${prompt}\n\n### Additional Instructions\n\n${instructions}`;
 }
 
 export class ReviewCommand implements CustomCommand {
@@ -292,10 +300,12 @@ export class ReviewCommand implements CustomCommand {
 					return undefined;
 				}
 
-				return buildReviewPrompt(
-					`Reviewing changes between \`${baseBranch}\` and \`${currentBranch}\` (PR-style)`,
-					stats,
-					diffText,
+				return appendInstructions(
+					buildReviewPrompt(
+						`Reviewing changes between \`${baseBranch}\` and \`${currentBranch}\` (PR-style)`,
+						stats,
+						diffText,
+					),
 					extraInstructions,
 				);
 			}
@@ -333,10 +343,8 @@ export class ReviewCommand implements CustomCommand {
 					return undefined;
 				}
 
-				return buildReviewPrompt(
-					"Reviewing uncommitted changes (staged + unstaged)",
-					stats,
-					combinedDiff,
+				return appendInstructions(
+					buildReviewPrompt("Reviewing uncommitted changes (staged + unstaged)", stats, combinedDiff),
 					extraInstructions,
 				);
 			}
@@ -374,7 +382,10 @@ export class ReviewCommand implements CustomCommand {
 					return undefined;
 				}
 
-				return buildReviewPrompt(`Reviewing commit \`${hash}\``, stats, diffText, extraInstructions);
+				return appendInstructions(
+					buildReviewPrompt(`Reviewing commit \`${hash}\``, stats, diffText),
+					extraInstructions,
+				);
 			}
 
 			case 4: {
@@ -394,12 +405,11 @@ export class ReviewCommand implements CustomCommand {
 				if (reviewDiff) {
 					const stats = parseDiff(reviewDiff);
 					// Even if all files filtered, include the custom instructions
-					return buildReviewPrompt(
+					return `${buildReviewPrompt(
 						`Custom review: ${instructions.split("\n")[0].slice(0, 60)}…`,
 						stats,
 						reviewDiff,
-						instructions,
-					);
+					)}\n\n### Additional Instructions\n\n${instructions}`;
 				}
 
 				// No diff available, just pass instructions
