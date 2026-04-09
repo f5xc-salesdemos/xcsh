@@ -94,12 +94,56 @@ async function resetArtifacts(): Promise<void> {
 	await $`bun --cwd=packages/stats scripts/generate-client-bundle.ts --reset`.cwd(repoRoot);
 }
 
+async function smokeTestHostBinary(): Promise<void> {
+	const hostPlatform = process.platform;
+	const hostArch = process.arch;
+	const hostTarget = targets.find((t) => t.platform === hostPlatform && t.arch === hostArch);
+	if (!hostTarget) {
+		console.log(`Skipping compiled binary smoke test (no target for ${hostPlatform}-${hostArch})`);
+		return;
+	}
+
+	const binaryPath = path.join(repoRoot, hostTarget.outfile);
+	try {
+		await fs.stat(binaryPath);
+	} catch {
+		console.log(`Skipping compiled binary smoke test (${hostTarget.outfile} not found)`);
+		return;
+	}
+
+	console.log(`Smoke-testing ${hostTarget.outfile}...`);
+	const result = Bun.spawnSync([binaryPath, "--version"], {
+		stdout: "pipe",
+		stderr: "pipe",
+		env: { ...Bun.env, HOME: await fs.mkdtemp(path.join(repoRoot, ".tmp-smoke-")), PI_DEV: "1" },
+	});
+
+	const stderr = result.stderr.toString();
+	if (result.exitCode !== 0) {
+		console.error(`FAIL: compiled binary exited with code ${result.exitCode}`);
+		console.error(stderr);
+		throw new Error("Compiled binary smoke test failed — native addon may not be embedded correctly");
+	}
+
+	const stdout = result.stdout.toString().trim();
+	console.log(`  ${stdout}`);
+	if (stderr.includes("Failed to load pi_natives")) {
+		console.error(`FAIL: compiled binary could not load native addon`);
+		console.error(stderr);
+		throw new Error("Compiled binary smoke test failed — native addon loading error detected");
+	}
+	console.log(`Smoke test passed for ${hostTarget.outfile}`);
+}
+
 async function main(): Promise<void> {
 	await fs.mkdir(binariesDir, { recursive: true });
 	await generateBundle();
 	try {
 		for (const target of targets) {
 			await buildBinary(target);
+		}
+		if (!isDryRun) {
+			await smokeTestHostBinary();
 		}
 	} finally {
 		await resetArtifacts();
