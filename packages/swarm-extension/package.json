@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "@f5xc-salesdemos/swarm-extension",
-	"version": "14.4.0",
+	"version": "14.4.1",
 	"description": "Swarm orchestration extension for xcsh",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Derek Rynd",
