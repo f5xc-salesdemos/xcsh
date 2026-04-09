@@ -10,8 +10,8 @@ import type {
 	AgentToolExecFn,
 	AgentToolResult,
 	AgentToolUpdateCallback,
-} from "@xcsh/pi-agent-core";
-import type { ImageContent, TextContent } from "@xcsh/pi-ai";
+} from "@f5xc-salesdemos/pi-agent-core";
+import type { ImageContent, TextContent } from "@f5xc-salesdemos/pi-ai";
 import { getDefault, type Settings } from "../config/settings";
 import { formatGroupedDiagnosticMessages } from "../lsp/utils";
 import type { Theme } from "../modes/theme/theme";

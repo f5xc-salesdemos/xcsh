@@ -1,6 +1,6 @@
-import type { TextContent } from "@xcsh/pi-ai";
-import type { Component } from "@xcsh/pi-tui";
-import { Box, Container, Markdown, Spacer, Text } from "@xcsh/pi-tui";
+import type { TextContent } from "@f5xc-salesdemos/pi-ai";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Box, Container, Markdown, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
 import type { MessageRenderer } from "../../extensibility/extensions/types";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import type { CustomMessage } from "../../session/messages";

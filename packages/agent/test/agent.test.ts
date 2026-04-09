@@ -1,14 +1,14 @@
 import { describe, expect, it } from "bun:test";
-import { Type } from "@sinclair/typebox";
-import { Agent, type AgentTool, ThinkingLevel } from "@xcsh/pi-agent-core";
+import { Agent, type AgentTool, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
 import {
 	type AssistantMessage,
 	getBundledModel,
 	type SimpleStreamOptions,
 	type ThinkingBudgets,
 	type Usage,
-} from "@xcsh/pi-ai";
-import { AssistantMessageEventStream } from "@xcsh/pi-ai/utils/event-stream";
+} from "@f5xc-salesdemos/pi-ai";
+import { AssistantMessageEventStream } from "@f5xc-salesdemos/pi-ai/utils/event-stream";
+import { Type } from "@sinclair/typebox";
 
 class MockAssistantStream extends AssistantMessageEventStream {}
 

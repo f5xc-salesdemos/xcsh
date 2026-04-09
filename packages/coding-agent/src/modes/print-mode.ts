@@ -5,7 +5,7 @@
  * - `xcsh -p "prompt"` - text output
  * - `xcsh --mode json "prompt"` - JSON event stream
  */
-import type { AssistantMessage, ImageContent } from "@xcsh/pi-ai";
+import type { AssistantMessage, ImageContent } from "@f5xc-salesdemos/pi-ai";
 import type { AgentSession } from "../session/agent-session";
 
 /**

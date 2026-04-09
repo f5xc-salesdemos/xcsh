@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "@xcsh/pi-ai",
+	"name": "@f5xc-salesdemos/pi-ai",
 	"version": "14.0.2",
 	"description": "Unified LLM API with automatic model discovery and provider configuration",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
@@ -45,7 +45,7 @@
 		"@aws-sdk/client-bedrock-runtime": "^3",
 		"@bufbuild/protobuf": "^2.11",
 		"@google/genai": "^1.43",
-		"@xcsh/pi-utils": "workspace:*",
+		"@f5xc-salesdemos/pi-utils": "workspace:*",
 		"@sinclair/typebox": "^0.34",
 		"@smithy/node-http-handler": "^4.4",
 		"ajv": "^8.18",

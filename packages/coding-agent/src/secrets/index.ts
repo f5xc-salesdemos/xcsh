@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { isEnoent, logger } from "@xcsh/pi-utils";
+import { isEnoent, logger } from "@f5xc-salesdemos/pi-utils";
 import { YAML } from "bun";
 import type { SecretEntry } from "./obfuscator";
 import { compileSecretRegex } from "./regex";

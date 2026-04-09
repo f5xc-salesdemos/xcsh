@@ -4,10 +4,15 @@
  * Subagents must call this tool to finish and return structured JSON output.
  */
 
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { dereferenceJsonSchema, sanitizeSchemaForStrictMode } from "@f5xc-salesdemos/pi-ai/utils/schema";
 import type { Static, TSchema } from "@sinclair/typebox";
 import { Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import { dereferenceJsonSchema, sanitizeSchemaForStrictMode } from "@xcsh/pi-ai/utils/schema";
 import Ajv, { type ErrorObject, type ValidateFunction } from "ajv";
 import { subprocessToolRegistry } from "../task/subprocess-tool-registry";
 import type { ToolSession } from ".";

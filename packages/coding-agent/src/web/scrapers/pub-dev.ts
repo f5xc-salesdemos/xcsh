@@ -1,4 +1,4 @@
-import { tryParseJson } from "@xcsh/pi-utils";
+import { tryParseJson } from "@f5xc-salesdemos/pi-utils";
 import { buildResult, formatNumber, htmlToBasicMarkdown, loadPage, type SpecialHandler } from "./types";
 
 /**

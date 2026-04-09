@@ -3,7 +3,7 @@
  * Handles data loading, tree building, filtering, and toggle persistence.
  */
 import * as path from "node:path";
-import { logger } from "@xcsh/pi-utils";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import type { ContextFile } from "../../../capability/context-file";
 import type { ExtensionModule } from "../../../capability/extension-module";
 import type { Hook } from "../../../capability/hook";

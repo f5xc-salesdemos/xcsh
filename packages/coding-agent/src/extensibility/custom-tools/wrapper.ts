@@ -2,8 +2,8 @@
  * CustomToolAdapter wraps CustomTool instances into AgentTool for use with the agent.
  */
 
+import type { AgentTool, AgentToolUpdateCallback } from "@f5xc-salesdemos/pi-agent-core";
 import type { Static, TSchema } from "@sinclair/typebox";
-import type { AgentTool, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
 import type { Theme } from "../../modes/theme/theme";
 import { applyToolProxy } from "../tool-proxy";
 import type { CustomTool, CustomToolContext } from "./types";

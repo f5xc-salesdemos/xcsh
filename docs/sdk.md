@@ -1,6 +1,6 @@
 # SDK
 
-The SDK is the in-process integration surface for `@xcsh/pi-coding-agent`.
+The SDK is the in-process integration surface for `@f5xc-salesdemos/xcsh`.
 Use it when you want direct access to agent state, event streaming, tool wiring, and session control from your own Bun/Node process.
 
 If you need cross-language/process isolation, use RPC mode instead.
@@ -8,12 +8,12 @@ If you need cross-language/process isolation, use RPC mode instead.
 ## Installation
 
 ```bash
-bun add @xcsh/pi-coding-agent
+bun add @f5xc-salesdemos/xcsh
 ```
 
 ## Entry points
 
-`@xcsh/pi-coding-agent` exports the SDK APIs from the package root (and also via `@xcsh/pi-coding-agent/sdk`).
+`@f5xc-salesdemos/xcsh` exports the SDK APIs from the package root (and also via `@f5xc-salesdemos/xcsh/sdk`).
 
 Core exports for embedders:
 
@@ -29,7 +29,7 @@ Core exports for embedders:
 ## Quick start (auto-discovery defaults)
 
 ```ts
-import { createAgentSession } from "@xcsh/pi-coding-agent";
+import { createAgentSession } from "@f5xc-salesdemos/xcsh";
 
 const { session, modelFallbackMessage } = await createAgentSession();
 
@@ -83,7 +83,7 @@ Typically you must provide only what you want to control:
 ### File-backed (default)
 
 ```ts
-import { createAgentSession, SessionManager } from "@xcsh/pi-coding-agent";
+import { createAgentSession, SessionManager } from "@f5xc-salesdemos/xcsh";
 
 const { session } = await createAgentSession({
 	sessionManager: SessionManager.create(process.cwd()),
@@ -99,7 +99,7 @@ console.log(session.sessionFile); // absolute .jsonl path
 ### In-memory
 
 ```ts
-import { createAgentSession, SessionManager } from "@xcsh/pi-coding-agent";
+import { createAgentSession, SessionManager } from "@f5xc-salesdemos/xcsh";
 
 const { session } = await createAgentSession({
 	sessionManager: SessionManager.inMemory(),
@@ -115,7 +115,7 @@ console.log(session.sessionFile); // undefined
 ### Resume/open/list helpers
 
 ```ts
-import { SessionManager } from "@xcsh/pi-coding-agent";
+import { SessionManager } from "@f5xc-salesdemos/xcsh";
 
 const recent = await SessionManager.continueRecent(process.cwd());
 const listed = await SessionManager.list(process.cwd());
@@ -134,7 +134,7 @@ import {
 	discoverAuthStorage,
 	ModelRegistry,
 	SessionManager,
-} from "@xcsh/pi-coding-agent";
+} from "@f5xc-salesdemos/xcsh";
 
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);
@@ -304,7 +304,7 @@ import {
 	ModelRegistry,
 	SessionManager,
 	Settings,
-} from "@xcsh/pi-coding-agent";
+} from "@f5xc-salesdemos/xcsh";
 
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);

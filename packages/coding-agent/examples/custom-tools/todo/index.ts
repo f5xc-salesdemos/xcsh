@@ -7,7 +7,7 @@
  *
  * The onSession callback reconstructs state by scanning past tool results.
  */
-import type { CustomTool, CustomToolContext, CustomToolFactory, CustomToolSessionEvent } from "@xcsh/pi-coding-agent";
+import type { CustomTool, CustomToolContext, CustomToolFactory, CustomToolSessionEvent } from "@f5xc-salesdemos/xcsh";
 
 interface Todo {
 	id: number;

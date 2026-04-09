@@ -17,9 +17,9 @@ import {
 	mapStainlessOs,
 	streamAnthropic,
 	stripClaudeToolPrefix,
-} from "@xcsh/pi-ai/providers/anthropic";
-import { getEnvApiKey } from "@xcsh/pi-ai/stream";
-import type { Context, Model } from "@xcsh/pi-ai/types";
+} from "@f5xc-salesdemos/pi-ai/providers/anthropic";
+import { getEnvApiKey } from "@f5xc-salesdemos/pi-ai/stream";
+import type { Context, Model } from "@f5xc-salesdemos/pi-ai/types";
 
 const ANTHROPIC_MODEL: Model<"anthropic-messages"> = {
 	id: "claude-sonnet-4-5",

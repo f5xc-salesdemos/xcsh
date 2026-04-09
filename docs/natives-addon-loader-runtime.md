@@ -1,6 +1,6 @@
 # Natives Addon Loader Runtime
 
-This document deep-dives the addon loading/validation layer in `@xcsh/pi-natives`: how `native.ts` decides which `.node` file to load, when embedded payload extraction runs, and how startup failures are reported.
+This document deep-dives the addon loading/validation layer in `@f5xc-salesdemos/pi-natives`: how `native.ts` decides which `.node` file to load, when embedded payload extraction runs, and how startup failures are reported.
 
 ## Implementation files
 
@@ -240,7 +240,7 @@ In compiled mode final diagnostics include:
 
 In normal package/runtime mode final diagnostics include:
 
-- reinstall hint (`bun install @xcsh/pi-natives`),
+- reinstall hint (`bun install @f5xc-salesdemos/pi-natives`),
 - local rebuild command (`bun --cwd=packages/natives run build`),
 - optional x64 variant build hint (`TARGET_VARIANT=baseline|modern ...`).
 

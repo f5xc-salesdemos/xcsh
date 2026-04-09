@@ -4,7 +4,7 @@
  * Handles `xcsh setup <component>` to install dependencies for optional features.
  */
 import * as path from "node:path";
-import { $which, APP_NAME, getPythonEnvDir } from "@xcsh/pi-utils";
+import { $which, APP_NAME, getPythonEnvDir } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import chalk from "chalk";
 import { theme } from "../modes/theme/theme";

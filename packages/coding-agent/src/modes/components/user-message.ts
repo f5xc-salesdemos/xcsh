@@ -1,4 +1,4 @@
-import { Container, Markdown, Spacer } from "@xcsh/pi-tui";
+import { Container, Markdown, Spacer } from "@f5xc-salesdemos/pi-tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 
 // OSC 133 shell integration: marks prompt zones for terminal multiplexers

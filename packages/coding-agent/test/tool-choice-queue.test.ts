@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import type { RejectInfo, ResolveInfo } from "@xcsh/pi-coding-agent/session/tool-choice-queue";
-import { ToolChoiceQueue } from "@xcsh/pi-coding-agent/session/tool-choice-queue";
+import type { RejectInfo, ResolveInfo } from "@f5xc-salesdemos/pi-coding-agent/session/tool-choice-queue";
+import { ToolChoiceQueue } from "@f5xc-salesdemos/pi-coding-agent/session/tool-choice-queue";
 
 const forced = { type: "tool", name: "write" } as const;
 const forcedRead = { type: "tool", name: "read" } as const;

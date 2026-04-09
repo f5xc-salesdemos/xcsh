@@ -1,7 +1,6 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { type Static, Type } from "@sinclair/typebox";
-import { getAntigravityHeaders, getEnvApiKey, StringEnum } from "@xcsh/pi-ai";
+import { getAntigravityHeaders, getEnvApiKey, StringEnum } from "@f5xc-salesdemos/pi-ai";
 import {
 	$env,
 	isEnoent,
@@ -11,7 +10,8 @@ import {
 	readSseJson,
 	Snowflake,
 	untilAborted,
-} from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/pi-utils";
+import { type Static, Type } from "@sinclair/typebox";
 import type { ModelRegistry } from "../config/model-registry";
 import type { CustomTool } from "../extensibility/custom-tools/types";
 import geminiImageDescription from "../prompts/tools/gemini-image.md" with { type: "text" };

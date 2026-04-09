@@ -6,8 +6,8 @@
  */
 import * as path from "node:path";
 import * as url from "node:url";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import type { TSchema } from "@sinclair/typebox";
-import { logger } from "@xcsh/pi-utils";
 import type { SourceMeta } from "../capability/types";
 import { resolveConfigValue } from "../config/resolve-config-value";
 import type { CustomTool } from "../extensibility/custom-tools/types";

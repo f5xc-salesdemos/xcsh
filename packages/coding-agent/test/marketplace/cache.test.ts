@@ -11,7 +11,7 @@ import {
 	isCached,
 	isValidVersionForCache,
 	removeCachedPlugin,
-} from "@xcsh/pi-coding-agent/extensibility/plugins/marketplace";
+} from "@f5xc-salesdemos/xcsh/extensibility/plugins/marketplace";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

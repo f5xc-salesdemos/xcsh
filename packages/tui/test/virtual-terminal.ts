@@ -1,4 +1,4 @@
-import type { Terminal, TerminalAppearance } from "@xcsh/pi-tui/terminal";
+import type { Terminal, TerminalAppearance } from "@f5xc-salesdemos/pi-tui/terminal";
 import type { Terminal as XtermTerminalType } from "@xterm/headless";
 import xterm from "@xterm/headless";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { getThemeByName } from "@xcsh/pi-coding-agent/modes/theme/theme";
+import { getThemeByName } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
 import { taskToolRenderer } from "../../src/task/render";
 import type { TaskToolDetails } from "../../src/task/types";
 

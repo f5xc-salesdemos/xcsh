@@ -1,5 +1,5 @@
-import type { AgentTool } from "@xcsh/pi-agent-core";
-import { sanitizeText } from "@xcsh/pi-natives";
+import type { AgentTool } from "@f5xc-salesdemos/pi-agent-core";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
 import {
 	Box,
 	type Component,
@@ -12,8 +12,8 @@ import {
 	TERMINAL,
 	Text,
 	type TUI,
-} from "@xcsh/pi-tui";
-import { getProjectDir, logger } from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/pi-tui";
+import { getProjectDir, logger } from "@f5xc-salesdemos/pi-utils";
 import { computeEditDiff, computeHashlineDiff, computePatchDiff, type DiffError, type DiffResult } from "../../edit";
 import type { Theme } from "../../modes/theme/theme";
 import { theme } from "../../modes/theme/theme";

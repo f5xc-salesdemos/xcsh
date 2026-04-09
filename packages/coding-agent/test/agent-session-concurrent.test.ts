@@ -6,19 +6,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { Agent, AgentBusyError, type AgentTool } from "@f5xc-salesdemos/pi-agent-core";
+import { type AssistantMessage, getBundledModel, type Message, type ToolCall } from "@f5xc-salesdemos/pi-ai";
+import { AssistantMessageEventStream } from "@f5xc-salesdemos/pi-ai/utils/event-stream";
+import { Snowflake } from "@f5xc-salesdemos/pi-utils";
+import type { Rule } from "@f5xc-salesdemos/xcsh/capability/rule";
+import { ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { TtsrManager } from "@f5xc-salesdemos/xcsh/export/ttsr";
+import { AgentSession } from "@f5xc-salesdemos/xcsh/session/agent-session";
+import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
+import { convertToLlm } from "@f5xc-salesdemos/xcsh/session/messages";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 import { Type } from "@sinclair/typebox";
-import { Agent, AgentBusyError, type AgentTool } from "@xcsh/pi-agent-core";
-import { type AssistantMessage, getBundledModel, type Message, type ToolCall } from "@xcsh/pi-ai";
-import { AssistantMessageEventStream } from "@xcsh/pi-ai/utils/event-stream";
-import type { Rule } from "@xcsh/pi-coding-agent/capability/rule";
-import { ModelRegistry } from "@xcsh/pi-coding-agent/config/model-registry";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { TtsrManager } from "@xcsh/pi-coding-agent/export/ttsr";
-import { AgentSession } from "@xcsh/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@xcsh/pi-coding-agent/session/auth-storage";
-import { convertToLlm } from "@xcsh/pi-coding-agent/session/messages";
-import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
-import { Snowflake } from "@xcsh/pi-utils";
 
 // Mock stream that mimics AssistantMessageEventStream
 class MockAssistantStream extends AssistantMessageEventStream {}

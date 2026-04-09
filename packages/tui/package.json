@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "@xcsh/pi-tui",
+	"name": "@f5xc-salesdemos/pi-tui",
 	"version": "14.0.2",
 	"description": "Terminal User Interface library with differential rendering for efficient text-based applications",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
@@ -37,8 +37,8 @@
 		"fmt": "biome format --write ."
 	},
 	"dependencies": {
-		"@xcsh/pi-natives": "workspace:*",
-		"@xcsh/pi-utils": "workspace:*",
+		"@f5xc-salesdemos/pi-natives": "workspace:*",
+		"@f5xc-salesdemos/pi-utils": "workspace:*",
 		"marked": "^17.0"
 	},
 	"devDependencies": {

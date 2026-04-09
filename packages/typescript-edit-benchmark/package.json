@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"private": true,
-	"name": "@xcsh/typescript-edit-benchmark",
+	"name": "@f5xc-salesdemos/typescript-edit-benchmark",
 	"version": "0.0.1",
 	"description": "Edit benchmark suite using TypeScript source code mutations",
 	"author": "Can Boluk",
@@ -30,14 +30,14 @@
 		"@babel/parser": "^7.29",
 		"@babel/traverse": "^7.29",
 		"@babel/types": "^7.29",
-		"@xcsh/pi-agent-core": "workspace:*",
-		"@xcsh/pi-coding-agent": "workspace:*",
-		"@xcsh/pi-utils": "workspace:*",
+		"@f5xc-salesdemos/pi-agent-core": "workspace:*",
+		"@f5xc-salesdemos/xcsh": "workspace:*",
+		"@f5xc-salesdemos/pi-utils": "workspace:*",
 		"diff": "^8.0",
 		"prettier": "^3.8",
 		"regexp-tree": "^0.1",
-		"@xcsh/pi-ai": "workspace:*",
-		"@xcsh/pi-tui": "workspace:*"
+		"@f5xc-salesdemos/pi-ai": "workspace:*",
+		"@f5xc-salesdemos/pi-tui": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/babel__generator": "^7.27",

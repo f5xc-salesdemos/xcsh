@@ -1,4 +1,4 @@
-import type { TabBarTheme } from "@xcsh/pi-tui";
+import type { TabBarTheme } from "@f5xc-salesdemos/pi-tui";
 import { theme } from "./theme/theme";
 
 // ═══════════════════════════════════════════════════════════════════════════

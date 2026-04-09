@@ -2,12 +2,12 @@ import { afterEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { getBundledModel } from "@f5xc-salesdemos/pi-ai";
+import { Snowflake } from "@f5xc-salesdemos/pi-utils";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { createAgentSession, type ExtensionFactory } from "@f5xc-salesdemos/xcsh/sdk";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 import { Type } from "@sinclair/typebox";
-import { getBundledModel } from "@xcsh/pi-ai";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { createAgentSession, type ExtensionFactory } from "@xcsh/pi-coding-agent/sdk";
-import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
-import { Snowflake } from "@xcsh/pi-utils";
 
 const toolActivationExtension: ExtensionFactory = pi => {
 	pi.registerTool({

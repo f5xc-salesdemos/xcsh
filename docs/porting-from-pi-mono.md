@@ -44,10 +44,10 @@ Upstream uses different package scopes. Replace them consistently.
 
 - Replace old scopes with the local scope used here.
 - Examples (adjust to match the actual packages you are porting):
-  - `@mariozechner/pi-coding-agent` → `@xcsh/pi-coding-agent`
-  - `@mariozechner/pi-agent-core` → `@xcsh/pi-agent-core`
-  - `@mariozechner/pi-tui` → `@xcsh/pi-tui`
-  - `@mariozechner/pi-ai` → `@xcsh/pi-ai`
+  - `@mariozechner/pi-coding-agent` → `@f5xc-salesdemos/xcsh`
+  - `@mariozechner/pi-agent-core` → `@f5xc-salesdemos/pi-agent-core`
+  - `@mariozechner/pi-tui` → `@f5xc-salesdemos/pi-tui`
+  - `@mariozechner/pi-ai` → `@f5xc-salesdemos/pi-ai`
 
 ## 4) Use Bun APIs where they improve on Node
 
@@ -128,7 +128,7 @@ Treat `package.json` as a contract. Merge intentionally.
 - Do not introduce `any` unless required.
 - Avoid dynamic imports and inline type imports; use top-level imports only.
 - Never build prompts in code; prompts are static `.md` files rendered with Handlebars.
-- In coding-agent, never use `console.log`/`console.warn`/`console.error`; use `logger` from `@xcsh/pi-utils`.
+- In coding-agent, never use `console.log`/`console.warn`/`console.error`; use `logger` from `@f5xc-salesdemos/pi-utils`.
 - Use `Promise.withResolvers()` instead of `new Promise((resolve, reject) => ...)`.
 - **No `private`/`protected`/`public` keywords on class fields or methods.** Use ES `#` private fields for encapsulation; leave accessible members bare (no keyword). The only exception is constructor parameter properties (`constructor(private readonly x: T)`), where the keyword is required by TypeScript. When porting upstream code that uses `private foo` or `protected bar`, convert to `#foo` (private) or bare `bar` (accessible).
 - Prefer existing helpers and utilities over new ad-hoc code.
@@ -329,7 +329,7 @@ Our fork has architectural decisions that differ from upstream. **Do not port th
 
 | Upstream                                           | Our Fork                                | Reason                                  |
 | -------------------------------------------------- | --------------------------------------- | --------------------------------------- |
-| `clipboard.ts` + `clipboard-image.ts` (tool files) | `@xcsh/pi-natives` clipboard module | Merged into N-API native implementation |
+| `clipboard.ts` + `clipboard-image.ts` (tool files) | `@f5xc-salesdemos/pi-natives` clipboard module | Merged into N-API native implementation |
 
 ### Test Framework
 
@@ -365,7 +365,7 @@ Our fork has architectural decisions that differ from upstream. **Do not port th
 When porting, **skip** these files/features entirely:
 
 - `footer-data-provider.ts` — we use StatusLineComponent
-- `clipboard-image.ts` — clipboard is in `@xcsh/pi-natives` N-API module
+- `clipboard-image.ts` — clipboard is in `@f5xc-salesdemos/pi-natives` N-API module
 - GitHub workflow files — we have our own CI
 - `models.generated.ts` — auto-generated, regenerate locally (as models.json instead)
 

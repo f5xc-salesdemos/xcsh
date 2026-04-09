@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { hookFetch } from "@xcsh/pi-utils";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
 import { AgentStorage } from "../../src/session/agent-storage";
 import { searchGemini } from "../../src/web/search/providers/gemini";
 

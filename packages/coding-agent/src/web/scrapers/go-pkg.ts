@@ -1,4 +1,4 @@
-import { tryParseJson } from "@xcsh/pi-utils";
+import { tryParseJson } from "@f5xc-salesdemos/pi-utils";
 import { parseHTML } from "linkedom";
 import type { RenderResult, SpecialHandler } from "./types";
 import { buildResult, htmlToBasicMarkdown, loadPage } from "./types";

@@ -1,8 +1,13 @@
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { prompt, untilAborted } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import type { Component } from "@xcsh/pi-tui";
-import { Text } from "@xcsh/pi-tui";
-import { prompt, untilAborted } from "@xcsh/pi-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import resolveDescription from "../prompts/tools/resolve.md" with { type: "text" };

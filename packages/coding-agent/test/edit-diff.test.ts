@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { adjustIndentation, computeHashlineDiff, DEFAULT_FUZZY_THRESHOLD, findMatch } from "@xcsh/pi-coding-agent/edit";
+import { adjustIndentation, computeHashlineDiff, DEFAULT_FUZZY_THRESHOLD, findMatch } from "@f5xc-salesdemos/xcsh/edit";
 
 describe("findMatch", () => {
 	describe("exact matching", () => {

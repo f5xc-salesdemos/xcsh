@@ -1,7 +1,12 @@
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { type Api, type AssistantMessage, completeSimple, type Model } from "@f5xc-salesdemos/pi-ai";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import { type Api, type AssistantMessage, completeSimple, type Model } from "@xcsh/pi-ai";
-import { prompt } from "@xcsh/pi-utils";
 import { expandRoleAlias, resolveModelFromString } from "../config/model-resolver";
 import inspectImageDescription from "../prompts/tools/inspect-image.md" with { type: "text" };
 import inspectImageSystemPromptTemplate from "../prompts/tools/inspect-image-system.md" with { type: "text" };

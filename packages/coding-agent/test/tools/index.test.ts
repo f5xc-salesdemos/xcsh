@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { type SettingPath, Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { createTools, HIDDEN_TOOLS, type ToolSession } from "@xcsh/pi-coding-agent/tools";
+import { type SettingPath, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { createTools, HIDDEN_TOOLS, type ToolSession } from "@f5xc-salesdemos/xcsh/tools";
 
 Bun.env.PI_PYTHON_SKIP_CHECK = "1";
 
@@ -97,7 +97,7 @@ describe("createTools", () => {
 
 	it("includes bash when python unavailable and python requested", async () => {
 		const session = createTestSession();
-		vi.spyOn(await import("@xcsh/pi-coding-agent/ipy/kernel"), "checkPythonKernelAvailability").mockResolvedValue({
+		vi.spyOn(await import("@f5xc-salesdemos/xcsh/ipy/kernel"), "checkPythonKernelAvailability").mockResolvedValue({
 			ok: false,
 			reason: "missing python",
 		});

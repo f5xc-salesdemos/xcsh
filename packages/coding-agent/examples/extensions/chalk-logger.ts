@@ -2,7 +2,7 @@
  * Example extension that uses a 3rd party dependency (chalk).
  * Tests that jiti can resolve npm modules correctly.
  */
-import type { ExtensionAPI } from "@xcsh/pi-coding-agent";
+import type { ExtensionAPI } from "@f5xc-salesdemos/xcsh";
 import chalk from "chalk";
 
 export default function (pi: ExtensionAPI) {

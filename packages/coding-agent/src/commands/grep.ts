@@ -1,8 +1,8 @@
 /**
  * Test grep tool.
  */
-import { GrepOutputMode } from "@xcsh/pi-natives";
-import { Args, Command, Flags } from "@xcsh/pi-utils/cli";
+import { GrepOutputMode } from "@f5xc-salesdemos/pi-natives";
+import { Args, Command, Flags } from "@f5xc-salesdemos/pi-utils/cli";
 import { type GrepCommandArgs, runGrepCommand } from "../cli/grep-cli";
 import { initTheme } from "../modes/theme/theme";
 

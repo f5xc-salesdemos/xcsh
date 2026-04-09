@@ -13,7 +13,7 @@
  * An extension is a TypeScript file that exports a default function:
  *   export default function (pi: ExtensionAPI) { ... }
  */
-import { createAgentSession, SessionManager } from "@xcsh/pi-coding-agent";
+import { createAgentSession, SessionManager } from "@f5xc-salesdemos/xcsh";
 
 // Extensions are loaded from disk, not passed inline to createAgentSession.
 // Use the discovery mechanism:
@@ -38,7 +38,7 @@ console.log();
 
 // Example extension file (./my-logging-extension.ts):
 /*
-import type { ExtensionAPI } from "@xcsh/pi-coding-agent";
+import type { ExtensionAPI } from "@f5xc-salesdemos/xcsh";
 
 export default function (pi: ExtensionAPI) {
 	pi.on("agent_start", async () => {

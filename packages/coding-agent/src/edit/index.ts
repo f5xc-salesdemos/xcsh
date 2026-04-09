@@ -1,5 +1,10 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import { prompt } from "@xcsh/pi-utils";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import {
 	createLspWritethrough,
 	type FileDiagnosticsResult,

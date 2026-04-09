@@ -8,13 +8,13 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as path from "node:path";
-import { Agent, ThinkingLevel } from "@xcsh/pi-agent-core";
-import { ModelRegistry } from "@xcsh/pi-coding-agent/config/model-registry";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { AgentSession } from "@xcsh/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@xcsh/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
-import { TempDir } from "@xcsh/pi-utils";
+import { Agent, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { AgentSession } from "@f5xc-salesdemos/xcsh/session/agent-session";
+import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 
 describe("plan mode thinking level", () => {
 	let tempDir: TempDir;

@@ -1,8 +1,8 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { ThinkingLevel } from "@xcsh/pi-agent-core";
-import { TERMINAL } from "@xcsh/pi-tui";
-import { formatDuration, formatNumber, getProjectDir, relativePathWithinRoot } from "@xcsh/pi-utils";
+import { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import { TERMINAL } from "@f5xc-salesdemos/pi-tui";
+import { formatDuration, formatNumber, getProjectDir, relativePathWithinRoot } from "@f5xc-salesdemos/pi-utils";
 import { theme } from "../../../modes/theme/theme";
 import { shortenPath } from "../../../tools/render-utils";
 import { getContextUsageLevel, getContextUsageThemeColor } from "./context-thresholds";

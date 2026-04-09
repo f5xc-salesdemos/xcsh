@@ -1,4 +1,4 @@
-import { structuredCloneJSON } from "@xcsh/pi-utils";
+import { structuredCloneJSON } from "@f5xc-salesdemos/pi-utils";
 import type OpenAI from "openai";
 import type {
 	ResponseFunctionToolCall,

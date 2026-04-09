@@ -5,8 +5,8 @@
  * to avoid import resolution issues with custom tools loaded from user directories.
  */
 import * as path from "node:path";
-import type { AgentToolResult } from "@xcsh/pi-agent-core";
-import { logger } from "@xcsh/pi-utils";
+import type { AgentToolResult } from "@f5xc-salesdemos/pi-agent-core";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import * as typebox from "@sinclair/typebox";
 import { toolCapability } from "../../capability/tool";
 import { type CustomTool, loadCapability } from "../../discovery";
@@ -85,7 +85,7 @@ export class CustomToolLoader {
 	#seenNames: Set<string>;
 
 	constructor(
-		pi: typeof import("@xcsh/pi-coding-agent"),
+		pi: typeof import("@f5xc-salesdemos/pi-coding-agent"),
 		cwd: string,
 		builtInToolNames: string[],
 		pushPendingAction?: (action: {
@@ -171,7 +171,7 @@ export async function loadCustomTools(
 	}) => void,
 ) {
 	const loader = new CustomToolLoader(
-		await import("@xcsh/pi-coding-agent"),
+		await import("@f5xc-salesdemos/pi-coding-agent"),
 		cwd,
 		builtInToolNames,
 		pushPendingAction,

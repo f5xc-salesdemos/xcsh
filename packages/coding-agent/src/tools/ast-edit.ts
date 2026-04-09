@@ -1,10 +1,15 @@
 import * as path from "node:path";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { type AstReplaceChange, astEdit } from "@f5xc-salesdemos/pi-natives";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { prompt, untilAborted } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import { type AstReplaceChange, astEdit } from "@xcsh/pi-natives";
-import type { Component } from "@xcsh/pi-tui";
-import { Text } from "@xcsh/pi-tui";
-import { prompt, untilAborted } from "@xcsh/pi-utils";
 import { computeLineHash } from "../edit/line-hash";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";

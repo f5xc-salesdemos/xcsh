@@ -1,9 +1,9 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { SearchDb } from "@xcsh/pi-natives";
-import { fuzzyFind } from "@xcsh/pi-natives";
-import { getProjectDir } from "@xcsh/pi-utils";
+import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
+import { fuzzyFind } from "@f5xc-salesdemos/pi-natives";
+import { getProjectDir } from "@f5xc-salesdemos/pi-utils";
 
 const PATH_DELIMITERS = new Set([" ", "\t", '"', "'", "="]);
 

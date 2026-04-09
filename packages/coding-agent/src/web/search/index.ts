@@ -6,10 +6,15 @@
  *
  */
 
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import { Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import { StringEnum } from "@xcsh/pi-ai";
-import { prompt } from "@xcsh/pi-utils";
 import type { CustomTool, CustomToolContext, RenderResultOptions } from "../../extensibility/custom-tools/types";
 import type { Theme } from "../../modes/theme/theme";
 import webSearchSystemPrompt from "../../prompts/system/web-search.md" with { type: "text" };

@@ -1,6 +1,6 @@
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import type { ptree } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import { StringEnum } from "@xcsh/pi-ai";
-import type { ptree } from "@xcsh/pi-utils";
 
 // =============================================================================
 // Tool Schema

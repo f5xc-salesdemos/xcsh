@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * Syncs ALL @xcsh/* package dependency versions to match their current versions.
+ * Syncs ALL @f5xc-salesdemos/* package dependency versions to match their current versions.
  * This ensures lockstep versioning across the monorepo.
  */
 

@@ -9,7 +9,7 @@ import {
 	discoverPromptTemplates,
 	type PromptTemplate,
 	SessionManager,
-} from "@xcsh/pi-coding-agent";
+} from "@f5xc-salesdemos/xcsh";
 
 // Discover prompt templates from cwd/.pi/prompts/ and ~/.pi/agent/prompts/
 const discovered = await discoverPromptTemplates();

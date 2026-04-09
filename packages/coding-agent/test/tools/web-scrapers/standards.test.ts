@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { handleCheatSh } from "@xcsh/pi-coding-agent/web/scrapers/cheatsh";
-import { handleRfc } from "@xcsh/pi-coding-agent/web/scrapers/rfc";
-import { handleTldr } from "@xcsh/pi-coding-agent/web/scrapers/tldr";
+import { handleCheatSh } from "@f5xc-salesdemos/xcsh/web/scrapers/cheatsh";
+import { handleRfc } from "@f5xc-salesdemos/xcsh/web/scrapers/rfc";
+import { handleTldr } from "@f5xc-salesdemos/xcsh/web/scrapers/tldr";
 
 const SKIP = !Bun.env.WEB_FETCH_INTEGRATION;
 

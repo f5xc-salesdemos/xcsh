@@ -8,8 +8,8 @@ import {
 	setKeybindings,
 	TUI_KEYBINDINGS,
 	KeybindingsManager as TuiKeybindingsManager,
-} from "@xcsh/pi-tui";
-import { getAgentDir, isEnoent, logger } from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/pi-tui";
+import { getAgentDir, isEnoent, logger } from "@f5xc-salesdemos/pi-utils";
 
 /**
  * Application-level keybindings (coding agent specific).
@@ -52,7 +52,7 @@ interface AppKeybindings {
 
 export type AppKeybinding = keyof AppKeybindings;
 
-declare module "@xcsh/pi-tui" {
+declare module "@f5xc-salesdemos/pi-tui" {
 	interface Keybindings extends AppKeybindings {}
 }
 

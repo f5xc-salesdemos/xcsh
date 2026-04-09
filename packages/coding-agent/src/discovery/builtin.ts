@@ -4,7 +4,7 @@
  * Primary provider for OMP native configs. Supports all capabilities.
  */
 import * as path from "node:path";
-import { logger, parseFrontmatter, tryParseJson } from "@xcsh/pi-utils";
+import { logger, parseFrontmatter, tryParseJson } from "@f5xc-salesdemos/pi-utils";
 import { registerProvider } from "../capability";
 import { type ContextFile, contextFileCapability } from "../capability/context-file";
 import { type Extension, type ExtensionManifest, extensionCapability } from "../capability/extension";

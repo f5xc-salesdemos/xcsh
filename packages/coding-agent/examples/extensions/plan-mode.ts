@@ -18,8 +18,9 @@
  * 2. Use /plan to toggle plan mode on/off
  * 3. Or start in plan mode with --plan flag
  */
-import type { ExtensionAPI, ExtensionContext } from "@xcsh/pi-coding-agent";
-import { Key } from "@xcsh/pi-tui";
+
+import { Key } from "@f5xc-salesdemos/pi-tui";
+import type { ExtensionAPI, ExtensionContext } from "@f5xc-salesdemos/xcsh";
 
 // Read-only tools for plan mode
 const PLAN_MODE_TOOLS = ["read", "bash", "grep", "find", "ls"];

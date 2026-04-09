@@ -1,4 +1,4 @@
-import { parseFrontmatter } from "@xcsh/pi-utils";
+import { parseFrontmatter } from "@f5xc-salesdemos/pi-utils";
 import type { RenderResult, SpecialHandler } from "./types";
 import { buildResult, loadPage } from "./types";
 import { asString } from "./utils";
