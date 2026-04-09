@@ -86,7 +86,7 @@ export interface HookUIContext {
 	 *
 	 * // Async factory with fire-and-forget work
 	 * const result = await ctx.ui.custom(async (tui, theme, done) => {
-	 *   const loader = new CancellableLoader(tui, theme.fg("accent"), theme.fg("muted"), "Working...");
+	 *   const loader = new CancellableLoader(tui, theme.fg("contentAccent"), theme.fg("muted"), "Working...");
 	 *   loader.onAbort = () => done(null);
 	 *   doWork(loader.signal).then(done);  // Don't await - fire and forget
 	 *   return loader;

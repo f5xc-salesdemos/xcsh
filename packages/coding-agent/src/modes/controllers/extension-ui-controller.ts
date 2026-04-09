@@ -187,7 +187,7 @@ export class ExtensionUiController {
 
 				this.ctx.chatContainer.addChild(new Spacer(1));
 				this.ctx.chatContainer.addChild(
-					new Text(`${theme.fg("accent", `${theme.status.success} New session started`)}`, 1, 1),
+					new Text(`${theme.fg("contentAccent", `${theme.status.success} New session started`)}`, 1, 1),
 				);
 				await this.ctx.reloadTodos();
 				this.ctx.ui.requestRender();
@@ -448,7 +448,7 @@ export class ExtensionUiController {
 
 				this.ctx.chatContainer.addChild(new Spacer(1));
 				this.ctx.chatContainer.addChild(
-					new Text(`${theme.fg("accent", `${theme.status.success} New session started`)}`, 1, 1),
+					new Text(`${theme.fg("contentAccent", `${theme.status.success} New session started`)}`, 1, 1),
 				);
 				await this.ctx.reloadTodos();
 				this.ctx.ui.requestRender();

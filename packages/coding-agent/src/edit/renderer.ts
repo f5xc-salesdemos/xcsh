@@ -128,14 +128,14 @@ function formatEditPathDisplay(
 	uiTheme: Theme,
 	options?: { rename?: string; firstChangedLine?: number },
 ): string {
-	let pathDisplay = rawPath ? uiTheme.fg("accent", shortenPath(rawPath)) : uiTheme.fg("toolOutput", "…");
+	let pathDisplay = rawPath ? uiTheme.fg("contentAccent", shortenPath(rawPath)) : uiTheme.fg("toolOutput", "…");
 
 	if (options?.firstChangedLine) {
 		pathDisplay += uiTheme.fg("warning", `:${options.firstChangedLine}`);
 	}
 
 	if (options?.rename) {
-		pathDisplay += ` ${uiTheme.fg("dim", "→")} ${uiTheme.fg("accent", shortenPath(options.rename))}`;
+		pathDisplay += ` ${uiTheme.fg("dim", "→")} ${uiTheme.fg("contentAccent", shortenPath(options.rename))}`;
 	}
 
 	return pathDisplay;

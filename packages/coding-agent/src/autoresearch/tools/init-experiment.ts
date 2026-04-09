@@ -381,7 +381,7 @@ export function createInitExperimentTool(
 }
 
 function renderInitCall(name: string, theme: Theme): string {
-	return `${theme.fg("toolTitle", theme.bold("init_experiment"))} ${theme.fg("accent", truncateToWidth(replaceTabs(name), 100))}`;
+	return `${theme.fg("toolTitle", theme.bold("init_experiment"))} ${theme.fg("contentAccent", truncateToWidth(replaceTabs(name), 100))}`;
 }
 
 function collectLoggedRunNumbers(results: ExperimentState["results"]): Set<number> {

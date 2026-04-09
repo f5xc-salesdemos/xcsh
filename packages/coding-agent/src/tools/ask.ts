@@ -607,7 +607,7 @@ export const askToolRenderer = {
 	renderCall(args: AskRenderArgs, _options: RenderResultOptions, uiTheme: Theme): Component {
 		const label = formatTitle("Ask", uiTheme);
 		const mdTheme = getMarkdownTheme();
-		const accentStyle = { color: (t: string) => uiTheme.fg("accent", t) };
+		const accentStyle = { color: (t: string) => uiTheme.fg("contentAccent", t) };
 
 		// Multi-part questions
 		if (args.questions && args.questions.length > 0) {
@@ -679,7 +679,7 @@ export const askToolRenderer = {
 	): Component {
 		const { details } = result;
 		const mdTheme = getMarkdownTheme();
-		const accentStyle = { color: (t: string) => uiTheme.fg("accent", t) };
+		const accentStyle = { color: (t: string) => uiTheme.fg("contentAccent", t) };
 
 		if (!details) {
 			const txt = result.content[0];

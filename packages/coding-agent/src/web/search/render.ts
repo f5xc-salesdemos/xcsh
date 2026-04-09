@@ -201,7 +201,7 @@ export function renderSearchResult(
 						const metaSep = theme.fg("dim", theme.sep.dot);
 						const metaSuffix = metaParts.length > 0 ? ` ${metaParts.join(metaSep)}` : "";
 						const srcLines: string[] = [
-							truncateToWidth(`${theme.fg("accent", title)}${metaSuffix}`, MAX_SNIPPET_LINE_LEN),
+							truncateToWidth(`${theme.fg("contentAccent", title)}${metaSuffix}`, MAX_SNIPPET_LINE_LEN),
 						];
 						const snippetText = typeof src.snippet === "string" ? src.snippet : "";
 						if (snippetText.trim()) {

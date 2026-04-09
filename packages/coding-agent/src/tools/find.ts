@@ -421,7 +421,7 @@ export const findToolRenderer = {
 							expanded,
 							maxCollapsed: COLLAPSED_LIST_LIMIT,
 							itemType: "file",
-							renderItem: line => uiTheme.fg("accent", line),
+							renderItem: line => uiTheme.fg("contentAccent", line),
 						},
 						uiTheme,
 					);

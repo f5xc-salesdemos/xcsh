@@ -888,7 +888,7 @@ export const pythonToolRenderer = {
 
 		const workdirLabel = displayWorkdir ? `cd ${displayWorkdir}` : undefined;
 		if (cells.length === 0) {
-			const prompt = uiTheme.fg("accent", ">>>");
+			const prompt = uiTheme.fg("contentAccent", ">>>");
 			const prefix = workdirLabel ? `${uiTheme.fg("dim", `${workdirLabel} && `)}` : "";
 			const text = formatTitle(`${prompt} ${prefix}…`, uiTheme);
 			return new Text(text, 0, 0);

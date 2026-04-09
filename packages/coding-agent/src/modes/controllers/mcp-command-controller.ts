@@ -148,7 +148,7 @@ export class MCPCommandController {
 			"",
 			"Manage Model Context Protocol (MCP) servers for external tool integrations.",
 			"",
-			theme.fg("accent", "Commands:"),
+			theme.fg("contentAccent", "Commands:"),
 			"  /mcp add              Add a new MCP server (interactive wizard)",
 			"  /mcp add <name> [--scope project|user] [--url <url> --transport http|sse] [--token <token>] [-- <command...>]",
 			"  /mcp list             List all configured MCP servers",
@@ -522,7 +522,7 @@ export class MCPCommandController {
 						// Show auth URL prominently in chat
 						this.ctx.chatContainer.addChild(new Spacer(1));
 						this.ctx.chatContainer.addChild(
-							new Text(theme.fg("accent", "━━━ OAuth Authorization Required ━━━"), 1, 0),
+							new Text(theme.fg("contentAccent", "━━━ OAuth Authorization Required ━━━"), 1, 0),
 						);
 						this.ctx.chatContainer.addChild(new Spacer(1));
 						this.ctx.chatContainer.addChild(
@@ -538,7 +538,7 @@ export class MCPCommandController {
 						);
 						this.ctx.chatContainer.addChild(new Spacer(1));
 						this.ctx.chatContainer.addChild(
-							new Text(theme.fg("accent", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"), 1, 0),
+							new Text(theme.fg("contentAccent", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"), 1, 0),
 						);
 						this.ctx.ui.requestRender();
 						// Try to open browser automatically
@@ -557,7 +557,7 @@ export class MCPCommandController {
 							this.ctx.chatContainer.addChild(
 								new Text(theme.fg("success", "Copy this exact URL in your browser:"), 1, 0),
 							);
-							this.ctx.chatContainer.addChild(new Text(theme.fg("accent", info.url), 1, 0));
+							this.ctx.chatContainer.addChild(new Text(theme.fg("contentAccent", info.url), 1, 0));
 							this.ctx.ui.requestRender();
 						} catch (_error) {
 							// Show error if browser doesn't open
@@ -568,7 +568,7 @@ export class MCPCommandController {
 							this.ctx.chatContainer.addChild(
 								new Text(theme.fg("success", "Copy this exact URL in your browser:"), 1, 0),
 							);
-							this.ctx.chatContainer.addChild(new Text(theme.fg("accent", info.url), 1, 0));
+							this.ctx.chatContainer.addChild(new Text(theme.fg("contentAccent", info.url), 1, 0));
 							this.ctx.ui.requestRender();
 						}
 					},
@@ -816,15 +816,15 @@ export class MCPCommandController {
 				lines.push("");
 			} else if (isConnecting) {
 				lines.push(theme.fg("muted", `◌ Server is connecting in background...`));
-				lines.push(theme.fg("muted", `  Run ${theme.fg("accent", `/mcp test ${name}`)} in a few seconds.`));
+				lines.push(theme.fg("muted", `  Run ${theme.fg("contentAccent", `/mcp test ${name}`)} in a few seconds.`));
 				lines.push("");
 			} else {
 				lines.push(theme.fg("warning", `⚠ Server added but not yet connected`));
-				lines.push(theme.fg("muted", `  Run ${theme.fg("accent", `/mcp test ${name}`)} to test the connection.`));
+				lines.push(theme.fg("muted", `  Run ${theme.fg("contentAccent", `/mcp test ${name}`)} to test the connection.`));
 				lines.push("");
 			}
 
-			lines.push(theme.fg("muted", `Run ${theme.fg("accent", "/mcp list")} to see all configured servers.`));
+			lines.push(theme.fg("muted", `Run ${theme.fg("contentAccent", "/mcp list")} to see all configured servers.`));
 			lines.push("");
 
 			this.#showMessage(lines.join("\n"));
@@ -838,7 +838,7 @@ export class MCPCommandController {
 			} else if (errorMsg.includes("ENOSPC")) {
 				helpText = "\n\nTip: Insufficient disk space.";
 			} else if (errorMsg.includes("already exists")) {
-				helpText = `\n\nTip: Use ${theme.fg("accent", "/mcp list")} to see existing servers.`;
+				helpText = `\n\nTip: Use ${theme.fg("contentAccent", "/mcp list")} to see existing servers.`;
 			}
 
 			this.ctx.showError(`Failed to add server: ${errorMsg}${helpText}`);
@@ -904,7 +904,7 @@ export class MCPCommandController {
 						"",
 						theme.fg("muted", "No MCP servers configured."),
 						"",
-						`Use ${theme.fg("accent", "/mcp add")} to add a server.`,
+						`Use ${theme.fg("contentAccent", "/mcp add")} to add a server.`,
 						"",
 					].join("\n"),
 				);
@@ -915,7 +915,7 @@ export class MCPCommandController {
 
 			// Show user-level servers
 			if (userServers.length > 0) {
-				lines.push(theme.fg("accent", "User level") + theme.fg("muted", ` (${userPathLabel}):`));
+				lines.push(theme.fg("contentAccent", "User level") + theme.fg("muted", ` (${userPathLabel}):`));
 				for (const name of userServers) {
 					const config = userConfig.mcpServers![name];
 					const type = config.type ?? "stdio";
@@ -931,14 +931,14 @@ export class MCPCommandController {
 								: state === "connecting"
 									? theme.fg("muted", " ◌ connecting")
 									: theme.fg("muted", " ○ not connected");
-					lines.push(`  ${theme.fg("accent", name)}${status} ${theme.fg("dim", `[${type}]`)}`);
+					lines.push(`  ${theme.fg("contentAccent", name)}${status} ${theme.fg("dim", `[${type}]`)}`);
 				}
 				lines.push("");
 			}
 
 			// Show project-level servers
 			if (projectServers.length > 0) {
-				lines.push(theme.fg("accent", "Project level") + theme.fg("muted", ` (${projectPathLabel}):`));
+				lines.push(theme.fg("contentAccent", "Project level") + theme.fg("muted", ` (${projectPathLabel}):`));
 				for (const name of projectServers) {
 					const config = projectConfig.mcpServers![name];
 					const type = config.type ?? "stdio";
@@ -954,7 +954,7 @@ export class MCPCommandController {
 								: state === "connecting"
 									? theme.fg("muted", " ◌ connecting")
 									: theme.fg("muted", " ○ not connected");
-					lines.push(`  ${theme.fg("accent", name)}${status} ${theme.fg("dim", `[${type}]`)}`);
+					lines.push(`  ${theme.fg("contentAccent", name)}${status} ${theme.fg("dim", `[${type}]`)}`);
 				}
 				lines.push("");
 			}
@@ -978,7 +978,7 @@ export class MCPCommandController {
 					const providerName = key.slice(0, sepIdx);
 					const sourcePath = key.slice(sepIdx + 1);
 					const shortPath = shortenPath(sourcePath);
-					lines.push(theme.fg("accent", providerName) + theme.fg("muted", ` (${shortPath}):`));
+					lines.push(theme.fg("contentAccent", providerName) + theme.fg("muted", ` (${shortPath}):`));
 					for (const { name } of entries) {
 						const state = this.ctx.mcpManager!.getConnectionStatus(name);
 						const status =
@@ -987,7 +987,7 @@ export class MCPCommandController {
 								: state === "connecting"
 									? theme.fg("muted", " ◌ connecting")
 									: theme.fg("muted", " ○ not connected");
-						lines.push(`  ${theme.fg("accent", name)}${status}`);
+						lines.push(`  ${theme.fg("contentAccent", name)}${status}`);
 					}
 					lines.push("");
 				}
@@ -996,9 +996,9 @@ export class MCPCommandController {
 			// Show servers disabled via /mcp disable (from third-party configs)
 			const relevantDisabled = [...disabledServerNames].filter(n => !configServerNames.has(n));
 			if (relevantDisabled.length > 0) {
-				lines.push(theme.fg("accent", "Disabled") + theme.fg("muted", " (discovered servers):"));
+				lines.push(theme.fg("contentAccent", "Disabled") + theme.fg("muted", " (discovered servers):"));
 				for (const name of relevantDisabled) {
-					lines.push(`  ${theme.fg("accent", name)}${theme.fg("warning", " ◌ disabled")}`);
+					lines.push(`  ${theme.fg("contentAccent", name)}${theme.fg("warning", " ◌ disabled")}`);
 				}
 				lines.push("");
 			}
@@ -1105,7 +1105,7 @@ export class MCPCommandController {
 
 			if (!config) {
 				this.ctx.showError(
-					`Server "${name}" not found.\n\nTip: Run ${theme.fg("accent", "/mcp list")} to see available servers.`,
+					`Server "${name}" not found.\n\nTip: Run ${theme.fg("contentAccent", "/mcp list")} to see available servers.`,
 				);
 				return;
 			}
@@ -1477,7 +1477,7 @@ export class MCPCommandController {
 			if (resources.length === 0 && templates.length === 0) continue;
 			hasAny = true;
 
-			lines.push(`${theme.fg("accent", name)}:`);
+			lines.push(`${theme.fg("contentAccent", name)}:`);
 			for (const r of resources) {
 				const desc = r.description ? ` ${theme.fg("dim", r.description)}` : "";
 				const mime = r.mimeType ? ` ${theme.fg("dim", `[${r.mimeType}]`)}` : "";
@@ -1487,7 +1487,7 @@ export class MCPCommandController {
 				lines.push(`  ${theme.fg("muted", "Templates:")}`);
 				for (const t of templates) {
 					const desc = t.description ? ` ${theme.fg("dim", t.description)}` : "";
-					lines.push(`    ${theme.fg("accent", t.uriTemplate)}${desc}`);
+					lines.push(`    ${theme.fg("contentAccent", t.uriTemplate)}${desc}`);
 				}
 			}
 			lines.push("");
@@ -1518,7 +1518,7 @@ export class MCPCommandController {
 			if (!prompts?.length) continue;
 			hasAny = true;
 
-			lines.push(`${theme.fg("accent", name)}:`);
+			lines.push(`${theme.fg("contentAccent", name)}:`);
 			for (const p of prompts) {
 				const commandName = `${name}:${p.name}`;
 				const desc = p.description ? ` ${theme.fg("dim", p.description)}` : "";
@@ -1573,7 +1573,7 @@ export class MCPCommandController {
 			if (!hasNotifications) continue;
 			hasAny = true;
 
-			lines.push(`${theme.fg("accent", name)}:`);
+			lines.push(`${theme.fg("contentAccent", name)}:`);
 			const check = theme.fg("success", "\u2713");
 			const cross = theme.fg("dim", "\u2717");
 			if (supportsToolsChanged) lines.push(`  ${check} tools/list_changed`);
@@ -1671,7 +1671,7 @@ export class MCPCommandController {
 				theme.bold("Smithery Login"),
 				theme.fg("muted", "Browser authorization started. Complete auth in your browser."),
 				theme.fg("dim", "Authorize URL:"),
-				theme.fg("accent", session.authUrl),
+				theme.fg("contentAccent", session.authUrl),
 				theme.fg("dim", `Fallback: ${fallbackLoginUrl}`),
 				"",
 			].join("\n"),

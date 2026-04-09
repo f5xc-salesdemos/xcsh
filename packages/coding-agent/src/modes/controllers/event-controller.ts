@@ -457,7 +457,7 @@ export class EventController {
 				const actionLabel = event.action === "handoff" ? "Auto-handoff" : "Auto context-full maintenance";
 				this.ctx.autoCompactionLoader = new Loader(
 					this.ctx.ui,
-					spinner => theme.fg("accent", spinner),
+					spinner => theme.fg("spinnerAccent", spinner),
 					text => theme.fg("muted", text),
 					`${reasonText}${actionLabel}… (esc to cancel)`,
 					getSymbolTheme().spinnerFrames,

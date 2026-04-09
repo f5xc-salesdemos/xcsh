@@ -39,7 +39,7 @@ import { setSessionTerminalTitle } from "../../utils/title-generator";
 function showMarkdownPanel(ctx: InteractiveModeContext, title: string, markdown: string): void {
 	ctx.chatContainer.addChild(new Spacer(1));
 	ctx.chatContainer.addChild(new DynamicBorder());
-	ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", title)), 1, 0));
+	ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("contentAccent", title)), 1, 0));
 	ctx.chatContainer.addChild(new Spacer(1));
 	ctx.chatContainer.addChild(new Markdown(markdown.trim(), 1, 1, getMarkdownTheme()));
 	ctx.chatContainer.addChild(new DynamicBorder());
@@ -511,7 +511,7 @@ export class CommandController {
 
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(new DynamicBorder());
-		this.ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", title)), 1, 0));
+		this.ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("contentAccent", title)), 1, 0));
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(new Markdown(changelogMarkdown + hint, 1, 1, getMarkdownTheme()));
 		this.ctx.chatContainer.addChild(new DynamicBorder());
@@ -541,7 +541,7 @@ export class CommandController {
 			}
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(new DynamicBorder());
-			this.ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "Memory Injection Payload")), 1, 0));
+			this.ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("contentAccent", "Memory Injection Payload")), 1, 0));
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(new Markdown(payload, 1, 1, getMarkdownTheme()));
 			this.ctx.chatContainer.addChild(new DynamicBorder());
@@ -604,7 +604,7 @@ export class CommandController {
 
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(
-			new Text(`${theme.fg("accent", `${theme.status.success} New session started`)}`, 1, 1),
+			new Text(`${theme.fg("contentAccent", `${theme.status.success} New session started`)}`, 1, 1),
 		);
 		await this.ctx.reloadTodos();
 		this.ctx.ui.requestRender();
@@ -634,7 +634,7 @@ export class CommandController {
 		const shortPath = sessionFile ? sessionFile.split("/").pop() : "new session";
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(
-			new Text(`${theme.fg("accent", `${theme.status.success} Session forked to ${shortPath}`)}`, 1, 1),
+			new Text(`${theme.fg("contentAccent", `${theme.status.success} Session forked to ${shortPath}`)}`, 1, 1),
 		);
 		this.ctx.ui.requestRender();
 	}
@@ -678,7 +678,7 @@ export class CommandController {
 
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(
-				new Text(`${theme.fg("accent", `${theme.status.success} Session moved to ${resolvedPath}`)}`, 1, 1),
+				new Text(`${theme.fg("contentAccent", `${theme.status.success} Session moved to ${resolvedPath}`)}`, 1, 1),
 			);
 			this.ctx.ui.requestRender();
 		} catch (err) {
@@ -811,7 +811,7 @@ export class CommandController {
 		const label = isAuto ? "Auto-compacting context... (esc to cancel)" : "Compacting context... (esc to cancel)";
 		const compactingLoader = new Loader(
 			this.ctx.ui,
-			spinner => theme.fg("accent", spinner),
+			spinner => theme.fg("spinnerAccent", spinner),
 			text => theme.fg("muted", text),
 			label,
 			getSymbolTheme().spinnerFrames,
@@ -873,7 +873,7 @@ export class CommandController {
 
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(
-				new Text(`${theme.fg("accent", `${theme.status.success} New session started with handoff context`)}`, 1, 1),
+				new Text(`${theme.fg("contentAccent", `${theme.status.success} New session started with handoff context`)}`, 1, 1),
 			);
 			if (result.savedPath) {
 				this.ctx.showStatus(`Handoff document saved to: ${result.savedPath}`);
@@ -1106,7 +1106,7 @@ function renderUsageReports(reports: UsageReport[], uiTheme: typeof theme, nowMs
 	const lines: string[] = [];
 	const latestFetchedAt = Math.max(...reports.map(report => report.fetchedAt ?? 0));
 	const headerSuffix = latestFetchedAt ? ` (${formatDuration(nowMs - latestFetchedAt)} ago)` : "";
-	lines.push(uiTheme.bold(uiTheme.fg("accent", `Usage${headerSuffix}`)));
+	lines.push(uiTheme.bold(uiTheme.fg("contentAccent", `Usage${headerSuffix}`)));
 	const grouped = new Map<string, UsageReport[]>();
 	for (const report of reports) {
 		const list = grouped.get(report.provider) ?? [];
@@ -1149,7 +1149,7 @@ function renderUsageReports(reports: UsageReport[], uiTheme: typeof theme, nowMs
 			}
 		}
 
-		lines.push(uiTheme.bold(uiTheme.fg("accent", providerName)));
+		lines.push(uiTheme.bold(uiTheme.fg("contentAccent", providerName)));
 
 		for (const group of limitGroups.values()) {
 			const entries = group.limits.map((limit, index) => ({

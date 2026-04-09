@@ -436,7 +436,7 @@ export const astGrepToolRenderer = {
 						renderItem: group =>
 							group.map(line => {
 								if (line.startsWith("## ")) return uiTheme.fg("dim", line);
-								if (line.startsWith("# ")) return uiTheme.fg("accent", line);
+								if (line.startsWith("# ")) return uiTheme.fg("contentAccent", line);
 								if (line.startsWith("  meta:")) return uiTheme.fg("dim", line);
 								return uiTheme.fg("toolOutput", line);
 							}),

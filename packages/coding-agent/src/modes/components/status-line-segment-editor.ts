@@ -257,7 +257,7 @@ export class StatusLineSegmentEditorComponent extends Container {
 		const lines: string[] = [];
 
 		// Title with live preview indicator
-		lines.push(theme.bold(theme.fg("accent", "Configure Status Line Segments")));
+		lines.push(theme.bold(theme.fg("contentAccent", "Configure Status Line Segments")));
 		lines.push(theme.fg("dim", "Live preview shown in status line above"));
 		lines.push("");
 
@@ -288,15 +288,15 @@ export class StatusLineSegmentEditorComponent extends Container {
 		const activeMarker = theme.nav.back;
 		const leftHeader =
 			this.#focusColumn === "left"
-				? theme.bold(theme.fg("accent", `${activeMarker} LEFT`))
+				? theme.bold(theme.fg("contentAccent", `${activeMarker} LEFT`))
 				: theme.fg("muted", "  LEFT");
 		const rightHeader =
 			this.#focusColumn === "right"
-				? theme.bold(theme.fg("accent", `${activeMarker} RIGHT`))
+				? theme.bold(theme.fg("contentAccent", `${activeMarker} RIGHT`))
 				: theme.fg("muted", "  RIGHT");
 		const disabledHeader =
 			this.#focusColumn === "disabled"
-				? theme.bold(theme.fg("accent", `${activeMarker} AVAILABLE`))
+				? theme.bold(theme.fg("contentAccent", `${activeMarker} AVAILABLE`))
 				: theme.fg("muted", "  AVAILABLE");
 
 		lines.push(`${leftHeader.padEnd(colWidth + 8)}${rightHeader.padEnd(colWidth + 8)}${disabledHeader}`);

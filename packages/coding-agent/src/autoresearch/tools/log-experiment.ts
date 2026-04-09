@@ -767,7 +767,7 @@ function renderSummary(details: LogDetails, theme: Theme): string {
 	const { experiment, state } = details;
 	const color = experiment.status === "keep" ? "success" : experiment.status === "discard" ? "warning" : "error";
 	let summary = `${theme.fg(color, experiment.status.toUpperCase())} ${theme.fg("muted", truncateToWidth(replaceTabs(experiment.description), 100))}`;
-	summary += ` ${theme.fg("accent", `${state.metricName}=${formatNum(experiment.metric, state.metricUnit)}`)}`;
+	summary += ` ${theme.fg("contentAccent", `${state.metricName}=${formatNum(experiment.metric, state.metricUnit)}`)}`;
 	if (state.bestMetric !== null) {
 		summary += ` ${theme.fg("dim", `baseline ${formatNum(state.bestMetric, state.metricUnit)}`)}`;
 	}

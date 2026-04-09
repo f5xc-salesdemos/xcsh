@@ -606,7 +606,7 @@ export const grepToolRenderer = {
 						renderItem: group =>
 							group.map(line => {
 								if (line.startsWith("## ")) return uiTheme.fg("dim", line);
-								if (line.startsWith("# ")) return uiTheme.fg("accent", line);
+								if (line.startsWith("# ")) return uiTheme.fg("contentAccent", line);
 								return uiTheme.fg("toolOutput", line);
 							}),
 					},

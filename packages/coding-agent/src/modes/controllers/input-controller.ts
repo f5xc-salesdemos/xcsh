@@ -626,7 +626,7 @@ export class InputController {
 			this.ctx.statusLine.invalidate();
 			this.ctx.updateEditorBorderColor();
 			const roleLabel = result.role === "default" ? "default" : result.role;
-			const roleLabelStyled = theme.bold(theme.fg("accent", roleLabel));
+			const roleLabelStyled = theme.bold(theme.fg("contentAccent", roleLabel));
 			const thinkingStr =
 				result.model.thinking && result.thinkingLevel !== ThinkingLevel.Off
 					? ` (thinking: ${result.thinkingLevel})`
@@ -636,7 +636,7 @@ export class InputController {
 			const cycleLabel = cycleOrder
 				.map(role => {
 					if (role === result.role) {
-						return theme.bold(theme.fg("accent", role));
+						return theme.bold(theme.fg("contentAccent", role));
 					}
 					return theme.fg("muted", role);
 				})

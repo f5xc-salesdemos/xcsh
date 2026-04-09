@@ -127,7 +127,7 @@ export class ReadToolGroupComponent extends Container implements ToolExecutionHa
 
 	#formatPath(entry: ReadEntry): string {
 		const filePath = shortenPath(entry.path);
-		let pathDisplay = filePath ? theme.fg("accent", filePath) : theme.fg("toolOutput", "…");
+		let pathDisplay = filePath ? theme.fg("contentAccent", filePath) : theme.fg("toolOutput", "…");
 		if (entry.sel) {
 			pathDisplay += theme.fg("warning", `:${entry.sel}`);
 		}

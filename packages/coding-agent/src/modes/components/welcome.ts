@@ -137,17 +137,17 @@ export class WelcomeComponent implements Component {
 
 		// Right column
 		const rightLines = [
-			` ${theme.bold(theme.fg("accent", "Tips"))}`,
+			` ${theme.bold(theme.fg("contentAccent", "Tips"))}`,
 			` ${theme.fg("dim", "?")}${theme.fg("muted", " for keyboard shortcuts")}`,
 			` ${theme.fg("dim", "#")}${theme.fg("muted", " for prompt actions")}`,
 			` ${theme.fg("dim", "/")}${theme.fg("muted", " for commands")}`,
 			` ${theme.fg("dim", "!")}${theme.fg("muted", " to run bash")}`,
 			` ${theme.fg("dim", "$")}${theme.fg("muted", " to run python")}`,
 			separator,
-			` ${theme.bold(theme.fg("accent", "LSP Servers"))}`,
+			` ${theme.bold(theme.fg("contentAccent", "LSP Servers"))}`,
 			...lspLines,
 			separator,
-			` ${theme.bold(theme.fg("accent", "Recent sessions"))}`,
+			` ${theme.bold(theme.fg("contentAccent", "Recent sessions"))}`,
 			...sessionLines,
 			"",
 		];
