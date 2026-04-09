@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { createLspWritethrough } from "@oh-my-pi/pi-coding-agent/lsp";
-import * as lspClient from "@oh-my-pi/pi-coding-agent/lsp/client";
-import * as lspConfig from "@oh-my-pi/pi-coding-agent/lsp/config";
-import type { Diagnostic, LspClient, ServerConfig } from "@oh-my-pi/pi-coding-agent/lsp/types";
-import { fileToUri } from "@oh-my-pi/pi-coding-agent/lsp/utils";
-import { type ptree, TempDir } from "@oh-my-pi/pi-utils";
+import { createLspWritethrough } from "@xcsh/pi-coding-agent/lsp";
+import * as lspClient from "@xcsh/pi-coding-agent/lsp/client";
+import * as lspConfig from "@xcsh/pi-coding-agent/lsp/config";
+import type { Diagnostic, LspClient, ServerConfig } from "@xcsh/pi-coding-agent/lsp/types";
+import { fileToUri } from "@xcsh/pi-coding-agent/lsp/utils";
+import { type ptree, TempDir } from "@xcsh/pi-utils";
 
 const TEST_SERVER: ServerConfig = {
 	command: "test-lsp",
@@ -50,7 +50,7 @@ describe("LSP diagnostics freshness", () => {
 	let tempDir: TempDir;
 
 	beforeEach(() => {
-		tempDir = TempDir.createSync("@omp-lsp-freshness-");
+		tempDir = TempDir.createSync("@xcsh-lsp-freshness-");
 	});
 
 	afterEach(() => {

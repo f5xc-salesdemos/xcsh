@@ -2,13 +2,13 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { type ChildProcess, execSync, spawn } from "node:child_process";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { Effort } from "@oh-my-pi/pi-ai";
-import { getBundledModel } from "@oh-my-pi/pi-ai/models";
-import { complete, getEnvApiKey, stream } from "@oh-my-pi/pi-ai/stream";
-import type { Api, Context, ImageContent, Model, OptionsForApi, Tool, ToolResultMessage } from "@oh-my-pi/pi-ai/types";
-import { StringEnum } from "@oh-my-pi/pi-ai/utils/schema";
-import { $which } from "@oh-my-pi/pi-utils";
 import { Type } from "@sinclair/typebox";
+import { Effort } from "@xcsh/pi-ai";
+import { getBundledModel } from "@xcsh/pi-ai/models";
+import { complete, getEnvApiKey, stream } from "@xcsh/pi-ai/stream";
+import type { Api, Context, ImageContent, Model, OptionsForApi, Tool, ToolResultMessage } from "@xcsh/pi-ai/types";
+import { StringEnum } from "@xcsh/pi-ai/utils/schema";
+import { $which } from "@xcsh/pi-utils";
 import { e2eApiKey, resolveApiKey } from "./oauth";
 
 // Resolve OAuth tokens at module level (async, runs before tests)

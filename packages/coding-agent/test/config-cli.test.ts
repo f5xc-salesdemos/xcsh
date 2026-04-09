@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { getConfigRootDir, setAgentDir } from "@oh-my-pi/pi-utils";
+import { getConfigRootDir, setAgentDir } from "@xcsh/pi-utils";
 import { runConfigCommand } from "../src/cli/config-cli";
 import { _resetSettingsForTest } from "../src/config/settings";
 
@@ -12,7 +12,7 @@ const fallbackAgentDir = path.join(getConfigRootDir(), "agent");
 
 beforeEach(async () => {
 	_resetSettingsForTest();
-	testAgentDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-config-cli-"));
+	testAgentDir = await fs.mkdtemp(path.join(os.tmpdir(), "xcsh-config-cli-"));
 	setAgentDir(testAgentDir);
 });
 

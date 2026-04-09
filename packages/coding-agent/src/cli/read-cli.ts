@@ -1,7 +1,7 @@
 /**
  * Read CLI command handler.
  *
- * Handles `omp read` subcommand — emits chunk-mode read output for files,
+ * Handles `xcsh read` subcommand — emits chunk-mode read output for files,
  * and delegates URL reads through the read tool pipeline.
  */
 import * as path from "node:path";

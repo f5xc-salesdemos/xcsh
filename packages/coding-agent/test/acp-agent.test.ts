@@ -3,8 +3,8 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import type { AgentSideConnection, PromptRequest, SessionNotification } from "@agentclientprotocol/sdk";
-import type { Model } from "@oh-my-pi/pi-ai";
-import { getConfigRootDir, setAgentDir } from "@oh-my-pi/pi-utils";
+import type { Model } from "@xcsh/pi-ai";
+import { getConfigRootDir, setAgentDir } from "@xcsh/pi-utils";
 import { AcpAgent } from "../src/modes/acp/acp-agent";
 import type { AgentSession, AgentSessionEvent } from "../src/session/agent-session";
 import { SessionManager } from "../src/session/session-manager";
@@ -244,7 +244,7 @@ afterEach(async () => {
 });
 
 async function createHarness(): Promise<AgentHarness> {
-	const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), "omp-acp-test-"));
+	const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), "xcsh-acp-test-"));
 	cleanupRoots.push(root);
 	const agentDir = path.join(root, "agent");
 	const cwdA = path.join(root, "cwd-a");

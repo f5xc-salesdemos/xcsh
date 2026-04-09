@@ -2,15 +2,15 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { _resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { EditTool } from "@oh-my-pi/pi-coding-agent/edit";
-import { HASHLINE_NIBBLE_ALPHABET } from "@oh-my-pi/pi-coding-agent/edit/line-hash";
-import { getLanguageFromPath } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { GrepTool } from "@oh-my-pi/pi-coding-agent/tools/grep";
-import { ReadTool } from "@oh-my-pi/pi-coding-agent/tools/read";
-import { resolveFileDisplayMode } from "@oh-my-pi/pi-coding-agent/utils/file-display-mode";
-import { ChunkReadStatus, ChunkState } from "@oh-my-pi/pi-natives";
+import { _resetSettingsForTest, Settings } from "@xcsh/pi-coding-agent/config/settings";
+import { EditTool } from "@xcsh/pi-coding-agent/edit";
+import { HASHLINE_NIBBLE_ALPHABET } from "@xcsh/pi-coding-agent/edit/line-hash";
+import { getLanguageFromPath } from "@xcsh/pi-coding-agent/modes/theme/theme";
+import type { ToolSession } from "@xcsh/pi-coding-agent/tools";
+import { GrepTool } from "@xcsh/pi-coding-agent/tools/grep";
+import { ReadTool } from "@xcsh/pi-coding-agent/tools/read";
+import { resolveFileDisplayMode } from "@xcsh/pi-coding-agent/utils/file-display-mode";
+import { ChunkReadStatus, ChunkState } from "@xcsh/pi-natives";
 import { applyChunkEdits } from "../../src/edit/modes/chunk";
 
 function getText(result: { content: Array<{ type: string; text?: string }> }): string {

@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { type ContextFile, contextFileCapability } from "@oh-my-pi/pi-coding-agent/capability/context-file";
-import { _resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { initializeWithSettings, loadCapability } from "@oh-my-pi/pi-coding-agent/discovery";
+import { type ContextFile, contextFileCapability } from "@xcsh/pi-coding-agent/capability/context-file";
+import { _resetSettingsForTest, Settings } from "@xcsh/pi-coding-agent/config/settings";
+import { initializeWithSettings, loadCapability } from "@xcsh/pi-coding-agent/discovery";
 
 describe("disabledExtensions runtime filtering", () => {
 	let tempDir = "";
@@ -14,12 +14,12 @@ describe("disabledExtensions runtime filtering", () => {
 	beforeEach(async () => {
 		_resetSettingsForTest();
 		originalHome = process.env.HOME;
-		tempHomeDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-disabled-ext-home-"));
+		tempHomeDir = await fs.mkdtemp(path.join(os.tmpdir(), "xcsh-disabled-ext-home-"));
 		process.env.HOME = tempHomeDir;
 		vi.spyOn(os, "homedir").mockReturnValue(tempHomeDir);
-		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-disabled-ext-"));
-		await fs.mkdir(path.join(tempDir, ".omp"), { recursive: true });
-		await fs.writeFile(path.join(tempDir, ".omp", "AGENTS.md"), "# project instructions\n");
+		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "xcsh-disabled-ext-"));
+		await fs.mkdir(path.join(tempDir, ".xcsh"), { recursive: true });
+		await fs.writeFile(path.join(tempDir, ".xcsh", "AGENTS.md"), "# project instructions\n");
 
 		const settings = await Settings.init({
 			inMemory: true,

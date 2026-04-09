@@ -6,7 +6,7 @@ import threading
 import time
 import unittest
 
-from omp_rpc import RpcClient, RpcCommandError, RpcConcurrencyError, RpcError, host_tool
+from xcsh_rpc import RpcClient, RpcCommandError, RpcConcurrencyError, RpcError, host_tool
 
 
 FAKE_SERVER = textwrap.dedent(
@@ -580,7 +580,7 @@ class RpcClientTests(unittest.TestCase):
 
     def test_command_builder_supports_common_rpc_options(self) -> None:
         client = RpcClient(
-            executable="omp",
+            executable="xcsh",
             model="openrouter/anthropic/claude-sonnet-4.6",
             cwd="/tmp/workspace",
             thinking="high",
@@ -596,7 +596,7 @@ class RpcClientTests(unittest.TestCase):
         self.assertEqual(
             client.command,
             (
-                "omp",
+                "xcsh",
                 "--mode",
                 "rpc",
                 "--model",

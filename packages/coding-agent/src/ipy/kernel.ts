@@ -1,4 +1,4 @@
-import { $env, logger, Snowflake } from "@oh-my-pi/pi-utils";
+import { $env, logger, Snowflake } from "@xcsh/pi-utils";
 import { $ } from "bun";
 import { Settings } from "../config/settings";
 import { htmlToBasicMarkdown } from "../web/scrapers/types";
@@ -285,8 +285,8 @@ export function renderKernelDisplay(content: Record<string, unknown>): {
 	const outputs: KernelDisplayOutput[] = [];
 
 	// Handle status events (custom MIME type from prelude helpers)
-	if (data["application/x-omp-status"] !== undefined) {
-		const statusData = data["application/x-omp-status"];
+	if (data["application/x-xcsh-status"] !== undefined) {
+		const statusData = data["application/x-xcsh-status"];
 		if (statusData && typeof statusData === "object" && "op" in statusData) {
 			outputs.push({ type: "status", event: statusData as PythonStatusEvent });
 		}
@@ -512,7 +512,7 @@ export class PythonKernel {
 			kernelId,
 			config.url,
 			Snowflake.next(),
-			"omp",
+			"xcsh",
 			false,
 			config.token,
 		);
@@ -575,7 +575,7 @@ export class PythonKernel {
 		)) as { id: string };
 		const kernelId = kernelInfo.id;
 
-		const kernel = new PythonKernel(Snowflake.next(), kernelId, gatewayUrl, Snowflake.next(), "omp", true);
+		const kernel = new PythonKernel(Snowflake.next(), kernelId, gatewayUrl, Snowflake.next(), "xcsh", true);
 
 		try {
 			await logger.time("startWithSharedGateway:connectWS", kernel.#connectWebSocket.bind(kernel), startup);

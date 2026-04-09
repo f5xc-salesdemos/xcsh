@@ -11,8 +11,8 @@ import {
 	streamHashLinesFromUtf8,
 	stripNewLinePrefixes,
 	validateLineRef,
-} from "@oh-my-pi/pi-coding-agent/edit";
-import type { Anchor, HashlineEdit } from "@oh-my-pi/pi-coding-agent/edit/modes/hashline";
+} from "@xcsh/pi-coding-agent/edit";
+import type { Anchor, HashlineEdit } from "@xcsh/pi-coding-agent/edit/modes/hashline";
 
 function makeTag(line: number, content: string): Anchor {
 	return {

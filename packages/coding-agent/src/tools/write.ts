@@ -1,16 +1,16 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { type Static, Type } from "@sinclair/typebox";
 import type {
 	AgentTool,
 	AgentToolContext,
 	AgentToolResult,
 	AgentToolUpdateCallback,
 	ToolCallContext,
-} from "@oh-my-pi/pi-agent-core";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { isEnoent, prompt, untilAborted } from "@oh-my-pi/pi-utils";
-import { type Static, Type } from "@sinclair/typebox";
+} from "@xcsh/pi-agent-core";
+import type { Component } from "@xcsh/pi-tui";
+import { Text } from "@xcsh/pi-tui";
+import { isEnoent, prompt, untilAborted } from "@xcsh/pi-utils";
 import { unzipSync, zipSync } from "fflate";
 import { stripHashlinePrefixes } from "../edit";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";

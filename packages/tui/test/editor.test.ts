@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { stripVTControlCharacters } from "node:util";
-import { setDefaultTabWidth } from "@oh-my-pi/pi-natives";
-import { CURSOR_MARKER } from "@oh-my-pi/pi-tui";
-import { CombinedAutocompleteProvider } from "@oh-my-pi/pi-tui/autocomplete";
-import { Editor } from "@oh-my-pi/pi-tui/components/editor";
-import { visibleWidth } from "@oh-my-pi/pi-tui/utils";
+import { setDefaultTabWidth } from "@xcsh/pi-natives";
+import { CURSOR_MARKER } from "@xcsh/pi-tui";
+import { CombinedAutocompleteProvider } from "@xcsh/pi-tui/autocomplete";
+import { Editor } from "@xcsh/pi-tui/components/editor";
+import { visibleWidth } from "@xcsh/pi-tui/utils";
 import { KeybindingsManager, setKeybindings, TUI_KEYBINDINGS } from "../src/keybindings";
 import { defaultEditorTheme } from "./test-themes";
 

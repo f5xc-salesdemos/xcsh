@@ -1,12 +1,12 @@
 import { beforeAll, describe, expect, it, vi } from "bun:test";
-import { type AgentMessage, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage, Message, Usage } from "@oh-my-pi/pi-ai";
-import { getBundledModel } from "@oh-my-pi/pi-ai";
-import { AssistantMessageEventStream } from "@oh-my-pi/pi-ai/utils/event-stream";
-import { BtwController } from "@oh-my-pi/pi-coding-agent/modes/controllers/btw-controller";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { InteractiveModeContext } from "@oh-my-pi/pi-coding-agent/modes/types";
-import { Container, type TUI } from "@oh-my-pi/pi-tui";
+import { type AgentMessage, ThinkingLevel } from "@xcsh/pi-agent-core";
+import type { AssistantMessage, Message, Usage } from "@xcsh/pi-ai";
+import { getBundledModel } from "@xcsh/pi-ai";
+import { AssistantMessageEventStream } from "@xcsh/pi-ai/utils/event-stream";
+import { BtwController } from "@xcsh/pi-coding-agent/modes/controllers/btw-controller";
+import { initTheme } from "@xcsh/pi-coding-agent/modes/theme/theme";
+import type { InteractiveModeContext } from "@xcsh/pi-coding-agent/modes/types";
+import { Container, type TUI } from "@xcsh/pi-tui";
 
 const usage: Usage = {
 	input: 0,

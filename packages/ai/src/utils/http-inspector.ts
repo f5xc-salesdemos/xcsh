@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { getLogsDir } from "@oh-my-pi/pi-utils";
+import { getLogsDir } from "@xcsh/pi-utils";
 import { extractHttpStatusFromError } from "./retry.js";
 import { formatErrorMessageWithRetryAfter } from "./retry-after.js";
 

@@ -16,7 +16,7 @@ Primary implementation files:
 
 Default config path:
 
-- `~/.omp/agent/models.yml`
+- `~/.xcsh/agent/models.yml`
 
 Legacy behavior still present:
 
@@ -125,7 +125,7 @@ Must define at least one of:
 
 ModelRegistry pipeline (on refresh):
 
-1. Load built-in providers/models from `@oh-my-pi/pi-ai`.
+1. Load built-in providers/models from `@xcsh/pi-ai`.
 2. Load `models.yml` custom config.
 3. Apply provider overrides (`baseUrl`, `headers`) to built-in models.
 4. Apply `modelOverrides` (per provider + model id).
@@ -395,7 +395,7 @@ providers:
 
 Most model configuration now flows through `models.yml` via `ModelRegistry`.
 
-One notable legacy path remains: web-search Anthropic auth resolution still reads `~/.omp/agent/models.json` directly in `src/web/search/auth.ts`.
+One notable legacy path remains: web-search Anthropic auth resolution still reads `~/.xcsh/agent/models.json` directly in `src/web/search/auth.ts`.
 
 If you rely on that specific path, keep JSON compatibility in mind until that module is migrated.
 

@@ -1,7 +1,7 @@
-import type { AgentTool } from "@oh-my-pi/pi-agent-core";
-import type { ToolChoice } from "@oh-my-pi/pi-ai";
-import type { SearchDb } from "@oh-my-pi/pi-natives";
-import { $env, logger } from "@oh-my-pi/pi-utils";
+import type { AgentTool } from "@xcsh/pi-agent-core";
+import type { ToolChoice } from "@xcsh/pi-ai";
+import type { SearchDb } from "@xcsh/pi-natives";
+import { $env, logger } from "@xcsh/pi-utils";
 import type { AsyncJobManager } from "../async";
 import type { PromptTemplate } from "../config/prompt-templates";
 import type { Settings } from "../config/settings";

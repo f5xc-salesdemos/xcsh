@@ -1,7 +1,7 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { type Component, Text } from "@oh-my-pi/pi-tui";
-import { prompt } from "@oh-my-pi/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
+import { type Component, Text } from "@xcsh/pi-tui";
+import { prompt } from "@xcsh/pi-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import {
 	buildDiscoverableMCPSearchIndex,

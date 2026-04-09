@@ -4,7 +4,7 @@
  * Provides diff string generation and the replace-mode edit logic
  * used when not in patch mode.
  */
-import { isEnoent } from "@oh-my-pi/pi-utils";
+import { isEnoent } from "@xcsh/pi-utils";
 import * as Diff from "diff";
 import { resolveToCwd } from "../tools/path-utils";
 import { DEFAULT_FUZZY_THRESHOLD, EditMatchError, findMatch } from "./modes/replace";

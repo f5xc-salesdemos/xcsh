@@ -3,14 +3,14 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "omp-rpc"
+name = "xcsh-rpc"
 version = "0.1.0"
-description = "Typed Python client for the omp coding-agent RPC protocol"
+description = "Typed Python client for the xcsh coding-agent RPC protocol"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "OpenAI Codex" }]
-keywords = ["omp", "rpc", "agent", "coding-agent", "jsonl", "stdio"]
+keywords = ["xcsh", "rpc", "agent", "coding-agent", "jsonl", "stdio"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -23,8 +23,8 @@ classifiers = [
 ]
 
 [project.urls]
-Repository = "https://github.com/can1357/oh-my-pi"
-Documentation = "https://github.com/can1357/oh-my-pi/blob/main/docs/rpc.md"
+Repository = "https://github.com/f5xc-salesdemos/xcsh"
+Documentation = "https://github.com/f5xc-salesdemos/xcsh/blob/main/docs/rpc.md"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -33,4 +33,4 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-omp_rpc = ["py.typed"]
+xcsh_rpc = ["py.typed"]

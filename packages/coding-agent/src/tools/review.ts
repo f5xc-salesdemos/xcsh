@@ -9,12 +9,12 @@
 // Subprocess tool handlers - registered for extraction/rendering in task tool
 // ─────────────────────────────────────────────────────────────────────────────
 import path from "node:path";
-import type { AgentTool } from "@oh-my-pi/pi-agent-core";
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Container, Text } from "@oh-my-pi/pi-tui";
-import { isRecord } from "@oh-my-pi/pi-utils";
 import { Type } from "@sinclair/typebox";
+import type { AgentTool } from "@xcsh/pi-agent-core";
+import { StringEnum } from "@xcsh/pi-ai";
+import type { Component } from "@xcsh/pi-tui";
+import { Container, Text } from "@xcsh/pi-tui";
+import { isRecord } from "@xcsh/pi-utils";
 import type { Theme, ThemeColor } from "../modes/theme/theme";
 import { subprocessToolRegistry } from "../task/subprocess-tool-registry";
 

@@ -2,14 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { createAgentSession } from "@oh-my-pi/pi-coding-agent/sdk";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import {
-	buildSystemPrompt,
-	loadProjectContextFiles,
-	loadSystemPromptFiles,
-} from "@oh-my-pi/pi-coding-agent/system-prompt";
+import { Settings } from "@xcsh/pi-coding-agent/config/settings";
+import { createAgentSession } from "@xcsh/pi-coding-agent/sdk";
+import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
+import { buildSystemPrompt, loadProjectContextFiles, loadSystemPromptFiles } from "@xcsh/pi-coding-agent/system-prompt";
 
 function escapeRegExp(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -43,7 +39,7 @@ describe("SYSTEM.md prompt assembly", () => {
 
 	it("renders SYSTEM.md exactly once when it is used as the custom base prompt", async () => {
 		const projectDir = path.join(tempDir, "project");
-		const systemDir = path.join(projectDir, ".omp");
+		const systemDir = path.join(projectDir, ".xcsh");
 		const systemPrompt = "You are the project SYSTEM prompt.";
 		fs.mkdirSync(systemDir, { recursive: true });
 		fs.writeFileSync(path.join(systemDir, "SYSTEM.md"), systemPrompt);
@@ -74,10 +70,10 @@ describe("SYSTEM.md prompt assembly", () => {
 
 	it("prefers project SYSTEM.md over user SYSTEM.md", async () => {
 		const projectDir = path.join(tempDir, "project");
-		fs.mkdirSync(path.join(projectDir, ".omp"), { recursive: true });
-		fs.mkdirSync(path.join(tempHomeDir, ".omp", "agent"), { recursive: true });
-		fs.writeFileSync(path.join(tempHomeDir, ".omp", "agent", "SYSTEM.md"), "User SYSTEM prompt");
-		fs.writeFileSync(path.join(projectDir, ".omp", "SYSTEM.md"), "Project SYSTEM prompt");
+		fs.mkdirSync(path.join(projectDir, ".xcsh"), { recursive: true });
+		fs.mkdirSync(path.join(tempHomeDir, ".xcsh", "agent"), { recursive: true });
+		fs.writeFileSync(path.join(tempHomeDir, ".xcsh", "agent", "SYSTEM.md"), "User SYSTEM prompt");
+		fs.writeFileSync(path.join(projectDir, ".xcsh", "SYSTEM.md"), "Project SYSTEM prompt");
 
 		await expect(loadSystemPromptFiles({ cwd: projectDir })).resolves.toBe("Project SYSTEM prompt");
 	});

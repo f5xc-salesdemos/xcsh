@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/hero.png?raw=true" alt="Pi Monorepo">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/hero.png?raw=true" alt="Pi Monorepo">
 </p>
 
 <p align="center">
@@ -7,10 +7,10 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@oh-my-pi/pi-coding-agent"><img src="https://img.shields.io/npm/v/@oh-my-pi/pi-coding-agent?style=flat&colorA=222222&colorB=CB3837" alt="npm version"></a>
-  <a href="https://github.com/can1357/oh-my-pi/blob/main/packages/coding-agent/CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-keep-E05735?style=flat&colorA=222222" alt="Changelog"></a>
-  <a href="https://github.com/can1357/oh-my-pi/actions"><img src="https://img.shields.io/github/actions/workflow/status/can1357/oh-my-pi/ci.yml?style=flat&colorA=222222&colorB=3FB950" alt="CI"></a>
-  <a href="https://github.com/can1357/oh-my-pi/blob/main/LICENSE"><img src="https://img.shields.io/github/license/can1357/oh-my-pi?style=flat&colorA=222222&colorB=58A6FF" alt="License"></a>
+  <a href="https://www.npmjs.com/package/@xcsh/pi-coding-agent"><img src="https://img.shields.io/npm/v/@xcsh/pi-coding-agent?style=flat&colorA=222222&colorB=CB3837" alt="npm version"></a>
+  <a href="https://github.com/f5xc-salesdemos/xcsh/blob/main/packages/coding-agent/CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-keep-E05735?style=flat&colorA=222222" alt="Changelog"></a>
+  <a href="https://github.com/f5xc-salesdemos/xcsh/actions"><img src="https://img.shields.io/github/actions/workflow/status/f5xc-salesdemos/xcsh/ci.yml?style=flat&colorA=222222&colorB=3FB950" alt="CI"></a>
+  <a href="https://github.com/f5xc-salesdemos/xcsh/blob/main/LICENSE"><img src="https://img.shields.io/github/license/f5xc-salesdemos/xcsh?style=flat&colorA=222222&colorB=58A6FF" alt="License"></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&colorA=222222&logo=typescript&logoColor=white" alt="TypeScript"></a>
   <a href="https://www.rust-lang.org"><img src="https://img.shields.io/badge/Rust-DEA584?style=flat&colorA=222222&logo=rust&logoColor=white" alt="Rust"></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/runtime-Bun-f472b6?style=flat&colorA=222222" alt="Bun"></a>
@@ -76,12 +76,12 @@ AI-powered conventional commit generation with intelligent change analysis:
 - **Changelog generation**: Proposes and applies changelog entries to `CHANGELOG.md` files
 - **Commit validation**: Detects filler words, meta phrases, and enforces conventional commit format
 - **Legacy mode**: `--legacy` flag for deterministic pipeline when preferred
-- Run via `omp commit` with options: `--push`, `--dry-run`, `--no-changelog`, `--context`
+- Run via `xcsh commit` with options: `--push`, `--dry-run`, `--no-changelog`, `--context`
 
 ### + Python Tool (IPython Kernel)
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/python.webp?raw=true" alt="python">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/python.webp?raw=true" alt="python">
 </p>
 
 Execute Python code with a persistent IPython kernel and rich helper prelude:
@@ -90,16 +90,16 @@ Execute Python code with a persistent IPython kernel and rich helper prelude:
 - **Prelude helpers**: File I/O, search, find/replace, line operations, shell, and text utilities built into the kernel
 - **Line operations**: `lines()`, `insert_at()`, `delete_lines()`, `delete_matching()` and related helpers for precise edits
 - **Shared gateway**: Resource-efficient kernel reuse across sessions (`python.sharedGateway` setting)
-- **Custom modules**: Load extensions from `.omp/modules/` and `~/.omp/agent/modules/`
+- **Custom modules**: Load extensions from `.xcsh/modules/` and `~/.xcsh/agent/modules/`
 - **Rich output**: Supports `display()` for HTML, Markdown, images, and interactive JSON trees
 - **Markdown rendering**: Python cell output with Markdown content renders inline
 - **Mermaid diagrams**: Renders mermaid code blocks as inline graphics in iTerm2/Kitty terminals
-- Install dependencies via `omp setup python`
+- Install dependencies via `xcsh setup python`
 
 ### + LSP Integration (Language Server Protocol)
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/lspv.webp?raw=true" alt="lsp">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/lspv.webp?raw=true" alt="lsp">
 </p>
 
 Full IDE-like code intelligence with automatic formatting and diagnostics:
@@ -115,7 +115,7 @@ Full IDE-like code intelligence with automatic formatting and diagnostics:
 ### + Time Traveling Streamed Rules (TTSR)
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/ttsr.webp?raw=true" alt="ttsr">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/ttsr.webp?raw=true" alt="ttsr">
 </p>
 
 Zero context-use rules that inject themselves only when needed:
@@ -131,7 +131,7 @@ Example: A "don't use deprecated API" rule only activates when the model starts 
 ### + Interactive Code Review
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/review.webp?raw=true" alt="review">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/review.webp?raw=true" alt="review">
 </p>
 
 Structured code review with priority-based findings:
@@ -144,7 +144,7 @@ Structured code review with priority-based findings:
 ### + Task Tool (Subagent System)
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/task.webp?raw=true" alt="task">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/task.webp?raw=true" alt="task">
 </p>
 
 Parallel execution framework with specialized agents and real-time streaming:
@@ -158,12 +158,12 @@ Parallel execution framework with specialized agents and real-time streaming:
 - **Agent Control Center**: `/agents` dashboard for managing and creating custom agents
 - **AI-powered agent creation**: Generate custom agent definitions with the architect model
 - **Per-agent model overrides**: Assign specific models to individual agents via swarm extension
-- User-level (`~/.omp/agent/agents/`) and project-level (`.omp/agents/`) custom agents
+- User-level (`~/.xcsh/agent/agents/`) and project-level (`.xcsh/agents/`) custom agents
 
 ### + Model Roles
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/models.webp?raw=true" alt="models">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/models.webp?raw=true" alt="models">
 </p>
 
 Configure different models for different purposes with automatic discovery:
@@ -189,7 +189,7 @@ Structured task management with phased progress tracking:
 ### + Ask Tool (Interactive Questioning)
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/ask.webp?raw=true" alt="ask">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/ask.webp?raw=true" alt="ask">
 </p>
 
 Structured user interaction with typed options:
@@ -201,12 +201,12 @@ Structured user interaction with typed options:
 ### + Custom TypeScript Slash Commands
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/slash.webp?raw=true" alt="slash">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/slash.webp?raw=true" alt="slash">
 </p>
 
 Programmable commands with full API access:
 
-- Create at `~/.omp/agent/commands/[name]/index.ts` or `.omp/commands/[name]/index.ts`
+- Create at `~/.xcsh/agent/commands/[name]/index.ts` or `.xcsh/commands/[name]/index.ts`
 - Export factory returning `{ name, description, execute(args, ctx) }`
 - Full access to `HookCommandContext` for UI dialogs, session control, shell execution
 - Return string to send as LLM prompt, or void for fire-and-forget actions
@@ -215,7 +215,7 @@ Programmable commands with full API access:
 ### + Universal Config Discovery
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/discovery.webp?raw=true" alt="discovery">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/discovery.webp?raw=true" alt="discovery">
 </p>
 
 Unified capability-based discovery that loads configuration from 8 AI coding tools:
@@ -225,12 +225,12 @@ Unified capability-based discovery that loads configuration from 8 AI coding too
 - **Native format support**: Cursor MDC frontmatter, Windsurf rules, Cline `.clinerules`, Copilot `applyTo` globs, Gemini `system.md`, Codex `AGENTS.md`
 - **Provider attribution**: See which tool contributed each configuration item
 - **Discovery settings**: Enable/disable individual providers via `/extensions` interactive dashboard
-- **Priority ordering**: Multi-path resolution across `.omp`, `.claude`, `.codex`, and `.gemini` directories
+- **Priority ordering**: Multi-path resolution across `.xcsh`, `.claude`, `.codex`, and `.gemini` directories
 
 ### + MCP & Plugin System
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/perplexity.webp?raw=true" alt="perplexity">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/perplexity.webp?raw=true" alt="perplexity">
 </p>
 
 Full Model Context Protocol support with external tool integration:
@@ -240,14 +240,14 @@ Full Model Context Protocol support with external tool integration:
 - **Browser server filtering**: Automatically filters browser-type MCP servers to prevent conflicts with built-in browser tool
 - **Automatic Exa filtering**: Extracts Exa API keys and prefers the native Exa integration
 - **Config schema + setup guide**: [`docs/mcp-config.md`](./docs/mcp-config.md) and [`packages/coding-agent/src/config/mcp-schema.json`](./packages/coding-agent/src/config/mcp-schema.json)
-- Plugin CLI (`omp plugin install/enable/configure/doctor`)
-- Hot-loadable plugins from `~/.omp/plugins/` with npm/bun integration
+- Plugin CLI (`xcsh plugin install/enable/configure/doctor`)
+- Hot-loadable plugins from `~/.xcsh/plugins/` with npm/bun integration
 - `disabledServers` works on both project-level and user-level third-party servers
 
 ### + Web Search & Fetch
 
 <p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/arxiv.webp?raw=true" alt="arxiv">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/arxiv.webp?raw=true" alt="arxiv">
 </p>
 
 Multi-provider search and full-page scraping with specialized handlers:
@@ -263,7 +263,7 @@ Multi-provider search and full-page scraping with specialized handlers:
 Remote command execution with persistent connections:
 
 - **Project discovery**: Reads SSH hosts from `ssh.json` / `.ssh.json` in your project
-- **Host management**: Add, remove, and list hosts via `omp ssh` CLI or `/ssh` slash command
+- **Host management**: Add, remove, and list hosts via `xcsh ssh` CLI or `/ssh` slash command
 - **Persistent connections**: Reuses SSH connections across commands for faster execution
 - **OS/shell detection**: Automatically detects remote OS and shell type
 - **SSHFS mounts**: Optional automatic mounting of remote directories
@@ -287,7 +287,7 @@ Headless browser automation with 14 stealth scripts to evade bot detection:
 Use your Cursor Pro subscription for AI completions:
 
 - **Browser-based OAuth**: Authenticate through Cursor's OAuth flow
-- **Tool execution bridge**: Maps Cursor's native tools to omp equivalents (read, write, shell, diagnostics)
+- **Tool execution bridge**: Maps Cursor's native tools to xcsh equivalents (read, write, shell, diagnostics)
 - **Conversation caching**: Persists context across requests in the same session
 - **Shell streaming**: Real-time stdout/stderr during command execution
 
@@ -361,9 +361,9 @@ Supported platforms: `linux-x64`, `linux-arm64`, `darwin-x64`, `darwin-arm64`, `
 
 ### ... and many more
 
-- **`omp config` subcommand**: Manage settings from CLI (`list`, `get`, `set`, `reset`, `path`)
-- **`omp setup` subcommand**: Install optional dependencies (e.g., `omp setup python` for Jupyter kernel)
-- **`omp stats` subcommand**: Local observability dashboard for AI usage (requests, cost, cache rate, tokens/s)
+- **`xcsh config` subcommand**: Manage settings from CLI (`list`, `get`, `set`, `reset`, `path`)
+- **`xcsh setup` subcommand**: Install optional dependencies (e.g., `xcsh setup python` for Jupyter kernel)
+- **`xcsh stats` subcommand**: Local observability dashboard for AI usage (requests, cost, cache rate, tokens/s)
 - **`xhigh` thinking level**: Extended reasoning for Anthropic models with increased token budgets
 - **Background mode**: `/background` detaches UI and continues agent execution
 - **Completion notifications**: Configurable bell/OSC99/OSC9 when agent finishes
@@ -372,7 +372,7 @@ Supported platforms: `linux-x64`, `linux-arm64`, `darwin-x64`, `darwin-arm64`, `
 - **Auto environment detection**: OS, distro, kernel, CPU, GPU, shell, terminal, DE in system prompt
 - **Git context**: System prompt includes branch, status, recent commits
 - **Bun runtime**: Native TypeScript execution, faster startup, all packages migrated
-- **Centralized file logging**: Debug logs with daily rotation to `~/.omp/logs/`
+- **Centralized file logging**: Debug logs with daily rotation to `~/.xcsh/logs/`
 - **Bash interceptor**: Optionally block shell commands that have dedicated tools
 - **Per-command PTY control**: Bash tool supports `pty: true` for commands requiring a real terminal (sudo, ssh)
 - **@file auto-read**: Type `@path/to/file` in prompts to inject file contents inline
@@ -388,7 +388,7 @@ Supported platforms: `linux-x64`, `linux-arm64`, `darwin-x64`, `darwin-arm64`, `
 Requires [Bun](https://bun.sh) **>= 1.3.7**:
 
 ```bash
-bun install -g @oh-my-pi/pi-coding-agent
+bun install -g @xcsh/pi-coding-agent
 ```
 
 ### Via installer script
@@ -396,13 +396,13 @@ bun install -g @oh-my-pi/pi-coding-agent
 **Linux / macOS:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.sh | sh
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-irm https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.ps1 | iex
 ```
 
 By default, the installer uses Bun when available (and compatible), otherwise installs the prebuilt binary.
@@ -419,31 +419,31 @@ Examples:
 
 ```bash
 # Source install (Bun)
-curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh -s -- --source
+curl -fsSL https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.sh | sh -s -- --source
 
 # Install release tag via binary
-curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh -s -- --binary --ref v3.20.1
+curl -fsSL https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.sh | sh -s -- --binary --ref v3.20.1
 
 # Install branch/commit via source
-curl -fsSL https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh | sh -s -- --source --ref main
+curl -fsSL https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.sh | sh -s -- --source --ref main
 ```
 
 ```powershell
 # Install release tag via binary
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.ps1))) -Binary -Ref v3.20.1
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.ps1))) -Binary -Ref v3.20.1
 # Install branch/commit via source
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.ps1))) -Source -Ref main
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.ps1))) -Source -Ref main
 ```
 
 ### Via [mise](https://mise.jdx.dev)
 
 ```bash
-mise use -g github:can1357/oh-my-pi
+mise use -g github:f5xc-salesdemos/xcsh
 ```
 
 ### Manual download
 
-Download binaries directly from [GitHub Releases](https://github.com/can1357/oh-my-pi/releases/latest).
+Download binaries directly from [GitHub Releases](https://github.com/f5xc-salesdemos/xcsh/releases/latest).
 
 ---
 
@@ -554,10 +554,10 @@ For `vllm`, paste your key in `/login` (or use `VLLM_API_KEY`). For local no-aut
 For `nanogpt`, `/login nanogpt` opens `https://nano-gpt.com/api` and prompts for your `sk-...` key (or set `NANO_GPT_API_KEY`). Login validates the key via NanoGPT's models endpoint (not a fixed model entitlement).
 For `cloudflare-ai-gateway`, set provider base URL to
 `https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_id>/anthropic`
-(for example in `~/.omp/agent/models.yml`).
+(for example in `~/.xcsh/agent/models.yml`).
 
 ```bash
-omp
+xcsh
 /login
 ```
 
@@ -565,7 +565,7 @@ omp
 
 - `/login` appends credentials for the provider (it does not wipe existing entries)
 - `/logout` clears saved credentials for the selected provider
-- Credentials are stored in `~/.omp/agent/agent.db`
+- Credentials are stored in `~/.xcsh/agent/agent.db`
 - For the same provider, saved API key credentials are selected before OAuth credentials
 
 ### First 15 Minutes (Recommended)
@@ -743,19 +743,19 @@ See [docs/session.md](docs/session.md) for the file format and API.
 
 ### Session Management
 
-Sessions auto-save to `~/.omp/agent/sessions/` (grouped by working directory).
+Sessions auto-save to `~/.xcsh/agent/sessions/` (grouped by working directory).
 
 ```bash
-omp --continue             # Continue most recent session
-omp -c
+xcsh --continue             # Continue most recent session
+xcsh -c
 
-omp --resume               # Open session picker
-omp -r
+xcsh --resume               # Open session picker
+xcsh -r
 
-omp --resume <id-prefix>   # Resume by session ID prefix
-omp --resume <path>        # Resume by explicit .jsonl path
-omp --session <value>      # Alias of --resume
-omp --no-session    # Ephemeral mode (don't save)
+xcsh --resume <id-prefix>   # Resume by session ID prefix
+xcsh --resume <path>        # Resume by explicit .jsonl path
+xcsh --session <value>      # Alias of --resume
+xcsh --no-session    # Ephemeral mode (don't save)
 ```
 
 Session IDs are Snowflake-style hex IDs (not UUIDs).
@@ -771,7 +771,7 @@ Long sessions can exhaust context windows. Compaction summarizes older messages 
 - **Overflow recovery**: model returns context overflow; compact and retry.
 - **Threshold maintenance**: context exceeds configured headroom after a successful turn.
 
-**Configuration** (`~/.omp/agent/config.yml`):
+**Configuration** (`~/.xcsh/agent/config.yml`):
 
 ```yaml
 compaction:
@@ -797,7 +797,7 @@ See [docs/compaction.md](docs/compaction.md) for internals and hook integration.
 
 When enabled, the agent extracts durable knowledge from past sessions and injects it at startup. The pipeline runs in the background and never blocks the active session.
 
-Memory is isolated per project (working directory) and stored under `~/.omp/agent/memories/`. At session start, a compact summary is injected into the system prompt. The agent can read deeper context via `memory://root/MEMORY.md` and `memory://root/skills/<name>/SKILL.md`.
+Memory is isolated per project (working directory) and stored under `~/.xcsh/agent/memories/`. At session start, a compact summary is injected into the system prompt. The agent can read deeper context via `memory://root/MEMORY.md` and `memory://root/skills/<name>/SKILL.md`.
 
 Manage via the `/memory` slash command:
 
@@ -813,7 +813,7 @@ Manage via the `/memory` slash command:
 
 ### Project Context Files
 
-omp discovers project context from supported config directories (for example `.omp`, `.claude`, `.codex`, `.gemini`).
+xcsh discovers project context from supported config directories (for example `.xcsh`, `.claude`, `.codex`, `.gemini`).
 
 Common files:
 
@@ -831,13 +831,13 @@ Use these for:
 
 Replace the default system prompt by creating `SYSTEM.md`:
 
-1. **Project-local:** `.omp/SYSTEM.md` (takes precedence)
-2. **Global:** `~/.omp/agent/SYSTEM.md` (fallback)
+1. **Project-local:** `.xcsh/SYSTEM.md` (takes precedence)
+2. **Global:** `~/.xcsh/agent/SYSTEM.md` (fallback)
    `--system-prompt` overrides both files. Use `--append-system-prompt` to append additional instructions.
 
 ### Custom Models and Providers
 
-Add custom providers/models via `~/.omp/agent/models.yml`.
+Add custom providers/models via `~/.xcsh/agent/models.yml`.
 
 `models.json` is still supported for legacy configs, but `models.yml` is the modern format.
 
@@ -876,9 +876,9 @@ providers:
 
 Global settings are stored in:
 
-- `~/.omp/agent/config.yml`
+- `~/.xcsh/agent/config.yml`
 
-Project overrides are loaded from discovered project settings files (commonly `.omp/settings.json`).
+Project overrides are loaded from discovered project settings files (commonly `.xcsh/settings.json`).
 
 Global `config.yml` example:
 
@@ -969,9 +969,9 @@ Legacy migration notes:
 
 Built-in themes include `dark`, `light`, and many bundled variants.
 
-**Automatic dark/light switching**: omp detects terminal appearance via Mode 2031, native macOS CoreFoundation FFI, or `COLORFGBG` fallback, and switches between `theme.dark` and `theme.light` automatically.
+**Automatic dark/light switching**: xcsh detects terminal appearance via Mode 2031, native macOS CoreFoundation FFI, or `COLORFGBG` fallback, and switches between `theme.dark` and `theme.light` automatically.
 
-Select theme via `/settings` or set in `~/.omp/agent/config.yml`:
+Select theme via `/settings` or set in `~/.xcsh/agent/config.yml`:
 
 ```yaml
 theme:
@@ -979,7 +979,7 @@ theme:
   light: light
 ```
 
-**Custom themes:** create `~/.omp/agent/themes/*.json`.
+**Custom themes:** create `~/.xcsh/agent/themes/*.json`.
 
 > See [Theme Documentation](docs/theme.md).
 
@@ -987,8 +987,8 @@ theme:
 
 Define reusable prompt commands as Markdown files:
 
-- Global: `~/.omp/agent/commands/*.md`
-- Project: `.omp/commands/*.md`
+- Global: `~/.xcsh/agent/commands/*.md`
+- Project: `.xcsh/commands/*.md`
 
 ```markdown
 ---
@@ -1011,8 +1011,8 @@ Argument placeholders:
 
 TypeScript custom commands are also supported:
 
-- `~/.omp/agent/commands/<name>/index.ts`
-- `.omp/commands/<name>/index.ts`
+- `~/.xcsh/agent/commands/<name>/index.ts`
+- `.xcsh/commands/<name>/index.ts`
 
 Bundled TypeScript command: `/review`.
 
@@ -1022,8 +1022,8 @@ Skills are capability packages loaded on-demand.
 
 Common locations:
 
-- `~/.omp/agent/skills/*/SKILL.md`
-- `.omp/skills/*/SKILL.md`
+- `~/.xcsh/agent/skills/*/SKILL.md`
+- `.xcsh/skills/*/SKILL.md`
 - `~/.claude/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`
 - `~/.codex/skills/*/SKILL.md`, `.codex/skills/*/SKILL.md`
 
@@ -1038,7 +1038,7 @@ description: Web search via Brave Search API.
 
 `description` drives matching; `name` defaults to the folder name when omitted.
 
-Disable skills with `omp --no-skills` or `skills.enabled: false`.
+Disable skills with `xcsh --no-skills` or `skills.enabled: false`.
 
 > See [Skills Documentation](docs/skills.md).
 
@@ -1048,15 +1048,15 @@ Hooks are TypeScript modules that subscribe to lifecycle events.
 
 Hook locations:
 
-- Global: `~/.omp/agent/hooks/pre/*.ts`, `~/.omp/agent/hooks/post/*.ts`
-- Project: `.omp/hooks/pre/*.ts`, `.omp/hooks/post/*.ts`
+- Global: `~/.xcsh/agent/hooks/pre/*.ts`, `~/.xcsh/agent/hooks/post/*.ts`
+- Project: `.xcsh/hooks/pre/*.ts`, `.xcsh/hooks/post/*.ts`
 - CLI: `--hook <path>`
 
 ```typescript
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@xcsh/pi-coding-agent/hooks";
 
-export default function (omp: HookAPI) {
-	omp.on("tool_call", async (event, ctx) => {
+export default function (xcsh: HookAPI) {
+	xcsh.on("tool_call", async (event, ctx) => {
 		if (event.toolName === "bash" && /sudo/.test(event.input.command as string)) {
 			const ok = await ctx.ui.confirm("Allow sudo?", event.input.command as string);
 			if (!ok) return { block: true, reason: "Blocked by user" };
@@ -1069,7 +1069,7 @@ export default function (omp: HookAPI) {
 Inject messages from hooks with:
 
 ```ts
-omp.sendMessage(message, { triggerTurn: true });
+xcsh.sendMessage(message, { triggerTurn: true });
 ```
 
 > See [Hooks Documentation](docs/hooks.md) and [examples/hooks/](packages/coding-agent/examples/hooks/).
@@ -1080,12 +1080,12 @@ Custom tools extend the built-in toolset and are callable by the model.
 
 Auto-discovered locations:
 
-- Global: `~/.omp/agent/tools/*/index.ts`
-- Project: `.omp/tools/*/index.ts`
+- Global: `~/.xcsh/agent/tools/*/index.ts`
+- Project: `.xcsh/tools/*/index.ts`
 
 ```typescript
 import { Type } from "@sinclair/typebox";
-import type { CustomToolFactory } from "@oh-my-pi/pi-coding-agent";
+import type { CustomToolFactory } from "@xcsh/pi-coding-agent";
 const factory: CustomToolFactory = () => ({
 	name: "greet",
 	label: "Greeting",
@@ -1108,8 +1108,8 @@ export default factory;
 ## CLI Reference
 
 ```bash
-omp [options] [@files...] [messages...]
-omp <command> [args] [flags]
+xcsh [options] [@files...] [messages...]
+xcsh <command> [args] [flags]
 ```
 
 ### Options
@@ -1152,7 +1152,7 @@ omp <command> [args] [flags]
 
 ### Subcommands
 
-`omp` also ships dedicated subcommands:
+`xcsh` also ships dedicated subcommands:
 
 - `commit`
 - `config`
@@ -1171,9 +1171,9 @@ omp <command> [args] [flags]
 Include files with `@` prefix:
 
 ```bash
-omp @prompt.md "Answer this"
-omp @screenshot.png "What's in this image?"
-omp @requirements.md @design.png "Implement this"
+xcsh @prompt.md "Answer this"
+xcsh @screenshot.png "What's in this image?"
+xcsh @requirements.md @design.png "Implement this"
 ```
 
 Text files are wrapped in `<file ...>` blocks. Images are attached.
@@ -1182,20 +1182,20 @@ Text files are wrapped in `<file ...>` blocks. Images are attached.
 
 ```bash
 # Interactive mode
-omp
+xcsh
 # Non-interactive
-omp -p "List all .ts files in src/"
-omp -c "What did we discuss?"
+xcsh -p "List all .ts files in src/"
+xcsh -c "What did we discuss?"
 # Resume by ID prefix
-omp -r abc123
+xcsh -r abc123
 
 # Model cycling with patterns
-omp --models "sonnet:high,haiku:low"
+xcsh --models "sonnet:high,haiku:low"
 
 # Restrict toolset for read-only review
-omp --tools read,grep,find -p "Review the architecture"
+xcsh --tools read,grep,find -p "Review the architecture"
 # Export session
-omp --export session.jsonl output.html
+xcsh --export session.jsonl output.html
 ```
 
 ### Environment Variables
@@ -1203,7 +1203,7 @@ omp --export session.jsonl output.html
 | Variable                                          | Description                                             |
 | ------------------------------------------------- | ------------------------------------------------------- |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc.       | Provider credentials                                    |
-| `PI_CODING_AGENT_DIR`                             | Override agent data directory (default: `~/.omp/agent`) |
+| `PI_CODING_AGENT_DIR`                             | Override agent data directory (default: `~/.xcsh/agent`) |
 | `PI_PACKAGE_DIR`                                  | Override package directory resolution                   |
 | `PI_SMOL_MODEL`, `PI_SLOW_MODEL`, `PI_PLAN_MODEL` | Role-model overrides                                    |
 | `PI_NO_PTY`                                       | Disable PTY-based bash execution                        |
@@ -1251,7 +1251,7 @@ Notes:
 
 Example:
 
-`omp --tools read,grep,find -p "Review this codebase"`
+`xcsh --tools read,grep,find -p "Review this codebase"`
 
 For adding new tools, see [Custom Tools](#custom-tools).
 
@@ -1261,10 +1261,10 @@ For adding new tools, see [Custom Tools](#custom-tools).
 
 ### SDK
 
-For embedding omp in Node.js/TypeScript applications, use the SDK:
+For embedding xcsh in Node.js/TypeScript applications, use the SDK:
 
 ```typescript
-import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@oh-my-pi/pi-coding-agent";
+import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@xcsh/pi-coding-agent";
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);
 await modelRegistry.refresh();
@@ -1298,7 +1298,7 @@ The SDK provides control over:
 For embedding from other languages or process isolation:
 
 ```bash
-omp --mode rpc --no-session
+xcsh --mode rpc --no-session
 ```
 
 Send JSON commands on stdin:
@@ -1315,8 +1315,8 @@ Responses are emitted as `type: "response"`; session events stream on stdout as 
 ### HTML Export
 
 ```bash
-omp --export session.jsonl              # Auto-generated filename
-omp --export session.jsonl output.html  # Custom filename
+xcsh --export session.jsonl              # Auto-generated filename
+xcsh --export session.jsonl output.html  # Custom filename
 ```
 
 Works with session files and JSON event logs from `--mode json`.
@@ -1325,7 +1325,7 @@ Works with session files and JSON event logs from `--mode json`.
 
 ## Philosophy
 
-omp is a fork of [pi-mono](https://github.com/badlogic/pi-mono) by [Mario Zechner](https://github.com/mariozechner), extended with a batteries-included coding workflow.
+xcsh is a fork of [pi-mono](https://github.com/badlogic/pi-mono) by [Mario Zechner](https://github.com/mariozechner), extended with a batteries-included coding workflow.
 
 Key ideas:
 
@@ -1349,20 +1349,20 @@ For architecture and contribution guidelines, see [packages/coding-agent/DEVELOP
 
 | Package                                                   | Description                                                                |
 | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **[@oh-my-pi/pi-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
-| **[@oh-my-pi/pi-agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
-| **[@oh-my-pi/pi-coding-agent](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
-| **[@oh-my-pi/pi-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
-| **[@oh-my-pi/pi-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
-| **[@oh-my-pi/omp-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
-| **[@oh-my-pi/pi-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
-| **[@oh-my-pi/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
+| **[@xcsh/pi-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
+| **[@xcsh/pi-agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
+| **[@xcsh/pi-coding-agent](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
+| **[@xcsh/pi-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
+| **[@xcsh/pi-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
+| **[@xcsh/xcsh-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
+| **[@xcsh/pi-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
+| **[@xcsh/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
 
 ### Rust Crates
 
 | Crate                                                         | Description                                                                                  |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@oh-my-pi/pi-natives`                                        |
+| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@xcsh/pi-natives`                                        |
 | **[brush-core-vendored](crates/brush-core-vendored)**         | Vendored fork of [brush-shell](https://github.com/reubeno/brush) for embedded bash execution |
 | **[brush-builtins-vendored](crates/brush-builtins-vendored)** | Vendored bash builtins (cd, echo, test, printf, read, export, etc.)                          |
 

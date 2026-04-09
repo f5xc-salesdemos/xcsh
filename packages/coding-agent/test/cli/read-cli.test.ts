@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
 import * as os from "node:os";
 import * as path from "node:path";
-import { runReadCommand } from "@oh-my-pi/pi-coding-agent/cli/read-cli";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import * as scrapers from "@oh-my-pi/pi-coding-agent/web/scrapers/types";
+import { runReadCommand } from "@xcsh/pi-coding-agent/cli/read-cli";
+import { Settings } from "@xcsh/pi-coding-agent/config/settings";
+import * as scrapers from "@xcsh/pi-coding-agent/web/scrapers/types";
 
 describe("runReadCommand URL handling", () => {
 	afterEach(() => {

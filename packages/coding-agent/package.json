@@ -1,9 +1,9 @@
 {
 	"type": "module",
-	"name": "@oh-my-pi/pi-coding-agent",
+	"name": "@xcsh/pi-coding-agent",
 	"version": "14.0.2",
 	"description": "Coding agent CLI with read, bash, edit, write tools and session management",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",
 	"contributors": [
 		"Mario Zechner"
@@ -11,11 +11,11 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/f5xc-salesdemos/xcsh.git",
 		"directory": "packages/coding-agent"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/f5xc-salesdemos/xcsh/issues"
 	},
 	"keywords": [
 		"coding-agent",
@@ -28,10 +28,10 @@
 	"main": "./src/index.ts",
 	"types": "./src/index.ts",
 	"bin": {
-		"omp": "src/cli.ts"
+		"xcsh": "src/cli.ts"
 	},
 	"scripts": {
-		"build": "bun --cwd=../stats scripts/generate-client-bundle.ts --generate && bun --cwd=../natives run embed:native && bun build --compile --define PI_COMPILED=true --external mupdf --root ../.. ./src/cli.ts --outfile dist/omp && bun --cwd=../natives run embed:native --reset && bun --cwd=../stats scripts/generate-client-bundle.ts --reset",
+		"build": "bun --cwd=../stats scripts/generate-client-bundle.ts --generate && bun --cwd=../natives run embed:native && bun build --compile --define PI_COMPILED=true --external mupdf --root ../.. ./src/cli.ts --outfile dist/xcsh && bun --cwd=../natives run embed:native --reset && bun --cwd=../stats scripts/generate-client-bundle.ts --reset",
 		"check": "biome check . && bun run check:types",
 		"check:types": "tsgo -p tsconfig.json --noEmit",
 		"lint": "biome lint .",
@@ -46,12 +46,12 @@
 	"dependencies": {
 		"@agentclientprotocol/sdk": "0.16.1",
 		"@mozilla/readability": "^0.6",
-		"@oh-my-pi/omp-stats": "workspace:*",
-		"@oh-my-pi/pi-agent-core": "workspace:*",
-		"@oh-my-pi/pi-ai": "workspace:*",
-		"@oh-my-pi/pi-natives": "workspace:*",
-		"@oh-my-pi/pi-tui": "workspace:*",
-		"@oh-my-pi/pi-utils": "workspace:*",
+		"@xcsh/xcsh-stats": "workspace:*",
+		"@xcsh/pi-agent-core": "workspace:*",
+		"@xcsh/pi-ai": "workspace:*",
+		"@xcsh/pi-natives": "workspace:*",
+		"@xcsh/pi-tui": "workspace:*",
+		"@xcsh/pi-utils": "workspace:*",
 		"@sinclair/typebox": "^0.34",
 		"@xterm/headless": "^6.0",
 		"ajv": "^8.18",

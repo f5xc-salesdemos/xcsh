@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { _resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { getDefault } from "@oh-my-pi/pi-coding-agent/config/settings-schema";
-import { SelectorController } from "@oh-my-pi/pi-coding-agent/modes/controllers/selector-controller";
-import { getProjectAgentDir, Snowflake } from "@oh-my-pi/pi-utils";
+import { _resetSettingsForTest, Settings } from "@xcsh/pi-coding-agent/config/settings";
+import { getDefault } from "@xcsh/pi-coding-agent/config/settings-schema";
+import { SelectorController } from "@xcsh/pi-coding-agent/modes/controllers/selector-controller";
+import { getProjectAgentDir, Snowflake } from "@xcsh/pi-utils";
 import { YAML } from "bun";
 
 describe("autocompleteMaxVisible setting", () => {

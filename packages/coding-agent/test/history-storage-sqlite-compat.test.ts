@@ -34,7 +34,7 @@ afterEach(async () => {
 });
 
 it("migrates legacy history schema away from unixepoch defaults", async () => {
-	tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-history-storage-legacy-"));
+	tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "xcsh-history-storage-legacy-"));
 	const dbPath = path.join(tempDir, "history.db");
 	const legacyDb = new Database(dbPath);
 	legacyDb.exec(`

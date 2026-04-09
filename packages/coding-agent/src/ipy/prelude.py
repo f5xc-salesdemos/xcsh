@@ -9,7 +9,7 @@ if "__omp_prelude_loaded__" not in globals():
 
     def _emit_status(op: str, **data):
         """Emit structured status event for TUI rendering."""
-        display({"application/x-omp-status": {"op": op, **data}}, raw=True)
+        display({"application/x-xcsh-status": {"op": op, **data}}, raw=True)
 
     def _category(cat: str):
         """Decorator to tag a prelude function with its category."""

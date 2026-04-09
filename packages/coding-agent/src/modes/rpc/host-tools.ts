@@ -1,6 +1,6 @@
-import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { Snowflake } from "@oh-my-pi/pi-utils";
 import type { Static, TSchema } from "@sinclair/typebox";
+import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
+import { Snowflake } from "@xcsh/pi-utils";
 import { applyToolProxy } from "../../extensibility/tool-proxy";
 import type { Theme } from "../../modes/theme/theme";
 import type {

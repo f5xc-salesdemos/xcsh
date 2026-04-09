@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
 import * as path from "node:path";
-import { Agent, type AgentTool } from "@oh-my-pi/pi-agent-core";
-import { getBundledModel } from "@oh-my-pi/pi-ai";
-import { AssistantMessageEventStream } from "@oh-my-pi/pi-ai/utils/event-stream";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { convertToLlm } from "@oh-my-pi/pi-coding-agent/session/messages";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Agent, type AgentTool } from "@xcsh/pi-agent-core";
+import { getBundledModel } from "@xcsh/pi-ai";
+import { AssistantMessageEventStream } from "@xcsh/pi-ai/utils/event-stream";
+import { ModelRegistry } from "@xcsh/pi-coding-agent/config/model-registry";
+import { Settings } from "@xcsh/pi-coding-agent/config/settings";
+import { AgentSession } from "@xcsh/pi-coding-agent/session/agent-session";
+import { AuthStorage } from "@xcsh/pi-coding-agent/session/auth-storage";
+import { convertToLlm } from "@xcsh/pi-coding-agent/session/messages";
+import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
+import { TempDir } from "@xcsh/pi-utils";
 import { Type } from "@sinclair/typebox";
 
 class MockAssistantStream extends AssistantMessageEventStream {}
