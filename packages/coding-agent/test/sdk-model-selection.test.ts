@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { getBundledModel } from "@oh-my-pi/pi-ai";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { createAgentSession, type ExtensionFactory } from "@oh-my-pi/pi-coding-agent/sdk";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { getBundledModel } from "@xcsh/pi-ai";
+import { ModelRegistry } from "@xcsh/pi-coding-agent/config/model-registry";
+import { Settings } from "@xcsh/pi-coding-agent/config/settings";
+import { createAgentSession, type ExtensionFactory } from "@xcsh/pi-coding-agent/sdk";
+import { AuthStorage } from "@xcsh/pi-coding-agent/session/auth-storage";
+import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
+import { Snowflake } from "@xcsh/pi-utils";
 
 describe("createAgentSession deferred model pattern resolution", () => {
 	let tempDir: string;

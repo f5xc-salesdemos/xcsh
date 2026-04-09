@@ -1,7 +1,7 @@
 /**
  * Read CLI command handler.
  *
- * Handles `omp read` subcommand — emits chunk-mode read output for a file.
+ * Handles `xcsh read` subcommand — emits chunk-mode read output for a file.
  */
 import * as path from "node:path";
 import chalk from "chalk";

@@ -1,12 +1,12 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import type { ImageContent, TextContent } from "@oh-my-pi/pi-ai";
-import { glob } from "@oh-my-pi/pi-natives";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { getRemoteDir, prompt, readImageMetadata, untilAborted } from "@oh-my-pi/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
+import type { ImageContent, TextContent } from "@xcsh/pi-ai";
+import { glob } from "@xcsh/pi-natives";
+import type { Component } from "@xcsh/pi-tui";
+import { Text } from "@xcsh/pi-tui";
+import { getRemoteDir, prompt, readImageMetadata, untilAborted } from "@xcsh/pi-utils";
 import { computeLineHash } from "../edit/line-hash";
 import {
 	type ChunkReadTarget,

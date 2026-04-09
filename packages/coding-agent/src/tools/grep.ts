@@ -1,11 +1,10 @@
 import * as path from "node:path";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-
-import { type GrepMatch, GrepOutputMode, type GrepResult, grep } from "@oh-my-pi/pi-natives";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { prompt, untilAborted } from "@oh-my-pi/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
+import { type GrepMatch, GrepOutputMode, type GrepResult, grep } from "@xcsh/pi-natives";
+import type { Component } from "@xcsh/pi-tui";
+import { Text } from "@xcsh/pi-tui";
+import { prompt, untilAborted } from "@xcsh/pi-utils";
 import { computeLineHash } from "../edit/line-hash";
 import { formatChunkedGrepLine } from "../edit/modes/chunk";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";

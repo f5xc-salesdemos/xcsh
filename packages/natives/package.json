@@ -1,18 +1,18 @@
 {
 	"type": "module",
-	"name": "@oh-my-pi/pi-natives",
+	"name": "@xcsh/pi-natives",
 	"version": "14.0.1",
 	"description": "Native Rust bindings for grep, clipboard, image processing, syntax highlighting, PTY, and shell operations via N-API",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/f5xc-salesdemos/xcsh.git",
 		"directory": "packages/natives"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/f5xc-salesdemos/xcsh/issues"
 	},
 	"keywords": [
 		"napi",

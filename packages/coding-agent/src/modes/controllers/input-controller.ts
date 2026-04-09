@@ -1,8 +1,8 @@
 import * as fs from "node:fs/promises";
-import { type AgentMessage, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
-import type { AutocompleteProvider, SlashCommand } from "@oh-my-pi/pi-tui";
-import { $env } from "@oh-my-pi/pi-utils";
+import { type AgentMessage, ThinkingLevel } from "@xcsh/pi-agent-core";
+import { sanitizeText } from "@xcsh/pi-natives";
+import type { AutocompleteProvider, SlashCommand } from "@xcsh/pi-tui";
+import { $env } from "@xcsh/pi-utils";
 import { settings } from "../../config/settings";
 import { createPromptActionAutocompleteProvider } from "../../modes/prompt-action-autocomplete";
 import { theme } from "../../modes/theme/theme";
@@ -717,7 +717,7 @@ export class InputController {
 				? [ttyHandle.fd, ttyHandle.fd, ttyHandle.fd]
 				: ["inherit", "inherit", "inherit"];
 
-			const result = await openInEditor(editorCmd, currentText, { extension: ".omp.md", stdio });
+			const result = await openInEditor(editorCmd, currentText, { extension: ".xcsh.md", stdio });
 			if (result !== null) {
 				this.ctx.editor.setText(result);
 			}

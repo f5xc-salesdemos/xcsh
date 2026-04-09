@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { Agent } from "@oh-my-pi/pi-agent-core";
-import { getBundledModel } from "@oh-my-pi/pi-ai/models";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { loadExtensions } from "@oh-my-pi/pi-coding-agent/extensibility/extensions/loader";
-import { ExtensionRunner } from "@oh-my-pi/pi-coding-agent/extensibility/extensions/runner";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { getProjectAgentDir, TempDir, withTimeout } from "@oh-my-pi/pi-utils";
+import { Agent } from "@xcsh/pi-agent-core";
+import { getBundledModel } from "@xcsh/pi-ai/models";
+import { ModelRegistry } from "@xcsh/pi-coding-agent/config/model-registry";
+import { Settings } from "@xcsh/pi-coding-agent/config/settings";
+import { loadExtensions } from "@xcsh/pi-coding-agent/extensibility/extensions/loader";
+import { ExtensionRunner } from "@xcsh/pi-coding-agent/extensibility/extensions/runner";
+import { AgentSession } from "@xcsh/pi-coding-agent/session/agent-session";
+import { AuthStorage } from "@xcsh/pi-coding-agent/session/auth-storage";
+import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
+import { getProjectAgentDir, TempDir, withTimeout } from "@xcsh/pi-utils";
 
 const runtimeSignalStoreKey = "__ompRuntimeSignals";
 

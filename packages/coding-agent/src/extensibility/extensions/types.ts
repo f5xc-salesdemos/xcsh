@@ -7,7 +7,9 @@
  * - Register commands, keyboard shortcuts, and CLI flags
  * - Interact with the user via UI primitives
  */
-import type { AgentMessage, AgentToolResult, AgentToolUpdateCallback, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
+
+import type { Static, TSchema } from "@sinclair/typebox";
+import type { AgentMessage, AgentToolResult, AgentToolUpdateCallback, ThinkingLevel } from "@xcsh/pi-agent-core";
 import type {
 	Api,
 	AssistantMessageEvent,
@@ -20,11 +22,10 @@ import type {
 	SimpleStreamOptions,
 	TextContent,
 	ToolResultMessage,
-} from "@oh-my-pi/pi-ai";
-import type * as piCodingAgent from "@oh-my-pi/pi-coding-agent";
-import type { SearchDb } from "@oh-my-pi/pi-natives";
-import type { AutocompleteItem, Component, EditorComponent, EditorTheme, KeyId, TUI } from "@oh-my-pi/pi-tui";
-import type { Static, TSchema } from "@sinclair/typebox";
+} from "@xcsh/pi-ai";
+import type * as piCodingAgent from "@xcsh/pi-coding-agent";
+import type { SearchDb } from "@xcsh/pi-natives";
+import type { AutocompleteItem, Component, EditorComponent, EditorTheme, KeyId, TUI } from "@xcsh/pi-tui";
 import type { Rule } from "../../capability/rule";
 import type { KeybindingsManager } from "../../config/keybindings";
 import type { ModelRegistry } from "../../config/model-registry";
@@ -946,7 +947,7 @@ export interface ExtensionAPI {
 	// =========================================================================
 
 	/** File logger for error/warning/debug messages */
-	logger: typeof import("@oh-my-pi/pi-utils").logger;
+	logger: typeof import("@xcsh/pi-utils").logger;
 
 	/** Injected @sinclair/typebox module for defining tool parameters */
 	typebox: typeof import("@sinclair/typebox");

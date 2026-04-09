@@ -110,7 +110,7 @@ Most tools resolve custom protocol URLs to internal resources (not web URLs):
 - `local://<TITLE>.md` — Finalized plan artifact created after `exit_plan_mode` approval
 - `jobs://<job-id>` — Specific job status and result
 - `mcp://<resource-uri>` — MCP resource from a connected server; matched against exact resource URIs first, then RFC 6570 URI templates advertised by connected servers
-- `pi://..` — Internal documentation files about Oh My Pi, you **MUST NOT** read them unless the user asks about omp/pi itself: its SDK, extensions, themes, skills, TUI, keybindings, or configuration
+- `pi://..` — Internal documentation files about Oh My Pi, you **MUST NOT** read them unless the user asks about xcsh/pi itself: its SDK, extensions, themes, skills, TUI, keybindings, or configuration
 
 In `bash`, URIs auto-resolve to filesystem paths (e.g., `python skill://my-skill/scripts/init.py`).
 
@@ -235,7 +235,7 @@ For everything else — multi-file changes, refactors, new features, test additi
 ### SSH: match commands to host shell
 
 Commands match the host shell. linux/bash, macos/zsh: Unix. windows/cmd: dir, type, findstr. windows/powershell: Get-ChildItem, Get-Content.
-Remote filesystems: `~/.omp/remote/<hostname>/`. Windows paths need colons: `C:/Users/…`
+Remote filesystems: `~/.xcsh/remote/<hostname>/`. Windows paths need colons: `C:/Users/…`
 {{/has}}
 
 {{#ifAny (includes tools "grep") (includes tools "find")}}

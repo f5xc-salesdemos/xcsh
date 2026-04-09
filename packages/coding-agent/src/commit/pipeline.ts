@@ -1,7 +1,7 @@
 import * as path from "node:path";
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { Api, Model } from "@oh-my-pi/pi-ai";
-import { getProjectDir, logger, prompt } from "@oh-my-pi/pi-utils";
+import type { ThinkingLevel } from "@xcsh/pi-agent-core";
+import type { Api, Model } from "@xcsh/pi-ai";
+import { getProjectDir, logger, prompt } from "@xcsh/pi-utils";
 import { ModelRegistry } from "../config/model-registry";
 import { Settings } from "../config/settings";
 import { discoverAuthStorage } from "../sdk";
@@ -28,7 +28,7 @@ const RECENT_COMMITS_COUNT = 8;
 const TYPES_DESCRIPTION = prompt.render(typesDescriptionPrompt);
 
 /**
- * Execute the omp commit pipeline for staged changes.
+ * Execute the xcsh commit pipeline for staged changes.
  */
 export async function runCommitCommand(args: CommitCommandArgs): Promise<void> {
 	if (args.legacy) {

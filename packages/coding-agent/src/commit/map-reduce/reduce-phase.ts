@@ -1,8 +1,8 @@
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { Api, AssistantMessage, Model } from "@oh-my-pi/pi-ai";
-import { completeSimple, validateToolCall } from "@oh-my-pi/pi-ai";
-import { prompt } from "@oh-my-pi/pi-utils";
 import { Type } from "@sinclair/typebox";
+import type { ThinkingLevel } from "@xcsh/pi-agent-core";
+import type { Api, AssistantMessage, Model } from "@xcsh/pi-ai";
+import { completeSimple, validateToolCall } from "@xcsh/pi-ai";
+import { prompt } from "@xcsh/pi-utils";
 import reduceSystemPrompt from "../../commit/prompts/reduce-system.md" with { type: "text" };
 import reduceUserPrompt from "../../commit/prompts/reduce-user.md" with { type: "text" };
 import type { ChangelogCategory, ConventionalAnalysis, FileObservation } from "../../commit/types";

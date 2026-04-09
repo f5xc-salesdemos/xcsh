@@ -266,7 +266,7 @@ class RpcClient:
         self,
         *,
         command: Sequence[str] | None = None,
-        executable: str = "omp",
+        executable: str = "xcsh",
         provider: str | None = None,
         model: str | None = None,
         session_dir: str | Path | None = None,
@@ -402,8 +402,8 @@ class RpcClient:
         )
         self._process = process
 
-        self._stdout_thread = threading.Thread(target=self._read_stdout_loop, name="omp-rpc-stdout", daemon=True)
-        self._stderr_thread = threading.Thread(target=self._read_stderr_loop, name="omp-rpc-stderr", daemon=True)
+        self._stdout_thread = threading.Thread(target=self._read_stdout_loop, name="xcsh-rpc-stdout", daemon=True)
+        self._stderr_thread = threading.Thread(target=self._read_stderr_loop, name="xcsh-rpc-stderr", daemon=True)
         self._stdout_thread.start()
         self._stderr_thread.start()
 
@@ -1035,7 +1035,7 @@ class RpcClient:
             finally:
                 self._pending_host_tool_calls.pop(request_id, None)
 
-        threading.Thread(target=run_tool, name=f"omp-rpc-host-tool:{tool_name}", daemon=True).start()
+        threading.Thread(target=run_tool, name=f"xcsh-rpc-host-tool:{tool_name}", daemon=True).start()
 
     def _handle_host_tool_cancel(self, payload: JsonObject) -> None:
         target_id = payload.get("targetId")

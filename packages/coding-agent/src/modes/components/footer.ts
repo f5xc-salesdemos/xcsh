@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
-import { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { type Component, padding, truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
-import { formatNumber, getProjectDir } from "@oh-my-pi/pi-utils";
+import { ThinkingLevel } from "@xcsh/pi-agent-core";
+import { type Component, padding, truncateToWidth, visibleWidth } from "@xcsh/pi-tui";
+import { formatNumber, getProjectDir } from "@xcsh/pi-utils";
 import { theme } from "../../modes/theme/theme";
 import type { AgentSession } from "../../session/agent-session";
 import { shortenPath } from "../../tools/render-utils";

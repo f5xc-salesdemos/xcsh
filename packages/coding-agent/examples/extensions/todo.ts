@@ -9,10 +9,11 @@
  * proper branching - when you branch, the todo state is automatically
  * correct for that point in history.
  */
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import type { ExtensionAPI, ExtensionContext, Theme } from "@oh-my-pi/pi-coding-agent";
-import { matchesKey, Text, truncateToWidth } from "@oh-my-pi/pi-tui";
+
 import { Type } from "@sinclair/typebox";
+import { StringEnum } from "@xcsh/pi-ai";
+import type { ExtensionAPI, ExtensionContext, Theme } from "@xcsh/pi-coding-agent";
+import { matchesKey, Text, truncateToWidth } from "@xcsh/pi-tui";
 
 interface Todo {
 	id: number;
