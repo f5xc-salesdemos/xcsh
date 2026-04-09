@@ -222,7 +222,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderNameStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step 1: Server Name")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step 1: Server Name")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter a unique name for this server:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -245,7 +245,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderTransportStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step 2: Transport Type")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step 2: Transport Type")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Select the transport type:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -259,8 +259,8 @@ export class MCPAddWizard extends Container {
 		for (let i = 0; i < options.length; i++) {
 			const option = options[i];
 			const isSelected = i === this.#selectedIndex;
-			const prefix = isSelected ? theme.fg("accent", `${theme.nav.cursor} `) : "  ";
-			const text = isSelected ? theme.fg("accent", option.label) : option.label;
+			const prefix = isSelected ? theme.fg("chromeAccent", `${theme.nav.cursor} `) : "  ";
+			const text = isSelected ? theme.fg("contentAccent", option.label) : option.label;
 			this.#contentContainer.addChild(new Text(prefix + text, 0, 0));
 		}
 
@@ -271,7 +271,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderCommandStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step 3: Command")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step 3: Command")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter the command to run:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -284,7 +284,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderArgsStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step 4: Arguments (Optional)")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step 4: Arguments (Optional)")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter command arguments (space-separated):", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -297,7 +297,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderUrlStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step 3: Server URL")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step 3: Server URL")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter the server URL:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -318,7 +318,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderAuthLocationStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step: How to provide the key?")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step: How to provide the key?")));
 		this.#contentContainer.addChild(new Spacer(1));
 
 		const options = [
@@ -329,8 +329,8 @@ export class MCPAddWizard extends Container {
 		for (let i = 0; i < options.length; i++) {
 			const option = options[i];
 			const isSelected = i === this.#selectedIndex;
-			const prefix = isSelected ? theme.fg("accent", `${theme.nav.cursor} `) : "  ";
-			const text = isSelected ? theme.fg("accent", option.label) : option.label;
+			const prefix = isSelected ? theme.fg("chromeAccent", `${theme.nav.cursor} `) : "  ";
+			const text = isSelected ? theme.fg("contentAccent", option.label) : option.label;
 			this.#contentContainer.addChild(new Text(prefix + text, 0, 0));
 		}
 
@@ -341,7 +341,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderEnvVarNameStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step: Environment Variable Name")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step: Environment Variable Name")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter the environment variable name:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -354,7 +354,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderHeaderNameStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step: HTTP Header Name")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step: HTTP Header Name")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter the HTTP header name:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -367,7 +367,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderScopeStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step: Configuration Scope")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step: Configuration Scope")));
 		this.#contentContainer.addChild(new Spacer(1));
 
 		const cwd = getProjectDir();
@@ -382,8 +382,8 @@ export class MCPAddWizard extends Container {
 		for (let i = 0; i < options.length; i++) {
 			const option = options[i];
 			const isSelected = i === this.#selectedIndex;
-			const prefix = isSelected ? theme.fg("accent", `${theme.nav.cursor} `) : "  ";
-			const text = isSelected ? theme.fg("accent", option.label) : option.label;
+			const prefix = isSelected ? theme.fg("chromeAccent", `${theme.nav.cursor} `) : "  ";
+			const text = isSelected ? theme.fg("contentAccent", option.label) : option.label;
 			this.#contentContainer.addChild(new Text(prefix + text, 0, 0));
 		}
 
@@ -394,11 +394,11 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderConfirmStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Review Configuration")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Review Configuration")));
 		this.#contentContainer.addChild(new Spacer(1));
 
 		// Show summary
-		this.#contentContainer.addChild(new Text(`Name: ${theme.fg("accent", this.#state.name)}`, 0, 0));
+		this.#contentContainer.addChild(new Text(`Name: ${theme.fg("contentAccent", this.#state.name)}`, 0, 0));
 		this.#contentContainer.addChild(new Text(`Type: ${this.#state.transport}`, 0, 0));
 
 		if (this.#state.transport === "stdio") {
@@ -433,8 +433,8 @@ export class MCPAddWizard extends Container {
 		const options = ["Yes", "No"];
 		for (let i = 0; i < options.length; i++) {
 			const isSelected = i === this.#selectedIndex;
-			const prefix = isSelected ? theme.fg("accent", `${theme.nav.cursor} `) : "  ";
-			const text = isSelected ? theme.fg("accent", options[i]) : options[i];
+			const prefix = isSelected ? theme.fg("chromeAccent", `${theme.nav.cursor} `) : "  ";
+			const text = isSelected ? theme.fg("contentAccent", options[i]) : options[i];
 			this.#contentContainer.addChild(new Text(prefix + text, 0, 0));
 		}
 
@@ -781,7 +781,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderAuthMethodStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "Step: Authentication Method")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "Step: Authentication Method")));
 		this.#contentContainer.addChild(new Spacer(1));
 
 		const options = [
@@ -792,8 +792,8 @@ export class MCPAddWizard extends Container {
 		for (let i = 0; i < options.length; i++) {
 			const option = options[i];
 			const isSelected = i === this.#selectedIndex;
-			const prefix = isSelected ? theme.fg("accent", `${theme.nav.cursor} `) : "  ";
-			const text = isSelected ? theme.fg("accent", option.label) : option.label;
+			const prefix = isSelected ? theme.fg("chromeAccent", `${theme.nav.cursor} `) : "  ";
+			const text = isSelected ? theme.fg("contentAccent", option.label) : option.label;
 			this.#contentContainer.addChild(new Text(prefix + text, 0, 0));
 			if (!isSelected) {
 				this.#contentContainer.addChild(new Text(`    ${theme.fg("dim", option.desc)}`, 0, 0));
@@ -807,7 +807,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderOAuthAuthUrlStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "OAuth: Authorization URL")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "OAuth: Authorization URL")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter the OAuth authorization endpoint:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -824,7 +824,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderOAuthTokenUrlStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "OAuth: Token URL")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "OAuth: Token URL")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter the OAuth token endpoint:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -839,7 +839,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderOAuthClientIdStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "OAuth: Client ID")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "OAuth: Client ID")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter your OAuth client ID:", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -852,7 +852,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderOAuthClientSecretStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "OAuth: Client Secret (Optional)")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "OAuth: Client Secret (Optional)")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter your OAuth client secret:", 0, 0));
 		this.#contentContainer.addChild(new Text(theme.fg("muted", "(Leave empty for PKCE-only flows)"), 0, 0));
@@ -866,7 +866,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderOAuthScopesStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "OAuth: Scopes (Optional)")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "OAuth: Scopes (Optional)")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter OAuth scopes (space-separated):", 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
@@ -889,8 +889,8 @@ export class MCPAddWizard extends Container {
 		const options = ["Retry OAuth authentication", "Edit OAuth settings"];
 		for (let i = 0; i < options.length; i++) {
 			const isSelected = i === this.#selectedIndex;
-			const prefix = isSelected ? theme.fg("accent", `${theme.nav.cursor} `) : "  ";
-			const text = isSelected ? theme.fg("accent", options[i]) : options[i];
+			const prefix = isSelected ? theme.fg("chromeAccent", `${theme.nav.cursor} `) : "  ";
+			const text = isSelected ? theme.fg("contentAccent", options[i]) : options[i];
 			this.#contentContainer.addChild(new Text(prefix + text, 0, 0));
 		}
 
@@ -901,7 +901,7 @@ export class MCPAddWizard extends Container {
 	}
 
 	#renderApiKeyStep(): void {
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "API Key Required")));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "API Key Required")));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Enter your API key or token:", 0, 0));
 		this.#contentContainer.addChild(new Text(theme.fg("muted", "(Supports !command for password manager)"), 0, 0));
@@ -1106,7 +1106,7 @@ export class MCPAddWizard extends Container {
 
 		// Show "Authenticating..." message
 		this.#contentContainer.clear();
-		this.#contentContainer.addChild(new Text(theme.fg("accent", "OAuth Authentication"), 0, 0));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", "OAuth Authentication"), 0, 0));
 		this.#contentContainer.addChild(new Spacer(1));
 		this.#contentContainer.addChild(new Text("Launching OAuth flow...", 0, 0));
 		this.#contentContainer.addChild(new Text(theme.fg("muted", "Browser will open automatically."), 0, 0));
@@ -1217,7 +1217,7 @@ export class MCPAddWizard extends Container {
 			}
 
 			this.#contentContainer.addChild(new Spacer(1));
-			this.#contentContainer.addChild(new Text(`${theme.fg("accent", "→ ")}Retry`, 0, 0));
+			this.#contentContainer.addChild(new Text(`${theme.fg("chromeAccent", "→ ")}Retry`, 0, 0));
 			this.#contentContainer.addChild(new Text("  Edit OAuth settings", 0, 0));
 			this.#contentContainer.addChild(new Spacer(1));
 			this.#contentContainer.addChild(

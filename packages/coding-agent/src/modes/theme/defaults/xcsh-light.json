@@ -17,6 +17,9 @@
 	},
 	"colors": {
 		"accent": "f5Red",
+		"chromeAccent": "#0090cc",
+		"spinnerAccent": "f5Red",
+		"contentAccent": "#5a6068",
 		"border": "lightGray",
 		"borderAccent": "f5Red",
 		"borderMuted": "f5Red",

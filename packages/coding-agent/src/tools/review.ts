@@ -30,7 +30,7 @@ const PRIORITY_INFO: Record<FindingPriority, FindingPriorityInfo> = {
 	P0: { ord: 0, symbol: "status.error", color: "error" },
 	P1: { ord: 1, symbol: "status.warning", color: "warning" },
 	P2: { ord: 2, symbol: "status.warning", color: "muted" },
-	P3: { ord: 3, symbol: "status.info", color: "accent" },
+	P3: { ord: 3, symbol: "status.info", color: "contentAccent" },
 };
 
 export const PRIORITY_LABELS: FindingPriority[] = ["P0", "P1", "P2", "P3"];

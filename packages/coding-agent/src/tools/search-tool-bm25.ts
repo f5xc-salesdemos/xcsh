@@ -126,7 +126,7 @@ function renderMatchLines(match: SearchToolBm25Match, theme: Theme): string[] {
 	metaParts.push(theme.fg("dim", `score ${match.score.toFixed(3)}`));
 	const metaSep = theme.fg("dim", theme.sep.dot);
 	const metaSuffix = metaParts.length > 0 ? ` ${metaParts.join(metaSep)}` : "";
-	const lines = [`${theme.fg("accent", truncateToWidth(safeLabel, MATCH_LABEL_LEN))}${metaSuffix}`];
+	const lines = [`${theme.fg("contentAccent", truncateToWidth(safeLabel, MATCH_LABEL_LEN))}${metaSuffix}`];
 	if (safeDescription) {
 		lines.push(theme.fg("muted", truncateToWidth(safeDescription, MATCH_DESCRIPTION_LEN)));
 	}

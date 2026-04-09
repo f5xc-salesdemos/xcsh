@@ -17,7 +17,7 @@ export interface StatusLineOptions {
 
 export function renderStatusLine(options: StatusLineOptions, theme: Theme): string {
 	const icon = options.icon ? formatStatusIcon(options.icon, theme, options.spinnerFrame) : "";
-	const titleColor = options.titleColor ?? "accent";
+	const titleColor = options.titleColor ?? "contentAccent";
 	const title = theme.fg(titleColor, options.title);
 	let line = icon ? `${icon} ${title}` : title;
 

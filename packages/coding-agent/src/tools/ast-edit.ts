@@ -474,7 +474,7 @@ export const astEditToolRenderer = {
 						renderItem: group =>
 							group.map(line => {
 								if (line.startsWith("## ")) return uiTheme.fg("dim", line);
-								if (line.startsWith("# ")) return uiTheme.fg("accent", line);
+								if (line.startsWith("# ")) return uiTheme.fg("contentAccent", line);
 								if (line.startsWith("+")) return uiTheme.fg("toolDiffAdded", line);
 								if (line.startsWith("-")) return uiTheme.fg("toolDiffRemoved", line);
 								return uiTheme.fg("toolOutput", line);

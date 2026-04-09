@@ -625,7 +625,7 @@ export class SelectorController {
 						this.ctx.chatContainer.addChild(new Spacer(1));
 						summaryLoader = new Loader(
 							this.ctx.ui,
-							spinner => theme.fg("accent", spinner),
+							spinner => theme.fg("spinnerAccent", spinner),
 							text => theme.fg("muted", text),
 							"Summarizing branch... (esc to cancel)",
 							getSymbolTheme().spinnerFrames,
@@ -827,7 +827,7 @@ export class SelectorController {
 					this.ctx.chatContainer.addChild(new Spacer(1));
 					this.ctx.chatContainer.addChild(new Text(theme.fg("dim", info.url), 1, 0));
 					const hyperlink = `\x1b]8;;${info.url}\x07Click here to login\x1b]8;;\x07`;
-					this.ctx.chatContainer.addChild(new Text(theme.fg("accent", hyperlink), 1, 0));
+					this.ctx.chatContainer.addChild(new Text(theme.fg("contentAccent", hyperlink), 1, 0));
 					if (info.instructions) {
 						this.ctx.chatContainer.addChild(new Spacer(1));
 						this.ctx.chatContainer.addChild(new Text(theme.fg("warning", info.instructions), 1, 0));

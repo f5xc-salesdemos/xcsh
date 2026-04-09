@@ -37,7 +37,7 @@ export class HookInputComponent extends Container {
 		this.addChild(new DynamicBorder());
 		this.addChild(new Spacer(1));
 
-		this.#titleComponent = new Markdown(title, 1, 0, getMarkdownTheme(), { color: t => theme.fg("accent", t) });
+		this.#titleComponent = new Markdown(title, 1, 0, getMarkdownTheme(), { color: t => theme.fg("contentAccent", t) });
 		this.addChild(this.#titleComponent);
 		this.addChild(new Spacer(1));
 

@@ -38,7 +38,7 @@ const piSegment: StatusLineSegment = {
 	id: "pi",
 	render(_ctx) {
 		const content = theme.icon.pi ? `${theme.icon.pi} ` : "";
-		return { content: theme.fg("accent", content), visible: true };
+		return { content: theme.fg("contentAccent", content), visible: true };
 	},
 };
 
@@ -85,7 +85,7 @@ const planModeSegment: StatusLineSegment = {
 
 		const label = status.paused ? "Plan ⏸" : "Plan";
 		const content = withIcon(theme.icon.plan, label);
-		const color = status.paused ? "warning" : "accent";
+		const color = status.paused ? "warning" : "chromeAccent";
 		return { content: theme.fg(color, content), visible: true };
 	},
 };
@@ -169,7 +169,7 @@ const prSegment: StatusLineSegment = {
 
 		const label = withIcon(theme.icon.pr, `#${pr.number}`);
 		const content = TERMINAL.hyperlinks ? `\x1b]8;;${pr.url}\x07${label}\x1b]8;;\x07` : label;
-		return { content: theme.fg("accent", content), visible: true };
+		return { content: theme.fg("contentAccent", content), visible: true };
 	},
 };
 

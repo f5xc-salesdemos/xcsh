@@ -58,7 +58,7 @@ function formatHeader(options: CodeCellOptions, theme: Theme): { title: string; 
 		}
 	}
 	if (index !== undefined && total !== undefined) {
-		parts.push(theme.fg("accent", `[${index + 1}/${total}]`));
+		parts.push(theme.fg("contentAccent", `[${index + 1}/${total}]`));
 	}
 	if (title) {
 		parts.push(theme.fg("toolTitle", title));

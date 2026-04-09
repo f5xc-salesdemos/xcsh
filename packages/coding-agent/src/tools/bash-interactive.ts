@@ -245,7 +245,7 @@ class BashInteractiveOverlayComponent implements Component {
 				: this.#state === "complete" && this.#exitCode === 0
 					? formatStatusIcon("success", this.uiTheme)
 					: formatStatusIcon("warning", this.uiTheme);
-		const title = this.uiTheme.fg("accent", "Console");
+		const title = this.uiTheme.fg("contentAccent", "Console");
 		const statusBadge = `${this.uiTheme.fg("dim", this.uiTheme.format.bracketLeft)}${this.#stateText()}${this.uiTheme.fg("dim", this.uiTheme.format.bracketRight)}`;
 		const prefix = `${statusIcon} ${title} `;
 		const suffix = ` ${statusBadge}`;

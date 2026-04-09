@@ -353,7 +353,7 @@ export class InteractiveMode implements InteractiveModeContext {
 					const condensedText = `Updated to v${latestVersion}. Use ${theme.bold("/changelog")} to view full changelog.`;
 					this.ui.addChild(new Text(condensedText, 1, 0));
 				} else {
-					this.ui.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 1, 0));
+					this.ui.addChild(new Text(theme.bold(theme.fg("contentAccent", "What's New")), 1, 0));
 					this.ui.addChild(new Spacer(1));
 					this.ui.addChild(new Markdown(this.#changelogMarkdown.trim(), 1, 0, getMarkdownTheme()));
 					this.ui.addChild(new Spacer(1));
@@ -555,7 +555,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			case "completed":
 				return theme.fg("success", `${prefix}${checkbox.checked} ${chalk.strikethrough(todo.content)}`);
 			case "in_progress": {
-				const main = theme.fg("accent", `${prefix}${checkbox.unchecked} ${todo.content}`);
+				const main = theme.fg("contentAccent", `${prefix}${checkbox.unchecked} ${todo.content}`);
 				if (!todo.details) return main;
 				const detailLines = todo.details.split("\n").map(line => theme.fg("dim", `${prefix}  ${line}`));
 				return [main, ...detailLines].join("\n");
@@ -584,12 +584,12 @@ export class InteractiveMode implements InteractiveModeContext {
 
 		const indent = "  ";
 		const hook = theme.tree.hook;
-		const lines = ["", indent + theme.bold(theme.fg("accent", "Todos"))];
+		const lines = ["", indent + theme.bold(theme.fg("contentAccent", "Todos"))];
 
 		if (!this.todoExpanded) {
 			const activePhase = this.#getActivePhase(phases);
 			if (!activePhase) return;
-			lines.push(`${indent}${theme.fg("accent", `${hook} ${activePhase.name}`)}`);
+			lines.push(`${indent}${theme.fg("contentAccent", `${hook} ${activePhase.name}`)}`);
 			const visibleTasks = activePhase.tasks.slice(0, 5);
 			visibleTasks.forEach((todo, index) => {
 				const prefix = `${indent}${index === 0 ? hook : " "} `;
@@ -604,7 +604,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		}
 
 		for (const phase of phases) {
-			lines.push(`${indent}${theme.fg("accent", `${hook} ${phase.name}`)}`);
+			lines.push(`${indent}${theme.fg("contentAccent", `${hook} ${phase.name}`)}`);
 			phase.tasks.forEach((todo, index) => {
 				const prefix = `${indent}${index === 0 ? hook : " "} `;
 				lines.push(this.#formatTodoLine(todo, prefix));
@@ -794,7 +794,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		planReviewContainer.clear();
 		planReviewContainer.addChild(new Spacer(1));
 		planReviewContainer.addChild(new DynamicBorder());
-		planReviewContainer.addChild(new Text(theme.bold(theme.fg("accent", "Plan Review")), 1, 1));
+		planReviewContainer.addChild(new Text(theme.bold(theme.fg("contentAccent", "Plan Review")), 1, 1));
 		planReviewContainer.addChild(new Spacer(1));
 		planReviewContainer.addChild(new Markdown(planContent, 1, 1, getMarkdownTheme()));
 		planReviewContainer.addChild(new DynamicBorder());
@@ -1147,7 +1147,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			this.statusContainer.clear();
 			this.loadingAnimation = new Loader(
 				this.ui,
-				spinner => theme.fg("accent", spinner),
+				spinner => theme.fg("spinnerAccent", spinner),
 				text => theme.fg("muted", text),
 				this.#defaultWorkingMessage,
 				getSymbolTheme().spinnerFrames,

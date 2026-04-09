@@ -27,7 +27,7 @@ export class InspectorPanel implements Component {
 		const lines: string[] = [];
 
 		// Name header
-		lines.push(theme.bold(theme.fg("accent", ext.displayName)));
+		lines.push(theme.bold(theme.fg("contentAccent", ext.displayName)));
 		lines.push("");
 
 		// Kind badge
@@ -143,7 +143,7 @@ export class InspectorPanel implements Component {
 
 		// Headers
 		if (/^#{1,6}\s/.test(highlighted)) {
-			highlighted = theme.bold(theme.fg("accent", highlighted));
+			highlighted = theme.bold(theme.fg("contentAccent", highlighted));
 		}
 		// Code blocks
 		else if (/^```/.test(highlighted)) {
@@ -151,11 +151,11 @@ export class InspectorPanel implements Component {
 		}
 		// Lists
 		else if (/^[\s]*[-*+]\s/.test(highlighted)) {
-			highlighted = highlighted.replace(/^([\s]*[-*+]\s)/, theme.fg("accent", "$1"));
+			highlighted = highlighted.replace(/^([\s]*[-*+]\s)/, theme.fg("contentAccent", "$1"));
 		}
 		// Numbered lists
 		else if (/^[\s]*\d+\.\s/.test(highlighted)) {
-			highlighted = highlighted.replace(/^([\s]*\d+\.\s)/, theme.fg("accent", "$1"));
+			highlighted = highlighted.replace(/^([\s]*\d+\.\s)/, theme.fg("contentAccent", "$1"));
 		}
 
 		return highlighted;
@@ -181,7 +181,7 @@ export class InspectorPanel implements Component {
 					const isRequired = required.has(name);
 					const defaultVal = param.default !== undefined ? `Default: ${param.default}` : null;
 
-					const nameCol = theme.fg("accent", name.padEnd(12));
+					const nameCol = theme.fg("contentAccent", name.padEnd(12));
 					const typeCol = theme.fg("muted", type.padEnd(10));
 					const reqCol = isRequired
 						? theme.fg("warning", "Required")
@@ -240,7 +240,7 @@ export class InspectorPanel implements Component {
 			const command = mcp?.command || mcp?.cmd || "";
 			const args = mcp?.args || mcp?.arguments || [];
 
-			lines.push(`  ${theme.fg("muted", "Transport:")}  ${theme.fg("accent", transport)}`);
+			lines.push(`  ${theme.fg("muted", "Transport:")}  ${theme.fg("contentAccent", transport)}`);
 
 			if (command) {
 				lines.push(`  ${theme.fg("muted", "Command:")}    ${theme.fg("success", command)}`);
@@ -272,7 +272,7 @@ export class InspectorPanel implements Component {
 		if (ext.trigger) {
 			lines.push(theme.fg("muted", "Trigger:"));
 			lines.push(theme.fg("dim", theme.boxSharp.horizontal.repeat(Math.min(width - 2, 40))));
-			lines.push(`  ${theme.fg("accent", ext.trigger)}`);
+			lines.push(`  ${theme.fg("contentAccent", ext.trigger)}`);
 			lines.push("");
 		}
 
@@ -281,16 +281,16 @@ export class InspectorPanel implements Component {
 
 	#getKindBadge(kind: string): string {
 		const kindColors: Record<string, string> = {
-			"extension-module": "accent",
-			skill: "accent",
+			"extension-module": "contentAccent",
+			skill: "contentAccent",
 			rule: "success",
 			tool: "warning",
-			mcp: "accent",
+			mcp: "contentAccent",
 			prompt: "muted",
 			hook: "warning",
 			"context-file": "dim",
 			instruction: "muted",
-			"slash-command": "accent",
+			"slash-command": "contentAccent",
 		};
 
 		const color = kindColors[kind] || "muted";
