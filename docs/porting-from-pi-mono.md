@@ -5,7 +5,7 @@ Use it for any merge: single file, feature branch, or full release sync.
 
 ## Last Sync Point
 
-**Commit:** `b21b42d032919de2f2e6920a76fa9a37c3920c0a`
+**Commit:** `d350ea60e` (can1357/oh-my-pi) — upstream sync 2026-04-09
 **Date:** 2026-03-22
 
 Update this section after each sync; do not reuse the previous range.
@@ -13,7 +13,7 @@ Update this section after each sync; do not reuse the previous range.
 When starting a new sync, generate patches from this commit forward:
 
 ```bash
-git format-patch b21b42d032919de2f2e6920a76fa9a37c3920c0a..HEAD --stdout > changes.patch
+git format-patch d350ea60e..HEAD --stdout > changes.patch
 ```
 
 ## 0) Define the scope
