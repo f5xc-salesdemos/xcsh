@@ -1,4 +1,4 @@
-import { getProjectDir, logger } from "@xcsh/pi-utils";
+import { getProjectDir, logger } from "@f5xc-salesdemos/pi-utils";
 import type { AutocompleteProvider, CombinedAutocompleteProvider } from "../autocomplete";
 import { BracketedPasteHandler } from "../bracketed-paste";
 import { getKeybindings, type KeybindingsManager } from "../keybindings";

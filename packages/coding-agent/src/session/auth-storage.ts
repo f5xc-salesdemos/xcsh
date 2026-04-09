@@ -1,5 +1,5 @@
 /**
- * Re-exports from @xcsh/pi-ai.
+ * Re-exports from @f5xc-salesdemos/pi-ai.
  * All credential storage types and the AuthStorage class now live in the ai package.
  */
 
@@ -13,5 +13,5 @@ export type {
 	OAuthCredential,
 	SerializedAuthStorage,
 	StoredAuthCredential,
-} from "@xcsh/pi-ai";
-export { AuthStorage } from "@xcsh/pi-ai";
+} from "@f5xc-salesdemos/pi-ai";
+export { AuthStorage } from "@f5xc-salesdemos/pi-ai";

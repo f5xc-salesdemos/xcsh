@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { discoverAndLoadExtensions } from "@xcsh/pi-coding-agent/extensibility/extensions/loader";
-import { getAgentDir, getPluginsDir, setAgentDir, TempDir } from "@xcsh/pi-utils";
+import { getAgentDir, getPluginsDir, setAgentDir, TempDir } from "@f5xc-salesdemos/pi-utils";
+import { discoverAndLoadExtensions } from "@f5xc-salesdemos/xcsh/extensibility/extensions/loader";
 
 describe("plugin extension discovery", () => {
 	let projectDir: TempDir;

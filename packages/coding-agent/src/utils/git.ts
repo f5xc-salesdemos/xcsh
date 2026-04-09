@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $which, isEnoent, Snowflake } from "@xcsh/pi-utils";
+import { $which, isEnoent, Snowflake } from "@f5xc-salesdemos/pi-utils";
 import {
 	parseDiffHunks as parseCommitDiffHunks,
 	parseFileDiffs,

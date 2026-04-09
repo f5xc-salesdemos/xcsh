@@ -5,11 +5,11 @@
  * They can provide custom rendering for tool calls and results in the TUI.
  */
 
+import type { AgentToolResult, AgentToolUpdateCallback } from "@f5xc-salesdemos/pi-agent-core";
+import type { Model } from "@f5xc-salesdemos/pi-ai";
+import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
 import type { Static, TSchema } from "@sinclair/typebox";
-import type { AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import type { Model } from "@xcsh/pi-ai";
-import type { SearchDb } from "@xcsh/pi-natives";
-import type { Component } from "@xcsh/pi-tui";
 import type { Rule } from "../../capability/rule";
 import type { ModelRegistry } from "../../config/model-registry";
 import type { Settings } from "../../config/settings";
@@ -53,7 +53,7 @@ export interface CustomToolAPI {
 	/** Whether UI is available (false in print/RPC mode) */
 	hasUI: boolean;
 	/** File logger for error/warning/debug messages */
-	logger: typeof import("@xcsh/pi-utils").logger;
+	logger: typeof import("@f5xc-salesdemos/pi-utils").logger;
 	/** Injected @sinclair/typebox module */
 	typebox: typeof import("@sinclair/typebox");
 	/** Injected pi-coding-agent exports */

@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $which, logger, Snowflake } from "@xcsh/pi-utils";
+import { $which, logger, Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 
 export interface RecordingHandle {

@@ -70,13 +70,13 @@ for pkg in utils natives ai agent tui stats coding-agent; do
 	)
 done
 
-utils_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-utils-*.tgz)"
-natives_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-natives-*.tgz)"
-ai_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-ai-*.tgz)"
-agent_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-agent-core-*.tgz)"
-tui_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-tui-*.tgz)"
-stats_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-xcsh-stats-*.tgz)"
-coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-coding-agent-*.tgz)"
+utils_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-utils-*.tgz)"
+natives_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-natives-*.tgz)"
+ai_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-ai-*.tgz)"
+agent_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-agent-core-*.tgz)"
+tui_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-tui-*.tgz)"
+stats_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-xcsh-stats-*.tgz)"
+coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-xcsh-[0-9]*.tgz)"
 
 TARBALL_APP_DIR="$WORK_DIR/tarball-install"
 mkdir -p "$TARBALL_APP_DIR"
@@ -89,13 +89,13 @@ mkdir -p "$TARBALL_APP_DIR"
 	node -e "
 		const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
 		pkg.overrides = {
-			'@xcsh/pi-utils': '$utils_tgz',
-			'@xcsh/pi-natives': '$natives_tgz',
-			'@xcsh/pi-ai': '$ai_tgz',
-			'@xcsh/pi-agent-core': '$agent_tgz',
-			'@xcsh/pi-tui': '$tui_tgz',
-			'@xcsh/xcsh-stats': '$stats_tgz',
-			'@xcsh/pi-coding-agent': '$coding_agent_tgz'
+			'@f5xc-salesdemos/pi-utils': '$utils_tgz',
+			'@f5xc-salesdemos/pi-natives': '$natives_tgz',
+			'@f5xc-salesdemos/pi-ai': '$ai_tgz',
+			'@f5xc-salesdemos/pi-agent-core': '$agent_tgz',
+			'@f5xc-salesdemos/pi-tui': '$tui_tgz',
+			'@f5xc-salesdemos/xcsh-stats': '$stats_tgz',
+			'@f5xc-salesdemos/xcsh': '$coding_agent_tgz'
 		};
 		require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
 	"

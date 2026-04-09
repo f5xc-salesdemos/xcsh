@@ -6,7 +6,7 @@
  */
 
 import { beforeEach, describe, expect, it } from "bun:test";
-import { StdinBuffer } from "@xcsh/pi-tui/stdin-buffer";
+import { StdinBuffer } from "@f5xc-salesdemos/pi-tui/stdin-buffer";
 
 describe("StdinBuffer", () => {
 	let buffer: StdinBuffer;

@@ -2,14 +2,14 @@ import { afterEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentEvent } from "@xcsh/pi-agent-core";
-import { defineRpcClientTool, RpcClient } from "@xcsh/pi-coding-agent/modes";
-import { RpcHostToolBridge } from "@xcsh/pi-coding-agent/modes/rpc/host-tools";
+import type { AgentEvent } from "@f5xc-salesdemos/pi-agent-core";
+import { defineRpcClientTool, RpcClient } from "@f5xc-salesdemos/xcsh/modes";
+import { RpcHostToolBridge } from "@f5xc-salesdemos/xcsh/modes/rpc/host-tools";
 import type {
 	RpcHostToolCallRequest,
 	RpcHostToolCancelRequest,
 	RpcHostToolUpdate,
-} from "@xcsh/pi-coding-agent/modes/rpc/rpc-types";
+} from "@f5xc-salesdemos/xcsh/modes/rpc/rpc-types";
 
 const tempPaths: string[] = [];
 

@@ -1,7 +1,7 @@
 /**
  * Install dependencies for optional features.
  */
-import { Args, Command, Flags, renderCommandHelp } from "@xcsh/pi-utils/cli";
+import { Args, Command, Flags, renderCommandHelp } from "@f5xc-salesdemos/pi-utils/cli";
 import { runSetupCommand, type SetupCommandArgs, type SetupComponent } from "../cli/setup-cli";
 import { initTheme } from "../modes/theme/theme";
 

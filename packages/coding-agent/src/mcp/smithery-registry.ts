@@ -1,4 +1,4 @@
-import { logger } from "@xcsh/pi-utils";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import type { MCPServerConfig } from "./types";
 
 const SMITHERY_REGISTRY_BASE_URL = "https://registry.smithery.ai";

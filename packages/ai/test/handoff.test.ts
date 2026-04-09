@@ -1,8 +1,16 @@
 import { describe, expect, it } from "bun:test";
+import { getBundledModel } from "@f5xc-salesdemos/pi-ai/models";
+import { complete } from "@f5xc-salesdemos/pi-ai/stream";
+import type {
+	Api,
+	AssistantMessage,
+	Context,
+	Message,
+	Model,
+	Tool,
+	ToolResultMessage,
+} from "@f5xc-salesdemos/pi-ai/types";
 import { Type } from "@sinclair/typebox";
-import { getBundledModel } from "@xcsh/pi-ai/models";
-import { complete } from "@xcsh/pi-ai/stream";
-import type { Api, AssistantMessage, Context, Message, Model, Tool, ToolResultMessage } from "@xcsh/pi-ai/types";
 import { e2eApiKey } from "./oauth";
 
 // Tool for testing

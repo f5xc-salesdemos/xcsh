@@ -1,6 +1,6 @@
 import * as path from "node:path";
-import type { AgentState } from "@xcsh/pi-agent-core";
-import { APP_NAME, isEnoent } from "@xcsh/pi-utils";
+import type { AgentState } from "@f5xc-salesdemos/pi-agent-core";
+import { APP_NAME, isEnoent } from "@f5xc-salesdemos/pi-utils";
 import { getResolvedThemeColors, getThemeExportColors } from "../../modes/theme/theme";
 import { type SessionEntry, type SessionHeader, SessionManager } from "../../session/session-manager";
 // Pre-generated template (created by scripts/generate-template.ts at publish time)

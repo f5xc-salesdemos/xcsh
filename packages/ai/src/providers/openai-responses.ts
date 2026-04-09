@@ -1,4 +1,4 @@
-import { $env, structuredCloneJSON } from "@xcsh/pi-utils";
+import { $env, structuredCloneJSON } from "@f5xc-salesdemos/pi-utils";
 import OpenAI from "openai";
 import type {
 	Tool as OpenAITool,

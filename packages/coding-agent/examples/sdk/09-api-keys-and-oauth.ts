@@ -10,7 +10,7 @@ import {
 	discoverModels,
 	ModelRegistry,
 	SessionManager,
-} from "@xcsh/pi-coding-agent";
+} from "@f5xc-salesdemos/xcsh";
 
 // Default: discoverAuthStorage() uses ~/.xcsh/agent/agent.db
 // discoverModels() loads built-in + custom models from ~/.xcsh/agent/models.json

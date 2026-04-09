@@ -1,6 +1,6 @@
-import type { ThinkingLevel } from "@xcsh/pi-agent-core";
-import type { Api, Model } from "@xcsh/pi-ai";
-import { $env } from "@xcsh/pi-utils";
+import type { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import type { Api, Model } from "@f5xc-salesdemos/pi-ai";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import { parseFileDiffs } from "../../commit/git/diff";
 import type { ConventionalAnalysis } from "../../commit/types";
 import { isExcludedFile } from "../../commit/utils/exclusions";

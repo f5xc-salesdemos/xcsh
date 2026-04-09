@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import type { AgentMessage } from "@xcsh/pi-agent-core";
-import * as ai from "@xcsh/pi-ai";
-import { getBundledModel } from "@xcsh/pi-ai/models";
-import { encodeTextSignatureV1 } from "@xcsh/pi-ai/providers/openai-responses-shared";
-import type { AssistantMessage, Model, ProviderPayload, Usage } from "@xcsh/pi-ai/types";
-import { hookFetch } from "@xcsh/pi-utils";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import * as ai from "@f5xc-salesdemos/pi-ai";
+import { getBundledModel } from "@f5xc-salesdemos/pi-ai/models";
+import { encodeTextSignatureV1 } from "@f5xc-salesdemos/pi-ai/providers/openai-responses-shared";
+import type { AssistantMessage, Model, ProviderPayload, Usage } from "@f5xc-salesdemos/pi-ai/types";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
 
 import {
 	type CompactionSettings,

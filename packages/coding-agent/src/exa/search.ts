@@ -4,8 +4,8 @@
  * Basic neural/keyword search, deep research, code search, and URL crawling.
  */
 
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
 import { Type } from "@sinclair/typebox";
-import { StringEnum } from "@xcsh/pi-ai";
 import type { CustomTool } from "../extensibility/custom-tools/types";
 import { createExaTool } from "./factory";
 import type { ExaRenderDetails } from "./types";

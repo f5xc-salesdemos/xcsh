@@ -1,4 +1,4 @@
-import { ImageFormat, PhotonImage } from "@xcsh/pi-natives";
+import { ImageFormat, PhotonImage } from "@f5xc-salesdemos/pi-natives";
 
 /**
  * Convert image to PNG format for terminal display.

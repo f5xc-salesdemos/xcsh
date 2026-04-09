@@ -1,6 +1,11 @@
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import { prompt } from "@xcsh/pi-utils";
 import cancelJobDescription from "../prompts/tools/cancel-job.md" with { type: "text" };
 import type { ToolSession } from "./index";
 

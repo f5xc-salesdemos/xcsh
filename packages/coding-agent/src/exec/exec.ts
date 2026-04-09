@@ -1,7 +1,7 @@
 /**
  * Shared command execution utilities for hooks and custom tools.
  */
-import { ptree } from "@xcsh/pi-utils";
+import { ptree } from "@f5xc-salesdemos/pi-utils";
 
 /**
  * Options for executing shell commands.

@@ -3,7 +3,7 @@
  *
  * @example
  * ```ts
- * import { hexToHsv, hsvToHex } from "@xcsh/pi-utils";
+ * import { hexToHsv, hsvToHex } from "@f5xc-salesdemos/pi-utils";
  *
  * // Work with HSV directly
  *

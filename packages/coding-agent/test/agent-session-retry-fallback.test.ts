@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as path from "node:path";
-import { Agent } from "@xcsh/pi-agent-core";
-import { type AssistantMessage, Effort, getBundledModel, type Model } from "@xcsh/pi-ai";
-import { AssistantMessageEventStream } from "@xcsh/pi-ai/utils/event-stream";
-import { ModelRegistry } from "@xcsh/pi-coding-agent/config/model-registry";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { AgentSession, type AgentSessionEvent } from "@xcsh/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@xcsh/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
-import { TempDir } from "@xcsh/pi-utils";
+import { Agent } from "@f5xc-salesdemos/pi-agent-core";
+import { type AssistantMessage, Effort, getBundledModel, type Model } from "@f5xc-salesdemos/pi-ai";
+import { AssistantMessageEventStream } from "@f5xc-salesdemos/pi-ai/utils/event-stream";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { AgentSession, type AgentSessionEvent } from "@f5xc-salesdemos/xcsh/session/agent-session";
+import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 
 class MockAssistantStream extends AssistantMessageEventStream {}
 

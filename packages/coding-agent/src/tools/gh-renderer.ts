@@ -1,4 +1,4 @@
-import { type Component, padding, Text, truncateToWidth, visibleWidth } from "@xcsh/pi-tui";
+import { type Component, padding, Text, truncateToWidth, visibleWidth } from "@f5xc-salesdemos/pi-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme, ThemeColor } from "../modes/theme/theme";
 import { renderStatusLine } from "../tui";

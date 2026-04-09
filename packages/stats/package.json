@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "@xcsh/xcsh-stats",
+	"name": "@f5xc-salesdemos/xcsh-stats",
 	"version": "14.0.1",
 	"description": "Local observability dashboard for pi AI usage statistics",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
@@ -37,8 +37,8 @@
 		"fmt": "biome format --write ."
 	},
 	"dependencies": {
-		"@xcsh/pi-ai": "workspace:*",
-		"@xcsh/pi-utils": "workspace:*",
+		"@f5xc-salesdemos/pi-ai": "workspace:*",
+		"@f5xc-salesdemos/pi-utils": "workspace:*",
 		"@tailwindcss/node": "^4.2",
 		"chart.js": "^4.5",
 		"date-fns": "^4.1",

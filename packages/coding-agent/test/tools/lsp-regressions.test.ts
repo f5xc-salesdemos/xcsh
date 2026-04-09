@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { RenderResultOptions } from "@xcsh/pi-agent-core";
-import { getServersForFile, loadConfig } from "@xcsh/pi-coding-agent/lsp/config";
-import { renderCall, renderResult } from "@xcsh/pi-coding-agent/lsp/render";
-import type { CodeAction, SymbolInformation } from "@xcsh/pi-coding-agent/lsp/types";
+import type { RenderResultOptions } from "@f5xc-salesdemos/pi-agent-core";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
+import * as piUtils from "@f5xc-salesdemos/pi-utils";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { getServersForFile, loadConfig } from "@f5xc-salesdemos/xcsh/lsp/config";
+import { renderCall, renderResult } from "@f5xc-salesdemos/xcsh/lsp/render";
+import type { CodeAction, SymbolInformation } from "@f5xc-salesdemos/xcsh/lsp/types";
 import {
 	applyCodeAction,
 	collectGlobMatches,
@@ -13,12 +16,9 @@ import {
 	filterWorkspaceSymbols,
 	hasGlobPattern,
 	resolveSymbolColumn,
-} from "@xcsh/pi-coding-agent/lsp/utils";
-import { getThemeByName } from "@xcsh/pi-coding-agent/modes/theme/theme";
-import { clampTimeout } from "@xcsh/pi-coding-agent/tools/tool-timeouts";
-import { sanitizeText } from "@xcsh/pi-natives";
-import * as piUtils from "@xcsh/pi-utils";
-import { TempDir } from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/xcsh/lsp/utils";
+import { getThemeByName } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
+import { clampTimeout } from "@f5xc-salesdemos/xcsh/tools/tool-timeouts";
 
 describe("lsp regressions", () => {
 	it("detects bracket-style glob patterns", () => {

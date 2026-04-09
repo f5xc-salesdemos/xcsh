@@ -1,9 +1,9 @@
 import * as childProcess from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { formatBytes } from "@f5xc-salesdemos/pi-utils";
 import { Type } from "@sinclair/typebox";
-import { Text } from "@xcsh/pi-tui";
-import { formatBytes } from "@xcsh/pi-utils";
 import type { ToolDefinition } from "../../extensibility/extensions";
 import type { Theme } from "../../modes/theme/theme";
 import { DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES, truncateTail } from "../../session/streaming-output";

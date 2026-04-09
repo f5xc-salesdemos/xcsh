@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { _resetSettingsForTest, Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { getDefaultTabWidth, getIndentation, setDefaultTabWidth } from "@xcsh/pi-natives";
-import { Snowflake } from "@xcsh/pi-utils";
+import { getDefaultTabWidth, getIndentation, setDefaultTabWidth } from "@f5xc-salesdemos/pi-natives";
+import { Snowflake } from "@f5xc-salesdemos/pi-utils";
+import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
 
 describe("indentation resolver", () => {
 	let tempDir = "";

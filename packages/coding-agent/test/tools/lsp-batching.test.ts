@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { createLspWritethrough } from "@xcsh/pi-coding-agent/lsp";
-import * as lspConfig from "@xcsh/pi-coding-agent/lsp/config";
-import { TempDir } from "@xcsh/pi-utils";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { createLspWritethrough } from "@f5xc-salesdemos/xcsh/lsp";
+import * as lspConfig from "@f5xc-salesdemos/xcsh/lsp/config";
 
 describe("createLspWritethrough batching", () => {
 	let tempDir: TempDir;

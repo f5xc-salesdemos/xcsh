@@ -4,7 +4,7 @@
  * Skills provide specialized instructions loaded into the system prompt.
  * Discover, filter, merge, or replace them.
  */
-import { createAgentSession, discoverSkills, SessionManager, type Skill } from "@xcsh/pi-coding-agent";
+import { createAgentSession, discoverSkills, SessionManager, type Skill } from "@f5xc-salesdemos/xcsh";
 
 // Discover all skills from cwd/.xcsh/skills, ~/.xcsh/agent/skills, etc.
 const { skills: allSkills } = await discoverSkills();

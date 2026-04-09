@@ -1,4 +1,4 @@
-import type { Api, Model, ToolChoice } from "@xcsh/pi-ai";
+import type { Api, Model, ToolChoice } from "@f5xc-salesdemos/pi-ai";
 
 /**
  * Build a provider-aware tool choice that targets one specific tool when supported.

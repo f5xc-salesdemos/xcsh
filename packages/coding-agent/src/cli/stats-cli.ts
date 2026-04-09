@@ -4,7 +4,7 @@
  * Handles `xcsh stats` subcommand for viewing AI usage statistics.
  */
 
-import { APP_NAME, formatDuration, formatNumber, formatPercent } from "@xcsh/pi-utils";
+import { APP_NAME, formatDuration, formatNumber, formatPercent } from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { openPath } from "../utils/open";
 
@@ -70,7 +70,7 @@ function normalizePremiumRequests(n: number): number {
 export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 	// Lazy import to avoid loading stats module when not needed
 	const { getDashboardStats, syncAllSessions, getTotalMessageCount, startServer, closeDb } = await import(
-		"@xcsh/xcsh-stats"
+		"@f5xc-salesdemos/xcsh-stats"
 	);
 
 	// Sync session files first
@@ -112,7 +112,7 @@ export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 }
 
 async function printStatsSummary(): Promise<void> {
-	const { getDashboardStats } = await import("@xcsh/xcsh-stats");
+	const { getDashboardStats } = await import("@f5xc-salesdemos/xcsh-stats");
 	const stats = await getDashboardStats();
 	const { overall, byModel, byFolder } = stats;
 

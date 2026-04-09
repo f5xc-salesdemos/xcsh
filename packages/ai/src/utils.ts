@@ -1,10 +1,10 @@
-import { $env } from "@xcsh/pi-utils";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import type { ResponseInput } from "openai/resources/responses/responses";
 import type { CacheRetention, OpenAIResponsesHistoryPayload, ProviderPayload } from "./types";
 
 type OpenAIResponsesReplayItem = ResponseInput[number];
 
-export { isRecord } from "@xcsh/pi-utils";
+export { isRecord } from "@f5xc-salesdemos/pi-utils";
 
 export function toNumber(value: unknown): number | undefined {
 	if (typeof value === "number" && Number.isFinite(value)) return value;

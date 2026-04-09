@@ -13,8 +13,8 @@ import type {
 	ModelRegistry,
 	Settings,
 	SingleResult,
-} from "@xcsh/pi-coding-agent";
-import { runSubprocess } from "@xcsh/pi-coding-agent";
+} from "@f5xc-salesdemos/xcsh";
+import { runSubprocess } from "@f5xc-salesdemos/xcsh";
 import type { SwarmAgent } from "./schema";
 import type { StateTracker } from "./state";
 

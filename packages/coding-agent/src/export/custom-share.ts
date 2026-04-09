@@ -6,7 +6,7 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getAgentDir } from "@xcsh/pi-utils";
+import { getAgentDir } from "@f5xc-salesdemos/pi-utils";
 
 export interface CustomShareResult {
 	/** URL to display/open (optional - script may handle everything itself) */

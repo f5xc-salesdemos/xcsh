@@ -4,7 +4,7 @@
  * Uses all defaults: discovers skills, hooks, tools, context files
  * from cwd and ~/.xcsh/agent. Model chosen from settings or first available.
  */
-import { createAgentSession } from "@xcsh/pi-coding-agent";
+import { createAgentSession } from "@f5xc-salesdemos/xcsh";
 
 const { session } = await createAgentSession();
 

@@ -1,9 +1,16 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import {
+	CONFIG_DIR_NAME,
+	getAgentDir,
+	getConfigAgentDirName,
+	getProjectDir,
+	isEnoent,
+	logger,
+} from "@f5xc-salesdemos/pi-utils";
 import type { TSchema } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
-import { CONFIG_DIR_NAME, getAgentDir, getConfigAgentDirName, getProjectDir, isEnoent, logger } from "@xcsh/pi-utils";
 import { Ajv, type ErrorObject, type ValidateFunction } from "ajv";
 import { JSONC, YAML } from "bun";
 import { expandTilde } from "./tools/path-utils";

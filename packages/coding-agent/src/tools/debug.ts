@@ -1,14 +1,14 @@
-import { type Static, Type } from "@sinclair/typebox";
 import type {
 	AgentTool,
 	AgentToolContext,
 	AgentToolResult,
 	AgentToolUpdateCallback,
 	RenderResultOptions,
-} from "@xcsh/pi-agent-core";
-import { StringEnum } from "@xcsh/pi-ai";
-import { type Component, Text } from "@xcsh/pi-tui";
-import { prompt } from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/pi-agent-core";
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import { type Component, Text } from "@f5xc-salesdemos/pi-tui";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
+import { type Static, Type } from "@sinclair/typebox";
 import {
 	type DapBreakpointRecord,
 	type DapCapabilities,

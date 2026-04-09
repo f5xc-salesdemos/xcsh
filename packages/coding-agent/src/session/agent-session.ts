@@ -24,7 +24,7 @@ import {
 	type AgentState,
 	type AgentTool,
 	ThinkingLevel,
-} from "@xcsh/pi-agent-core";
+} from "@f5xc-salesdemos/pi-agent-core";
 import type {
 	AssistantMessage,
 	Effort,
@@ -40,7 +40,7 @@ import type {
 	ToolChoice,
 	Usage,
 	UsageReport,
-} from "@xcsh/pi-ai";
+} from "@f5xc-salesdemos/pi-ai";
 import {
 	calculateRateLimitBackoffMs,
 	getSupportedEfforts,
@@ -48,9 +48,9 @@ import {
 	isUsageLimitError,
 	modelsAreEqual,
 	parseRateLimitReason,
-} from "@xcsh/pi-ai";
-import { killTree, MacOSPowerAssertion, type SearchDb } from "@xcsh/pi-natives";
-import { abortableSleep, getAgentDbPath, isEnoent, logger, prompt, setNativeKillTree } from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/pi-ai";
+import { killTree, MacOSPowerAssertion, type SearchDb } from "@f5xc-salesdemos/pi-natives";
+import { abortableSleep, getAgentDbPath, isEnoent, logger, prompt, setNativeKillTree } from "@f5xc-salesdemos/pi-utils";
 import type { AsyncJob, AsyncJobManager } from "../async";
 import type { Rule } from "../capability/rule";
 import { MODEL_ROLE_IDS, type ModelRegistry } from "../config/model-registry";

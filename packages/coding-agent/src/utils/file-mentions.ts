@@ -7,10 +7,10 @@
  */
 import * as fs from "node:fs/promises";
 import path from "node:path";
-import type { AgentMessage } from "@xcsh/pi-agent-core";
-import type { ImageContent } from "@xcsh/pi-ai";
-import { glob } from "@xcsh/pi-natives";
-import { formatAge, formatBytes, readImageMetadata } from "@xcsh/pi-utils";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import type { ImageContent } from "@f5xc-salesdemos/pi-ai";
+import { glob } from "@f5xc-salesdemos/pi-natives";
+import { formatAge, formatBytes, readImageMetadata } from "@f5xc-salesdemos/pi-utils";
 import { formatHashLines } from "../edit/line-hash";
 import type { FileMentionMessage } from "../session/messages";
 import {

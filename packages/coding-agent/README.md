@@ -1,4 +1,4 @@
-# @xcsh/pi-coding-agent
+# @f5xc-salesdemos/xcsh
 
 Core implementation package for the `xcsh` coding agent in the `xcsh` monorepo.
 

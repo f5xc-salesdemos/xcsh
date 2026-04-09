@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
+import type { Tool, ToolCall } from "@f5xc-salesdemos/pi-ai/types";
+import { validateToolArguments } from "@f5xc-salesdemos/pi-ai/utils/validation";
 import { Type } from "@sinclair/typebox";
-import type { Tool, ToolCall } from "@xcsh/pi-ai/types";
-import { validateToolArguments } from "@xcsh/pi-ai/utils/validation";
 
 describe("Tool argument coercion", () => {
 	it("coerces numeric strings when schema expects number", () => {

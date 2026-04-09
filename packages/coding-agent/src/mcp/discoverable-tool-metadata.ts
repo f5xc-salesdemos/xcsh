@@ -1,4 +1,4 @@
-import type { AgentTool } from "@xcsh/pi-agent-core";
+import type { AgentTool } from "@f5xc-salesdemos/pi-agent-core";
 
 export interface DiscoverableMCPTool {
 	name: string;

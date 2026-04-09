@@ -1,5 +1,5 @@
-import type { ThinkingLevel } from "@xcsh/pi-agent-core";
-import type { Api, Model } from "@xcsh/pi-ai";
+import type { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import type { Api, Model } from "@f5xc-salesdemos/pi-ai";
 import { MODEL_ROLE_IDS } from "../config/model-registry";
 import { parseModelPattern, resolveModelRoleValue, resolveRoleSelection } from "../config/model-resolver";
 import type { Settings } from "../config/settings";

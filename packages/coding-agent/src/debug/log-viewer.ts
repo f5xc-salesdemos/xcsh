@@ -1,4 +1,4 @@
-import { sanitizeText } from "@xcsh/pi-natives";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
 import {
 	type Component,
 	extractPrintableText,
@@ -7,7 +7,7 @@ import {
 	replaceTabs,
 	truncateToWidth,
 	visibleWidth,
-} from "@xcsh/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { theme } from "../modes/theme/theme";
 import { copyToClipboard } from "../utils/clipboard";
 import {

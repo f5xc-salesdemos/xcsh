@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseGitUrl } from "@xcsh/pi-coding-agent/extensibility/plugins/git-url";
+import { parseGitUrl } from "@f5xc-salesdemos/xcsh/extensibility/plugins/git-url";
 
 describe("parseGitUrl", () => {
 	describe("protocol URLs (accepted without git: prefix)", () => {

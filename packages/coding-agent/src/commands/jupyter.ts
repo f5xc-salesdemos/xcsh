@@ -1,7 +1,7 @@
 /**
  * Manage the shared Jupyter gateway.
  */
-import { Args, Command } from "@xcsh/pi-utils/cli";
+import { Args, Command } from "@f5xc-salesdemos/pi-utils/cli";
 import { type JupyterAction, type JupyterCommandArgs, runJupyterCommand } from "../cli/jupyter-cli";
 import { initTheme } from "../modes/theme/theme";
 

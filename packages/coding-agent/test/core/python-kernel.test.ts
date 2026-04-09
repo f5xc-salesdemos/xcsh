@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import { type KernelDisplayOutput, PythonKernel } from "@xcsh/pi-coding-agent/ipy/kernel";
-import { PYTHON_PRELUDE } from "@xcsh/pi-coding-agent/ipy/prelude";
-import { hookFetch } from "@xcsh/pi-utils";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
+import { type KernelDisplayOutput, PythonKernel } from "@f5xc-salesdemos/xcsh/ipy/kernel";
+import { PYTHON_PRELUDE } from "@f5xc-salesdemos/xcsh/ipy/prelude";
 
 type JupyterMessage = {
 	channel: string;

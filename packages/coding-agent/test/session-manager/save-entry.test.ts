@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { type CustomEntry, SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
+import { type CustomEntry, SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 
 describe("SessionManager.saveCustomEntry", () => {
 	it("saves custom entries and includes them in tree traversal", () => {

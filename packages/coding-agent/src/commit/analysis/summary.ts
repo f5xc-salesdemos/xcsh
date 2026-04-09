@@ -1,8 +1,8 @@
+import type { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import type { Api, AssistantMessage, Model } from "@f5xc-salesdemos/pi-ai";
+import { completeSimple, validateToolCall } from "@f5xc-salesdemos/pi-ai";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import { Type } from "@sinclair/typebox";
-import type { ThinkingLevel } from "@xcsh/pi-agent-core";
-import type { Api, AssistantMessage, Model } from "@xcsh/pi-ai";
-import { completeSimple, validateToolCall } from "@xcsh/pi-ai";
-import { prompt } from "@xcsh/pi-utils";
 import summarySystemPrompt from "../../commit/prompts/summary-system.md" with { type: "text" };
 import summaryUserPrompt from "../../commit/prompts/summary-user.md" with { type: "text" };
 import type { CommitSummary } from "../../commit/types";

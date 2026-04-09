@@ -3,9 +3,9 @@
  *
  * Shows how to select a specific model and thinking level.
  */
-import { ThinkingLevel } from "@xcsh/pi-agent-core";
-import { getModel } from "@xcsh/pi-ai";
-import { createAgentSession, discoverAuthStorage, discoverModels } from "@xcsh/pi-coding-agent";
+import { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import { getModel } from "@f5xc-salesdemos/pi-ai";
+import { createAgentSession, discoverAuthStorage, discoverModels } from "@f5xc-salesdemos/xcsh";
 
 // Set up auth storage and model registry
 const authStorage = await discoverAuthStorage();

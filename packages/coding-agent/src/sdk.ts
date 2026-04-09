@@ -5,14 +5,14 @@ import {
 	type AgentTool,
 	INTENT_FIELD,
 	type ThinkingLevel,
-} from "@xcsh/pi-agent-core";
-import type { Message, Model } from "@xcsh/pi-ai";
+} from "@f5xc-salesdemos/pi-agent-core";
+import type { Message, Model } from "@f5xc-salesdemos/pi-ai";
 import {
 	getOpenAICodexTransportDetails,
 	prewarmOpenAICodexResponses,
-} from "@xcsh/pi-ai/providers/openai-codex-responses";
-import { SearchDb } from "@xcsh/pi-natives";
-import type { Component } from "@xcsh/pi-tui";
+} from "@f5xc-salesdemos/pi-ai/providers/openai-codex-responses";
+import { SearchDb } from "@f5xc-salesdemos/pi-natives";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
 import {
 	$env,
 	getAgentDbPath,
@@ -22,7 +22,7 @@ import {
 	logger,
 	postmortem,
 	prompt,
-} from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { AsyncJobManager } from "./async";
 import { createAutoresearchExtension } from "./autoresearch";
@@ -617,7 +617,7 @@ function buildMCPPromptCommands(manager: MCPManager): LoadedCustomCommand[] {
  * const { session } = await createAgentSession();
  *
  * // With explicit model
- * import { getModel } from '@xcsh/pi-ai';
+ * import { getModel } from '@f5xc-salesdemos/pi-ai';
  * const { session } = await createAgentSession({
  *   model: getModel('anthropic', 'claude-opus-4-5'),
  *   thinkingLevel: 'high',

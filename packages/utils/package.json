@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "@xcsh/pi-utils",
+	"name": "@f5xc-salesdemos/pi-utils",
 	"version": "14.0.1",
 	"description": "Shared utilities for pi packages",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
@@ -38,7 +38,7 @@
 	},
 	"devDependencies": {
 		"@types/bun": "^1.3",
-		"@xcsh/pi-natives": "workspace:*"
+		"@f5xc-salesdemos/pi-natives": "workspace:*"
 	},
 	"engines": {
 		"bun": ">=1.3.7"

@@ -1,4 +1,4 @@
-import { $env } from "@xcsh/pi-utils";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import { AzureOpenAI } from "openai";
 import type {
 	Tool as OpenAITool,

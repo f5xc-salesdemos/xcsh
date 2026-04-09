@@ -7,9 +7,9 @@
  */
 import { Database } from "bun:sqlite";
 import path from "node:path";
+import type { AgentTool } from "@f5xc-salesdemos/pi-agent-core";
+import { $env, getAgentDir, logger, VERSION } from "@f5xc-salesdemos/pi-utils";
 import { Type } from "@sinclair/typebox";
-import type { AgentTool } from "@xcsh/pi-agent-core";
-import { $env, getAgentDir, logger, VERSION } from "@xcsh/pi-utils";
 import type { Settings } from "..";
 import type { ToolSession } from "./index";
 

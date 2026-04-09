@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
 import {
 	analyzeAuthError,
 	discoverOAuthEndpoints,
 	extractMcpAuthServerUrl,
-} from "@xcsh/pi-coding-agent/mcp/oauth-discovery";
-import { hookFetch } from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/xcsh/mcp/oauth-discovery";
 
 describe("mcp oauth discovery", () => {
 	it("extracts Mcp-Auth-Server from transport error headers", () => {

@@ -1,5 +1,4 @@
 import * as path from "node:path";
-import { type Static, Type } from "@sinclair/typebox";
 import {
 	type Api,
 	type AssistantMessageEventStream,
@@ -25,8 +24,9 @@ import {
 	type ThinkingConfig,
 	unregisterCustomApis,
 	unregisterOAuthProviders,
-} from "@xcsh/pi-ai";
-import { isRecord, logger } from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/pi-ai";
+import { isRecord, logger } from "@f5xc-salesdemos/pi-utils";
+import { type Static, Type } from "@sinclair/typebox";
 import { type ConfigError, ConfigFile } from "../config";
 import { parseModelString } from "../config/model-resolver";
 import { isValidThemeColor, type ThemeColor } from "../modes/theme/theme";

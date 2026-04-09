@@ -1,6 +1,6 @@
-import type { AgentTool } from "@xcsh/pi-agent-core";
-import type { SearchDb } from "@xcsh/pi-natives";
-import { $env, logger } from "@xcsh/pi-utils";
+import type { AgentTool } from "@f5xc-salesdemos/pi-agent-core";
+import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
+import { $env, logger } from "@f5xc-salesdemos/pi-utils";
 import type { AsyncJobManager } from "../async";
 import type { PromptTemplate } from "../config/prompt-templates";
 import type { Settings } from "../config/settings";

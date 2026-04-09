@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
 import type { TSchema } from "@sinclair/typebox";
-import { hookFetch } from "@xcsh/pi-utils";
 import {
 	buildRequest,
 	parseGeminiCliCredentials,

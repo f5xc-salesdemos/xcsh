@@ -5,7 +5,7 @@
  * Priority: 5 (low, project/user config discovery)
  */
 import * as path from "node:path";
-import { getSSHConfigPath, tryParseJson } from "@xcsh/pi-utils";
+import { getSSHConfigPath, tryParseJson } from "@f5xc-salesdemos/pi-utils";
 import { registerProvider } from "../capability";
 import { readFile } from "../capability/fs";
 import { type SSHHost, sshCapability } from "../capability/ssh";

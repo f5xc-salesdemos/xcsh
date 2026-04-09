@@ -1,7 +1,7 @@
 /**
  * Default themes for TUI tests using chalk
  */
-import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@xcsh/pi-tui";
+import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@f5xc-salesdemos/pi-tui";
 import { Chalk } from "chalk";
 
 const chalk = new Chalk({ level: 3 });

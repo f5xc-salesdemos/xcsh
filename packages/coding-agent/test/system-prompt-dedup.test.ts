@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { createAgentSession } from "@xcsh/pi-coding-agent/sdk";
-import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
-import { buildSystemPrompt, loadProjectContextFiles, loadSystemPromptFiles } from "@xcsh/pi-coding-agent/system-prompt";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { createAgentSession } from "@f5xc-salesdemos/xcsh/sdk";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
+import { buildSystemPrompt, loadProjectContextFiles, loadSystemPromptFiles } from "@f5xc-salesdemos/xcsh/system-prompt";
 
 function escapeRegExp(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

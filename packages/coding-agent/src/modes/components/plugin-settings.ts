@@ -16,7 +16,7 @@ import {
 	SettingsList,
 	Spacer,
 	Text,
-} from "@xcsh/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { PluginManager } from "../../extensibility/plugins/manager";
 import type { InstalledPlugin, PluginSettingSchema } from "../../extensibility/plugins/types";
 import { getSelectListTheme, getSettingsListTheme, theme } from "../../modes/theme/theme";

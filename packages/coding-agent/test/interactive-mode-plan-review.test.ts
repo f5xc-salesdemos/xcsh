@@ -1,11 +1,11 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { Agent } from "@xcsh/pi-agent-core";
-import { _resetSettingsForTest, Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { resolveLocalUrlToPath } from "@xcsh/pi-coding-agent/internal-urls";
-import { initTheme } from "@xcsh/pi-coding-agent/modes/theme/theme";
-import { Text } from "@xcsh/pi-tui";
-import { TempDir } from "@xcsh/pi-utils";
+import { Agent } from "@f5xc-salesdemos/pi-agent-core";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { resolveLocalUrlToPath } from "@f5xc-salesdemos/xcsh/internal-urls";
+import { initTheme } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
 import { ModelRegistry } from "../src/config/model-registry";
 import { InteractiveMode } from "../src/modes/interactive-mode";
 import { AgentSession } from "../src/session/agent-session";

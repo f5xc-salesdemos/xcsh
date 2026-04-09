@@ -1,5 +1,5 @@
-import type { Effort } from "@xcsh/pi-ai";
-import { Container, type SelectItem, SelectList } from "@xcsh/pi-tui";
+import type { Effort } from "@f5xc-salesdemos/pi-ai";
+import { Container, type SelectItem, SelectList } from "@f5xc-salesdemos/pi-tui";
 import { getSelectListTheme } from "../../modes/theme/theme";
 import { getThinkingLevelMetadata } from "../../thinking";
 import { DynamicBorder } from "./dynamic-border";

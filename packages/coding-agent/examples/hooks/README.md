@@ -34,7 +34,7 @@ cp permission-gate.ts ~/.xcsh/agent/hooks/
 See [docs/hooks.md](../../docs/hooks.md) for full documentation.
 
 ```typescript
-import type { HookAPI } from "@xcsh/pi-coding-agent/hooks";
+import type { HookAPI } from "@f5xc-salesdemos/xcsh/hooks";
 
 export default function (pi: HookAPI) {
 	// Subscribe to events

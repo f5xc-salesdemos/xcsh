@@ -37,8 +37,8 @@ import {
 	type SetSessionModeResponse,
 	type Usage,
 } from "@agentclientprotocol/sdk";
-import type { Model } from "@xcsh/pi-ai";
-import { logger, VERSION } from "@xcsh/pi-utils";
+import type { Model } from "@f5xc-salesdemos/pi-ai";
+import { logger, VERSION } from "@f5xc-salesdemos/pi-utils";
 import type { ExtensionUIContext } from "../../extensibility/extensions";
 import { loadSlashCommands } from "../../extensibility/slash-commands";
 import { MCPManager } from "../../mcp/manager";

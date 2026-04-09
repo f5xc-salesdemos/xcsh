@@ -8,9 +8,10 @@
  * 1. Copy this file to ~/.xcsh/agent/extensions/ (legacy: ~/.pi/agent/extensions/) or your project's .xcsh/extensions/
  * 2. Use /tools to open the tool selector
  */
-import type { ExtensionAPI, ExtensionContext } from "@xcsh/pi-coding-agent";
-import { getSettingsListTheme } from "@xcsh/pi-coding-agent";
-import { Container, type SettingItem, SettingsList } from "@xcsh/pi-tui";
+
+import { Container, type SettingItem, SettingsList } from "@f5xc-salesdemos/pi-tui";
+import type { ExtensionAPI, ExtensionContext } from "@f5xc-salesdemos/xcsh";
+import { getSettingsListTheme } from "@f5xc-salesdemos/xcsh";
 
 // State persisted to session
 interface ToolsState {
