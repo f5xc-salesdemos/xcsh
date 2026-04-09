@@ -271,10 +271,14 @@ async function cmdRelease(version: string): Promise<void> {
 	await updateChangelogsForRelease(version);
 	console.log();
 
-	// 6. Run checks
-	console.log("Running checks...");
-	await $`bun run check`;
-	console.log();
+	// 6. Run checks (skip in CI — already validated by prerequisite jobs)
+	if (process.env.CI) {
+		console.log("Skipping checks (CI already validated).\n");
+	} else {
+		console.log("Running checks...");
+		await $`bun run check`;
+		console.log();
+	}
 
 	// 7. Commit and tag
 	console.log("Committing and tagging...");
