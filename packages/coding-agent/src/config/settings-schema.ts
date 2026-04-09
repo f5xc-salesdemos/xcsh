@@ -238,7 +238,7 @@ export const SETTINGS_SCHEMA = {
 	// Theme
 	"theme.dark": {
 		type: "string",
-		default: "titanium",
+		default: "xcsh-dark",
 		ui: {
 			tab: "appearance",
 			label: "Dark Theme",
@@ -249,7 +249,7 @@ export const SETTINGS_SCHEMA = {
 
 	"theme.light": {
 		type: "string",
-		default: "light",
+		default: "xcsh-light",
 		ui: {
 			tab: "appearance",
 			label: "Light Theme",

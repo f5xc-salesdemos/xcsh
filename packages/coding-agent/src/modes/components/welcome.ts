@@ -14,7 +14,7 @@ export interface LspServerInfo {
 }
 
 /**
- * Premium welcome screen with block-based OMP logo and two-column layout.
+ * Premium welcome screen with F5 XCSH logo and two-column layout.
  */
 export class WelcomeComponent implements Component {
 	constructor(
@@ -42,14 +42,14 @@ export class WelcomeComponent implements Component {
 
 	render(termWidth: number): string[] {
 		// Box dimensions - responsive with max width and small-terminal support
-		const maxWidth = 100;
+		const maxWidth = 120;
 		const boxWidth = Math.min(maxWidth, Math.max(0, termWidth - 2));
 		if (boxWidth < 4) {
 			return [];
 		}
 		const dualContentWidth = boxWidth - 3; // 3 = │ + │ + │
-		const preferredLeftCol = 26;
-		const minLeftCol = 14; // logo width
+		const preferredLeftCol = 50;
+		const minLeftCol = 48; // F5 logo width (46 chars + padding)
 		const minRightCol = 20;
 		const leftMinContentWidth = Math.max(
 			minLeftCol,
@@ -67,23 +67,40 @@ export class WelcomeComponent implements Component {
 		const leftCol = showRightColumn ? dualLeftCol : boxWidth - 2;
 		const rightCol = showRightColumn ? dualRightCol : 0;
 
-		// Block-based OMP logo (gradient: magenta → cyan)
+		// F5 XCSH globe logo
 		// biome-ignore format: preserve ASCII art layout
-		const piLogo = ["▀████████████▀", " ╘███    ███  ", "  ███    ███  ", "  ███    ███  ", " ▄███▄  ▄███▄ "];
-
-		// Apply gradient to logo
-		const logoColored = piLogo.map(line => this.#gradientLine(line));
-
-		// Left column - centered content
-		const leftLines = [
-			"",
-			this.#centerText(theme.bold("Welcome back!"), leftCol),
-			"",
-			...logoColored.map(l => this.#centerText(l, leftCol)),
-			"",
-			this.#centerText(theme.fg("muted", this.modelName), leftCol),
-			this.#centerText(theme.fg("borderMuted", this.providerName), leftCol),
+		const f5Logo = [
+			"                   ________",
+			"              (▒▒▒▒▓▓▓▓▓▓▓▓▒▒▒▒)",
+			"         (▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒)",
+			"      (▒▒▓▓▓▓██████████▓▓▓▓█████████████)",
+			"    (▒▓▓▓▓██████▒▒▒▒▒███▓▓██████████████▒)",
+			"   (▒▓▓▓▓██████▒▓▓▓▓▓▒▒▒▓██▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒)",
+			"  (▒▓▓▓▓▓██████▓▓▓▓▓▓▓▓▓██▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒)",
+			" (▒▓▓███████████████▓▓▓▓█████████████▓▓▓▓▓▓▒)",
+			"(▒▓▓▓▒▒▒███████▒▒▒▒▒▓▓▓████████████████▓▓▓▓▓▒)",
+			"|▒▓▓▓▓▓▓▒██████▓▓▓▓▓▓▓████████████████████▓▓▒|",
+			"|▒▓▓▓▓▓▓▓██████▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒██████████▓▒|",
+			"(▒▓▓▓▓▓▓▓██████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒████████▒▒)",
+			" (▒▓▓▓▓▓▓██████▓▓▓▓▓▓▓███▓▓▓▓▓▓▓▓▓▓▒▒▒████▒▒)",
+			"  (▒▓▓▓▓▓██████▓▓▓▓▓▓█████▓▓▓▓▓▓▓▓▓▓▓▓███▒▒)",
+			"   (▒▒██████████▓▓▓▓▓▒██████▓▓▓▓▓▓▓▓███▒▒▒)",
+			"    (▒▒▒▒▒██████████▓▓▒▒█████████████▒▒▓▒)",
+			"      (▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒)",
+			"         (▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒)",
+			"              (▒▒▒▒▓▓▓▓▓▓▓▓▒▒▒▒)",
 		];
+
+		// Apply F5 branding colors to logo
+		const logoColored = f5Logo.map((line) => this.#f5ColorLine(line));
+
+		// Center the logo as a block (widest line = 46 chars), preserving internal alignment
+		const logoMaxWidth = 46;
+		const logoBlockPad = Math.max(0, Math.floor((leftCol - logoMaxWidth) / 2));
+		const logoPadStr = padding(logoBlockPad);
+
+		// Left column - logo only
+		const leftLines = [...logoColored.map((l) => logoPadStr + l), ""];
 
 		// Right column separator
 		const separatorWidth = Math.max(0, rightCol - 2); // padding on each side
@@ -135,28 +152,29 @@ export class WelcomeComponent implements Component {
 			"",
 		];
 
-		// Border characters (dim)
+		// Border characters (themed)
+		const border = (s: string) => theme.fg("borderMuted", s);
 		const hChar = theme.boxRound.horizontal;
-		const h = theme.fg("dim", hChar);
-		const v = theme.fg("dim", theme.boxRound.vertical);
-		const tl = theme.fg("dim", theme.boxRound.topLeft);
-		const tr = theme.fg("dim", theme.boxRound.topRight);
-		const bl = theme.fg("dim", theme.boxRound.bottomLeft);
-		const br = theme.fg("dim", theme.boxRound.bottomRight);
+		const h = border(hChar);
+		const v = border(theme.boxRound.vertical);
+		const tl = border(theme.boxRound.topLeft);
+		const tr = border(theme.boxRound.topRight);
+		const bl = border(theme.boxRound.bottomLeft);
+		const br = border(theme.boxRound.bottomRight);
 
 		const lines: string[] = [];
 
 		// Top border with embedded title
 		const title = ` ${APP_NAME} v${this.version} `;
 		const titlePrefixRaw = hChar.repeat(3);
-		const titleStyled = theme.fg("dim", titlePrefixRaw) + theme.fg("muted", title);
+		const titleStyled = border(titlePrefixRaw) + theme.bold(theme.fg("text", title));
 		const titleVisLen = visibleWidth(titlePrefixRaw) + visibleWidth(title);
 		const titleSpace = boxWidth - 2;
 		if (titleVisLen >= titleSpace) {
 			lines.push(tl + truncateToWidth(titleStyled, titleSpace) + tr);
 		} else {
 			const afterTitle = titleSpace - titleVisLen;
-			lines.push(tl + titleStyled + theme.fg("dim", hChar.repeat(afterTitle)) + tr);
+			lines.push(tl + titleStyled + border(hChar.repeat(afterTitle)) + tr);
 		}
 
 		// Content rows
@@ -172,7 +190,7 @@ export class WelcomeComponent implements Component {
 		}
 		// Bottom border
 		if (showRightColumn) {
-			lines.push(bl + h.repeat(leftCol) + theme.fg("dim", theme.boxSharp.teeUp) + h.repeat(rightCol) + br);
+			lines.push(bl + h.repeat(leftCol) + border(theme.boxSharp.teeUp) + h.repeat(rightCol) + br);
 		} else {
 			lines.push(bl + h.repeat(leftCol) + br);
 		}
@@ -180,40 +198,22 @@ export class WelcomeComponent implements Component {
 		return lines;
 	}
 
-	/** Center text within a given width */
-	#centerText(text: string, width: number): string {
-		const visLen = visibleWidth(text);
-		if (visLen >= width) {
-			return truncateToWidth(text, width);
-		}
-		const leftPad = Math.floor((width - visLen) / 2);
-		const rightPad = width - visLen - leftPad;
-		return padding(leftPad) + text + padding(rightPad);
-	}
-
-	/** Apply magenta→cyan gradient to a string */
-	#gradientLine(line: string): string {
-		const colors = [
-			"\x1b[38;5;199m", // bright magenta
-			"\x1b[38;5;171m", // magenta-purple
-			"\x1b[38;5;135m", // purple
-			"\x1b[38;5;99m", // purple-blue
-			"\x1b[38;5;75m", // cyan-blue
-			"\x1b[38;5;51m", // bright cyan
-		];
+	/** Apply F5 branding colors: ▓→red solid, █→bold white, ▒→red, outlines→red */
+	#f5ColorLine(line: string): string {
+		const red = "\x1b[38;5;160m"; // F5 red (#ca260a)
+		const white = "\x1b[1;37m"; // bold white
 		const reset = "\x1b[0m";
 
 		let result = "";
-		let colorIdx = 0;
-		const step = Math.max(1, Math.floor(line.length / colors.length));
-
-		for (let i = 0; i < line.length; i++) {
-			if (i > 0 && i % step === 0 && colorIdx < colors.length - 1) {
-				colorIdx++;
-			}
-			const char = line[i];
-			if (char !== " ") {
-				result += colors[colorIdx] + char + reset;
+		for (const char of line) {
+			if (char === "▓") {
+				result += `${red}\u2588${reset}`; // render as solid block in red
+			} else if (char === "█") {
+				result += `${white}\u2588${reset}`; // solid block in bold white
+			} else if (char === "▒") {
+				result += `${red}\u2592${reset}`; // medium shade in red
+			} else if ("()|_".includes(char)) {
+				result += `${red}${char}${reset}`; // outlines in red
 			} else {
 				result += char;
 			}
