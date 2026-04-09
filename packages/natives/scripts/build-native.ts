@@ -173,6 +173,14 @@ async function resolveBuiltAddonPath(canonicalFilename: string): Promise<string>
 		return path.join(nativeDir, canonicalFilename);
 	}
 
+	// On platforms without an environment tag in their Rust triple (e.g. macOS
+	// x86_64-apple-darwin), napi-rs emits the untagged base filename even when
+	// a variant build is requested.  Accept it as a rename source.
+	const baseFilename = `pi_natives.${targetPlatform}-${targetArch}.node`;
+	if (canonicalFilename !== baseFilename && entries.includes(baseFilename)) {
+		return path.join(nativeDir, baseFilename);
+	}
+
 	const generatedCandidates = entries.filter(entry => {
 		if (!entry.startsWith(`pi_natives.${targetPlatform}-${targetArch}`) || !entry.endsWith(".node")) {
 			return false;
