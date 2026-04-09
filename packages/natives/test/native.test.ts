@@ -485,4 +485,34 @@ describe("pi-natives", () => {
 			});
 		});
 	});
+
+	describe("native addon symbols", () => {
+		it("should have no undefined tree-sitter external scanner symbols", async () => {
+			if (process.platform === "win32") {
+				return; // nm not available on Windows
+			}
+
+			const nativeDir = path.join(import.meta.dir, "..", "native");
+			const platformTag = `${process.platform}-${process.arch}`;
+
+			const entries = await fs.readdir(nativeDir);
+			const nodeFiles = entries
+				.filter((e) => e.startsWith("pi_natives.") && e.includes(platformTag) && e.endsWith(".node"))
+				.map((e) => path.join(nativeDir, e));
+
+			expect(nodeFiles.length).toBeGreaterThan(0);
+
+			for (const nodeFile of nodeFiles) {
+				const nmProc = Bun.spawn(["nm", "-D", nodeFile], { stdout: "pipe", stderr: "pipe" });
+				const output = await new Response(nmProc.stdout).text();
+				await nmProc.exited;
+
+				const undefinedScannerSymbols = output
+					.split("\n")
+					.filter((line) => /\bU\b.*tree_sitter_\w+_external_scanner_/.test(line));
+
+				expect(undefinedScannerSymbols).toEqual([]);
+			}
+		});
+	});
 });
