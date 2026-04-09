@@ -2704,7 +2704,6 @@ dependencies = [
  "brush-core",
  "bytes",
  "bytes-utils",
- "cc",
  "clap",
  "dashmap",
  "fff-grep",
@@ -3977,8 +3976,6 @@ dependencies = [
 [[package]]
 name = "tree-sitter-glimmer"
 version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "295346943475457f55688342f14675e2a54ba3e8f3d224f11d10477d99e70330"
 dependencies = [
  "cc",
  "tree-sitter",

@@ -37,6 +37,37 @@ async function main(): Promise<void> {
 	for (const platform of expectedAddons) {
 		console.log(`OK pi_natives.${platform}.node`);
 	}
+
+	// Verify no undefined tree-sitter external scanner symbols in ELF/Mach-O addons.
+	// Windows DLLs use a different linking model and are not affected by this class of bug.
+	const nonWindowsAddons = expectedAddons.filter((p) => !p.startsWith("win32-"));
+	let symbolErrors = 0;
+
+	for (const platform of nonWindowsAddons) {
+		const addonPath = path.join(nativeDir, `pi_natives.${platform}.node`);
+		const nmProc = Bun.spawn(["nm", "-D", addonPath], { stdout: "pipe", stderr: "pipe" });
+		const output = await new Response(nmProc.stdout).text();
+		await nmProc.exited;
+
+		const undefinedScannerSymbols = output
+			.split("\n")
+			.filter((line) => /\bU\b.*tree_sitter_\w+_external_scanner_/.test(line));
+
+		if (undefinedScannerSymbols.length > 0) {
+			console.error(`SYMBOL ERROR pi_natives.${platform}.node: ${undefinedScannerSymbols.length} undefined tree-sitter scanner symbol(s)`);
+			for (const sym of undefinedScannerSymbols) {
+				console.error(`  ${sym.trim()}`);
+			}
+			symbolErrors++;
+		} else {
+			console.log(`SYMBOLS OK pi_natives.${platform}.node`);
+		}
+	}
+
+	if (symbolErrors > 0) {
+		console.error(`\n${symbolErrors} addon(s) have undefined tree-sitter scanner symbols`);
+		process.exit(1);
+	}
 }
 
 await main();
