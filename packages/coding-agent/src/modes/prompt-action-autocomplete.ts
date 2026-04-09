@@ -1,11 +1,11 @@
-import type { SearchDb } from "@oh-my-pi/pi-natives";
+import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
 import {
 	type AutocompleteItem,
 	type AutocompleteProvider,
 	CombinedAutocompleteProvider,
 	getKeybindings,
 	type SlashCommand,
-} from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { formatKeyHints, type KeybindingsManager } from "../config/keybindings";
 
 interface PromptActionDefinition {

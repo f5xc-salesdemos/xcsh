@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { Agent, type AgentMessage } from "@oh-my-pi/pi-agent-core";
-import { type AssistantMessage, getBundledModel, type Message } from "@oh-my-pi/pi-ai";
-import { inferCopilotInitiator } from "@oh-my-pi/pi-ai/providers/github-copilot-headers";
-import { AssistantMessageEventStream } from "@oh-my-pi/pi-ai/utils/event-stream";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import type { ExtensionRunner } from "@oh-my-pi/pi-coding-agent/extensibility/extensions";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { convertToLlm } from "@oh-my-pi/pi-coding-agent/session/messages";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Agent, type AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import { type AssistantMessage, getBundledModel, type Message } from "@f5xc-salesdemos/pi-ai";
+import { inferCopilotInitiator } from "@f5xc-salesdemos/pi-ai/providers/github-copilot-headers";
+import { AssistantMessageEventStream } from "@f5xc-salesdemos/pi-ai/utils/event-stream";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import type { ExtensionRunner } from "@f5xc-salesdemos/xcsh/extensibility/extensions";
+import { AgentSession } from "@f5xc-salesdemos/xcsh/session/agent-session";
+import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
+import { convertToLlm } from "@f5xc-salesdemos/xcsh/session/messages";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 
 class MockAssistantStream extends AssistantMessageEventStream {}
 

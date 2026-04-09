@@ -1,5 +1,5 @@
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Container, Text } from "@oh-my-pi/pi-tui";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Container, Text } from "@f5xc-salesdemos/pi-tui";
 import { theme } from "../../modes/theme/theme";
 import { shortenPath } from "../../tools/render-utils";
 import type { ToolExecutionHandle } from "./tool-execution";

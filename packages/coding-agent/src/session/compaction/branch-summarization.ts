@@ -4,10 +4,10 @@
  * When navigating to a different point in the session tree, this generates
  * a summary of the branch being left so context isn't lost.
  */
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { Model } from "@oh-my-pi/pi-ai";
-import { completeSimple } from "@oh-my-pi/pi-ai";
-import { prompt } from "@oh-my-pi/pi-utils";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import type { Model } from "@f5xc-salesdemos/pi-ai";
+import { completeSimple } from "@f5xc-salesdemos/pi-ai";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import branchSummaryPrompt from "../../prompts/compaction/branch-summary.md" with { type: "text" };
 import branchSummaryPreamble from "../../prompts/compaction/branch-summary-preamble.md" with { type: "text" };
 import {

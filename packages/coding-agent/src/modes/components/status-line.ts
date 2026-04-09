@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
-import type { AssistantMessage } from "@oh-my-pi/pi-ai";
-import { type Component, truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
-import { formatCount, getProjectDir } from "@oh-my-pi/pi-utils";
+import type { AssistantMessage } from "@f5xc-salesdemos/pi-ai";
+import { type Component, truncateToWidth, visibleWidth } from "@f5xc-salesdemos/pi-tui";
+import { formatCount, getProjectDir } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import { settings } from "../../config/settings";
 import type { StatusLinePreset, StatusLineSegmentId, StatusLineSeparatorStyle } from "../../config/settings-schema";

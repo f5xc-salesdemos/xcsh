@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message, UsageReport } from "@oh-my-pi/pi-ai";
-import type { Component, Container, Loader, Spacer, Text, TUI } from "@oh-my-pi/pi-tui";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import type { AssistantMessage, ImageContent, Message, UsageReport } from "@f5xc-salesdemos/pi-ai";
+import type { Component, Container, Loader, Spacer, Text, TUI } from "@f5xc-salesdemos/pi-tui";
 import type { KeybindingsManager } from "../config/keybindings";
 import type { Settings } from "../config/settings";
 import type {

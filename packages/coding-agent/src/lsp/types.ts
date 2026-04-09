@@ -1,5 +1,5 @@
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import type { ptree } from "@oh-my-pi/pi-utils";
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import type { ptree } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 
 // =============================================================================

@@ -5,14 +5,14 @@ import {
 	type AgentTool,
 	INTENT_FIELD,
 	type ThinkingLevel,
-} from "@oh-my-pi/pi-agent-core";
-import type { Message, Model } from "@oh-my-pi/pi-ai";
+} from "@f5xc-salesdemos/pi-agent-core";
+import type { Message, Model } from "@f5xc-salesdemos/pi-ai";
 import {
 	getOpenAICodexTransportDetails,
 	prewarmOpenAICodexResponses,
-} from "@oh-my-pi/pi-ai/providers/openai-codex-responses";
-import { SearchDb } from "@oh-my-pi/pi-natives";
-import type { Component } from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-ai/providers/openai-codex-responses";
+import { SearchDb } from "@f5xc-salesdemos/pi-natives";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
 import {
 	$env,
 	$flag,
@@ -23,7 +23,7 @@ import {
 	logger,
 	postmortem,
 	prompt,
-} from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { AsyncJobManager } from "./async";
 import { createAutoresearchExtension } from "./autoresearch";
@@ -139,7 +139,7 @@ import { buildNamedToolChoice } from "./utils/tool-choice";
 export interface CreateAgentSessionOptions {
 	/** Working directory for project-local discovery. Default: getProjectDir() */
 	cwd?: string;
-	/** Global config directory. Default: ~/.omp/agent */
+	/** Global config directory. Default: ~/.xcsh/agent */
 	agentDir?: string;
 	/** Spawns to allow. Default: "*" */
 	spawns?: string;
@@ -190,7 +190,7 @@ export interface CreateAgentSessionOptions {
 	rules?: Rule[];
 	/** Context files (AGENTS.md content). Default: discovered walking up from cwd */
 	contextFiles?: Array<{ path: string; content: string }>;
-	/** Prompt templates. Default: discovered from cwd/.omp/prompts/ + agentDir/prompts/ */
+	/** Prompt templates. Default: discovered from cwd/.xcsh/prompts/ + agentDir/prompts/ */
 	promptTemplates?: PromptTemplate[];
 	/** File-based slash commands. Default: discovered from commands/ directories */
 	slashCommands?: FileSlashCommand[];
@@ -619,7 +619,7 @@ function buildMCPPromptCommands(manager: MCPManager): LoadedCustomCommand[] {
  * const { session } = await createAgentSession();
  *
  * // With explicit model
- * import { getModel } from '@oh-my-pi/pi-ai';
+ * import { getModel } from '@f5xc-salesdemos/pi-ai';
  * const { session } = await createAgentSession({
  *   model: getModel('anthropic', 'claude-opus-4-5'),
  *   thinkingLevel: 'high',
@@ -1046,7 +1046,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		customTools.push(...getSearchTools());
 	}
 
-	// Discover and load custom tools from .omp/tools/, .claude/tools/, etc.
+	// Discover and load custom tools from .xcsh/tools/, .claude/tools/, etc.
 	const builtInToolNames = builtinTools.map(t => t.name);
 	const discoveredCustomTools = await logger.time(
 		"discoverAndLoadCustomTools",

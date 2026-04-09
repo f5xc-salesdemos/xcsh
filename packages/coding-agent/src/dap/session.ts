@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { logger, ptree } from "@oh-my-pi/pi-utils";
+import { logger, ptree } from "@f5xc-salesdemos/pi-utils";
 import { NON_INTERACTIVE_ENV } from "../exec/non-interactive-env";
 import { DapClient } from "./client";
 import type {
@@ -975,7 +975,7 @@ export class DapSessionManager {
 
 	#buildInitializeArguments(adapter: DapResolvedAdapter): DapInitializeArguments {
 		return {
-			clientID: "omp",
+			clientID: "xcsh",
 			clientName: "Oh My Pi",
 			adapterID: adapter.name,
 			locale: "en-US",

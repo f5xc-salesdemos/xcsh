@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { buildSystemPrompt } from "@oh-my-pi/pi-coding-agent/system-prompt";
-import { prompt } from "@oh-my-pi/pi-utils";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
+import { buildSystemPrompt } from "@f5xc-salesdemos/xcsh/system-prompt";
 import Handlebars from "handlebars";
 
 const baseGitContext = {

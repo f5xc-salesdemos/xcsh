@@ -1,10 +1,10 @@
 /**
  * Jupyter CLI command handlers.
  *
- * Handles `omp jupyter` subcommand for managing the shared Python gateway.
+ * Handles `xcsh jupyter` subcommand for managing the shared Python gateway.
  */
 
-import { APP_NAME } from "@oh-my-pi/pi-utils";
+import { APP_NAME } from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { getGatewayStatus, shutdownSharedGateway } from "../ipy/gateway-coordinator";
 

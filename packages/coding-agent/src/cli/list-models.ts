@@ -1,8 +1,8 @@
 /**
  * List available models with optional fuzzy search
  */
-import { type Api, getSupportedEfforts, type Model } from "@oh-my-pi/pi-ai";
-import { formatNumber } from "@oh-my-pi/pi-utils";
+import { type Api, getSupportedEfforts, type Model } from "@f5xc-salesdemos/pi-ai";
+import { formatNumber } from "@f5xc-salesdemos/pi-utils";
 import type { ModelRegistry } from "../config/model-registry";
 import { fuzzyFilter } from "../utils/fuzzy";
 

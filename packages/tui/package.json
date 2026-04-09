@@ -1,9 +1,9 @@
 {
 	"type": "module",
-	"name": "@oh-my-pi/pi-tui",
+	"name": "@f5xc-salesdemos/pi-tui",
 	"version": "14.0.4",
 	"description": "Terminal User Interface library with differential rendering for efficient text-based applications",
-	"homepage": "https://github.com/can1357/oh-my-pi",
+	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",
 	"contributors": [
 		"Mario Zechner"
@@ -11,11 +11,11 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/f5xc-salesdemos/xcsh.git",
 		"directory": "packages/tui"
 	},
 	"bugs": {
-		"url": "https://github.com/can1357/oh-my-pi/issues"
+		"url": "https://github.com/f5xc-salesdemos/xcsh/issues"
 	},
 	"keywords": [
 		"tui",
@@ -37,8 +37,8 @@
 		"fmt": "biome format --write ."
 	},
 	"dependencies": {
-		"@oh-my-pi/pi-natives": "workspace:*",
-		"@oh-my-pi/pi-utils": "workspace:*",
+		"@f5xc-salesdemos/pi-natives": "workspace:*",
+		"@f5xc-salesdemos/pi-utils": "workspace:*",
 		"marked": "^17.0"
 	},
 	"devDependencies": {

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { resetPreludeDocsCache, warmPythonEnvironment } from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import { getPythonToolDescription, PythonTool } from "@oh-my-pi/pi-coding-agent/tools/python";
-import { $which, getProjectDir } from "@oh-my-pi/pi-utils";
+import { $which, getProjectDir } from "@f5xc-salesdemos/pi-utils";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { resetPreludeDocsCache, warmPythonEnvironment } from "@f5xc-salesdemos/xcsh/ipy/executor";
+import { getPythonToolDescription, PythonTool } from "@f5xc-salesdemos/xcsh/tools/python";
 
 const resolvePythonPath = (): string | null => {
 	const venvPath = Bun.env.VIRTUAL_ENV;

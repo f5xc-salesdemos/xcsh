@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { RenderResultOptions } from "@oh-my-pi/pi-agent-core";
-import { getServersForFile, loadConfig } from "@oh-my-pi/pi-coding-agent/lsp/config";
-import { renderCall, renderResult } from "@oh-my-pi/pi-coding-agent/lsp/render";
-import type { CodeAction, SymbolInformation } from "@oh-my-pi/pi-coding-agent/lsp/types";
+import type { RenderResultOptions } from "@f5xc-salesdemos/pi-agent-core";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
+import * as piUtils from "@f5xc-salesdemos/pi-utils";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { getServersForFile, loadConfig } from "@f5xc-salesdemos/xcsh/lsp/config";
+import { renderCall, renderResult } from "@f5xc-salesdemos/xcsh/lsp/render";
+import type { CodeAction, SymbolInformation } from "@f5xc-salesdemos/xcsh/lsp/types";
 import {
 	applyCodeAction,
 	collectGlobMatches,
@@ -13,12 +16,9 @@ import {
 	filterWorkspaceSymbols,
 	hasGlobPattern,
 	resolveSymbolColumn,
-} from "@oh-my-pi/pi-coding-agent/lsp/utils";
-import { getThemeByName } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import { clampTimeout } from "@oh-my-pi/pi-coding-agent/tools/tool-timeouts";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
-import * as piUtils from "@oh-my-pi/pi-utils";
-import { TempDir } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/xcsh/lsp/utils";
+import { getThemeByName } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
+import { clampTimeout } from "@f5xc-salesdemos/xcsh/tools/tool-timeouts";
 
 describe("lsp regressions", () => {
 	it("detects bracket-style glob patterns", () => {
@@ -34,7 +34,7 @@ describe("lsp regressions", () => {
 	});
 
 	it("limits glob collection to avoid large diagnostic stalls", async () => {
-		const tempDir = TempDir.createSync("@omp-lsp-glob-");
+		const tempDir = TempDir.createSync("@xcsh-lsp-glob-");
 		try {
 			await Promise.all([
 				Bun.write(`${tempDir.path()}/a.ts`, "export const a = 1;\n"),
@@ -50,7 +50,7 @@ describe("lsp regressions", () => {
 	});
 
 	it("resolves the requested symbol occurrence on a line", async () => {
-		const tempDir = TempDir.createSync("@omp-lsp-regression-");
+		const tempDir = TempDir.createSync("@xcsh-lsp-regression-");
 		try {
 			const filePath = `${tempDir.path()}/symbol.ts`;
 			await Bun.write(filePath, "foo(bar(foo));\n");
@@ -63,7 +63,7 @@ describe("lsp regressions", () => {
 	});
 
 	it("throws when symbol does not exist on the target line", async () => {
-		const tempDir = TempDir.createSync("@omp-lsp-missing-symbol-");
+		const tempDir = TempDir.createSync("@xcsh-lsp-missing-symbol-");
 		try {
 			const filePath = `${tempDir.path()}/symbol.ts`;
 			await Bun.write(filePath, "winston.info('x');\n");
@@ -77,7 +77,7 @@ describe("lsp regressions", () => {
 	});
 
 	it("throws when occurrence is out of bounds", async () => {
-		const tempDir = TempDir.createSync("@omp-lsp-occurrence-");
+		const tempDir = TempDir.createSync("@xcsh-lsp-occurrence-");
 		try {
 			const filePath = `${tempDir.path()}/symbol.ts`;
 			await Bun.write(filePath, "foo();\n");
@@ -254,7 +254,7 @@ describe("lsp regressions", () => {
 	});
 
 	it("detects tlaplus files for LSP startup and language ids", async () => {
-		const tempDir = TempDir.createSync("@omp-lsp-tlaplus-");
+		const tempDir = TempDir.createSync("@xcsh-lsp-tlaplus-");
 		const specPath = path.join(tempDir.path(), "Spec.tla");
 		const aliasPath = path.join(tempDir.path(), "Spec.tlaplus");
 

@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentEvent, AgentMessage } from "@oh-my-pi/pi-agent-core";
+import type { AgentEvent, AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
 import { RpcClient } from "../src/modes/rpc/rpc-client";
 import {
 	type BranchSummaryEntry,
@@ -34,7 +34,7 @@ function getLastAssistant(messages: AgentMessage[]): Extract<AgentMessage, { rol
 }
 
 async function main() {
-	const sessionDir = path.join(os.tmpdir(), `omp-checkpoint-rpc-qa-${Date.now()}`);
+	const sessionDir = path.join(os.tmpdir(), `xcsh-checkpoint-rpc-qa-${Date.now()}`);
 	const projectRoot = path.join(import.meta.dir, "..");
 	const client = new RpcClient({
 		cliPath: path.join(projectRoot, "src/cli.ts"),

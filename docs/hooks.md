@@ -25,7 +25,7 @@ So this file documents the hook subsystem implementation itself (types/loader/ru
 A hook module must default-export a factory:
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@f5xc-salesdemos/xcsh/hooks";
 
 export default function hook(pi: HookAPI): void {
 	pi.on("tool_call", async (event, ctx) => {
@@ -65,7 +65,7 @@ The factory can:
 
 ### Important legacy mismatch
 
-Discovery providers for `hookCapability` still model pre/post shell-style hook files (for example `.claude/hooks/pre/*`, `.omp/.../hooks/pre/*`).
+Discovery providers for `hookCapability` still model pre/post shell-style hook files (for example `.claude/hooks/pre/*`, `.xcsh/.../hooks/pre/*`).
 
 The hook loader here uses dynamic module import and requires a default JS/TS hook factory. If a discovered hook path is not importable as a module, load fails and is reported in `LoadHooksResult.errors`.
 
@@ -252,7 +252,7 @@ Hook status text set via `ctx.ui.setStatus(key, text)` is:
 ### Block unsafe bash commands
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@f5xc-salesdemos/xcsh/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("tool_call", async (event, ctx) => {
@@ -270,7 +270,7 @@ export default function (pi: HookAPI): void {
 ### Redact tool output on post-execution
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@f5xc-salesdemos/xcsh/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("tool_result", async event => {
@@ -289,7 +289,7 @@ export default function (pi: HookAPI): void {
 ### Modify model context per LLM call
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@f5xc-salesdemos/xcsh/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.on("context", async event => {
@@ -302,7 +302,7 @@ export default function (pi: HookAPI): void {
 ### Register slash command with command-safe context methods
 
 ```ts
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@f5xc-salesdemos/xcsh/hooks";
 
 export default function (pi: HookAPI): void {
 	pi.registerCommand("handoff", {

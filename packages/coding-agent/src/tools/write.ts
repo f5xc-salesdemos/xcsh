@@ -6,10 +6,10 @@ import type {
 	AgentToolResult,
 	AgentToolUpdateCallback,
 	ToolCallContext,
-} from "@oh-my-pi/pi-agent-core";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { isEnoent, prompt, untilAborted } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-agent-core";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { isEnoent, prompt, untilAborted } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { unzipSync, zipSync } from "fflate";
 import { stripHashlinePrefixes } from "../edit";

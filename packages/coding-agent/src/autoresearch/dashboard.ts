@@ -1,4 +1,4 @@
-import { matchesKey, replaceTabs, Text, truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
+import { matchesKey, replaceTabs, Text, truncateToWidth, visibleWidth } from "@f5xc-salesdemos/pi-tui";
 import type { Theme } from "../modes/theme/theme";
 import { formatElapsed, formatNum, isBetter } from "./helpers";
 import { currentResults, findBaselineMetric, findBaselineRunNumber, findBaselineSecondary } from "./state";

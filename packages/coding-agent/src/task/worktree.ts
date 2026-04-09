@@ -2,8 +2,8 @@ import type { Dirent } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { projfsOverlayStart, projfsOverlayStop } from "@oh-my-pi/pi-natives";
-import { $which, getWorktreeDir, isEnoent, logger, Snowflake } from "@oh-my-pi/pi-utils";
+import { projfsOverlayStart, projfsOverlayStop } from "@f5xc-salesdemos/pi-natives";
+import { $which, getWorktreeDir, isEnoent, logger, Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import * as git from "../utils/git";
 
@@ -154,7 +154,7 @@ export async function applyBaseline(worktreeDir: string, baseline: WorktreeBasel
 		// baseline untracked files in the diff-tree output.
 		if ((await git.status(nestedDir)).trim().length > 0) {
 			await git.stage.files(nestedDir);
-			await git.commit(nestedDir, "omp-baseline", { allowEmpty: true });
+			await git.commit(nestedDir, "xcsh-baseline", { allowEmpty: true });
 			// Update baseline to reflect the committed state — prevents double-apply
 			// in captureRepoDeltaPatch's temp-index path
 			entry.baseline.headCommit = (await git.head.sha(nestedDir)) ?? "";
@@ -209,7 +209,7 @@ async function captureRepoDeltaPatch(repoDir: string, rb: RepoBaseline): Promise
 	}
 
 	// HEAD unchanged: use temp index approach (subtracts baseline from delta)
-	const tempIndex = path.join(os.tmpdir(), `omp-task-index-${Snowflake.next()}`);
+	const tempIndex = path.join(os.tmpdir(), `xcsh-task-index-${Snowflake.next()}`);
 	try {
 		await git.readTree(repoDir, rb.headCommit, {
 			env: { GIT_INDEX_FILE: tempIndex },
@@ -460,13 +460,13 @@ export async function commitToBranch(
 	if (!rootPatch.trim() && nestedPatches.length === 0) return null;
 
 	const repoRoot = baseline.root.repoRoot;
-	const branchName = `omp/task/${taskId}`;
+	const branchName = `xcsh/task/${taskId}`;
 	const fallbackMessage = description || taskId;
 
 	// Only create a branch if the root repo has changes
 	if (rootPatch.trim()) {
 		await git.branch.create(repoRoot, branchName);
-		const tmpDir = path.join(os.tmpdir(), `omp-branch-${Snowflake.next()}`);
+		const tmpDir = path.join(os.tmpdir(), `xcsh-branch-${Snowflake.next()}`);
 		try {
 			await git.worktree.add(repoRoot, tmpDir, branchName);
 			try {
@@ -517,7 +517,7 @@ export async function mergeTaskBranches(
 
 	// Stash dirty working tree so cherry-pick can operate on a clean HEAD.
 	// Without this, cherry-pick refuses to run when uncommitted changes exist.
-	const didStash = await git.stash.push(repoRoot, "omp-task-merge");
+	const didStash = await git.stash.push(repoRoot, "xcsh-task-merge");
 
 	let conflictResult: MergeBranchResult | undefined;
 

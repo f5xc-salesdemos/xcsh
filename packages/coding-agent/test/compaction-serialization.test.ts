@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { Message } from "@oh-my-pi/pi-ai";
+import type { Message } from "@f5xc-salesdemos/pi-ai";
 import { serializeConversation } from "../src/session/compaction/utils";
 
 describe("serializeConversation", () => {

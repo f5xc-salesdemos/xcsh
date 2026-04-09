@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { Agent, type AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { Message, SimpleStreamOptions } from "@oh-my-pi/pi-ai";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
+import { Agent, type AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import type { Message, SimpleStreamOptions } from "@f5xc-salesdemos/pi-ai";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { AgentSession } from "@f5xc-salesdemos/xcsh/session/agent-session";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 
 function createAgent(): Agent {
 	return new Agent({

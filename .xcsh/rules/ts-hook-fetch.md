@@ -14,10 +14,10 @@ scope: "tool:edit(**/*.test.{ts,tsx,js,jsx}), tool:write(**/*.test.{ts,tsx,js,js
 
 ## What to use instead
 
-Use `hookFetch` from `@oh-my-pi/pi-utils`. It returns a `Disposable` — use `using` for automatic cleanup:
+Use `hookFetch` from `@f5xc-salesdemos/pi-utils`. It returns a `Disposable` — use `using` for automatic cleanup:
 
 ```ts
-import { hookFetch } from "@oh-my-pi/pi-utils";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
 
 using _hook = hookFetch((input, init, next) => {
 	// return a mocked Response, or delegate with next(input, init)

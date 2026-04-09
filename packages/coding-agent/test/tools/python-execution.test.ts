@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "bun:test";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import * as pythonExecutor from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { PythonTool } from "@oh-my-pi/pi-coding-agent/tools/python";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import * as pythonExecutor from "@f5xc-salesdemos/xcsh/ipy/executor";
+import type { ToolSession } from "@f5xc-salesdemos/xcsh/tools";
+import { PythonTool } from "@f5xc-salesdemos/xcsh/tools/python";
 
 function createSession(cwd: string): ToolSession {
 	return {

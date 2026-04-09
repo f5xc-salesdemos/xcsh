@@ -1,10 +1,10 @@
 /**
  * Shared types and utilities for web-fetch handlers
  */
-import { ptree } from "@oh-my-pi/pi-utils";
+import { ptree } from "@f5xc-salesdemos/pi-utils";
 import { ToolAbortError } from "../../tools/tool-errors";
 
-export { formatNumber } from "@oh-my-pi/pi-utils";
+export { formatNumber } from "@f5xc-salesdemos/pi-utils";
 
 export interface RenderResult {
 	url: string;

@@ -12,8 +12,8 @@ import {
 	buildAnthropicUrl,
 	findAnthropicAuth,
 	stripClaudeToolPrefix,
-} from "@oh-my-pi/pi-ai";
-import { $env } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-ai";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import type {
 	AnthropicApiResponse,
 	AnthropicCitation,
@@ -241,7 +241,7 @@ export async function searchAnthropic(params: AnthropicSearchParams): Promise<Se
 	const auth = await findAnthropicAuth();
 	if (!auth) {
 		throw new Error(
-			"No Anthropic credentials found. Set ANTHROPIC_API_KEY or configure OAuth in ~/.omp/agent/agent.db",
+			"No Anthropic credentials found. Set ANTHROPIC_API_KEY or configure OAuth in ~/.xcsh/agent/agent.db",
 		);
 	}
 

@@ -10,10 +10,10 @@ const path = require("node:path");
 
 function getNativesDir() {
 	const xdgDataHome = process.env.XDG_DATA_HOME;
-	if (xdgDataHome && fs.existsSync(path.join(xdgDataHome, "omp"))) {
-		return path.join(xdgDataHome, "omp", "natives");
+	if (xdgDataHome && fs.existsSync(path.join(xdgDataHome, "xcsh"))) {
+		return path.join(xdgDataHome, "xcsh", "natives");
 	}
-	return path.join(os.homedir(), ".omp", "natives");
+	return path.join(os.homedir(), ".xcsh", "natives");
 }
 const packageJson = require("../package.json");
 let embeddedAddon = null;
@@ -26,7 +26,7 @@ const execDir = path.dirname(process.execPath);
 const versionedDir = path.join(getNativesDir(), packageVersion);
 const userDataDir =
 	process.platform === "win32"
-		? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "omp")
+		? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "xcsh")
 		: path.join(os.homedir(), ".local", "bin");
 const isCompiledBinary =
 	process.env.PI_COMPILED ||
@@ -210,7 +210,7 @@ function loadNative() {
 		const expectedPaths = addonFilenames.map(filename => `  ${path.join(versionedDir, filename)}`).join("\n");
 		const downloadHints = addonFilenames
 			.map(filename => {
-				const downloadUrl = `https://github.com/can1357/oh-my-pi/releases/latest/download/${filename}`;
+				const downloadUrl = `https://github.com/f5xc-salesdemos/xcsh/releases/latest/download/${filename}`;
 				const targetPath = path.join(versionedDir, filename);
 				return `  curl -fsSL "${downloadUrl}" -o "${targetPath}"`;
 			})
@@ -220,7 +220,7 @@ function loadNative() {
 			`If missing, delete ${versionedDir} and re-run, or download manually:\n${downloadHints}`;
 	} else {
 		helpMessage =
-			"If installed via npm/bun, try reinstalling: bun install @oh-my-pi/pi-natives\n" +
+			"If installed via npm/bun, try reinstalling: bun install @f5xc-salesdemos/pi-natives\n" +
 			"If developing locally, build with: bun --cwd=packages/natives run build\n" +
 			"Optional x64 variants: TARGET_VARIANT=baseline|modern bun --cwd=packages/natives run build";
 	}

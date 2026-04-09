@@ -1,4 +1,4 @@
-import { $env } from "@oh-my-pi/pi-utils";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import { AzureOpenAI } from "openai";
 import type {
 	Tool as OpenAITool,
@@ -313,7 +313,7 @@ function buildParams(
 		// Always request encrypted reasoning content so reasoning items can be
 		// replayed in multi-turn conversations when store is false (items aren't
 		// persisted server-side, so we must include the full content).
-		// See: https://github.com/can1357/oh-my-pi/issues/41
+		// See: https://github.com/f5xc-salesdemos/xcsh/issues/41
 		params.include = ["reasoning.encrypted_content"];
 
 		if (options?.reasoning || options?.reasoningSummary) {

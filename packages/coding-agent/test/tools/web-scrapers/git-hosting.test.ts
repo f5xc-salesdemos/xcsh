@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { handleGitHub } from "@oh-my-pi/pi-coding-agent/web/scrapers/github";
-import { handleGitHubGist } from "@oh-my-pi/pi-coding-agent/web/scrapers/github-gist";
+import { handleGitHub } from "@f5xc-salesdemos/xcsh/web/scrapers/github";
+import { handleGitHubGist } from "@f5xc-salesdemos/xcsh/web/scrapers/github-gist";
 
 const SKIP = !Bun.env.WEB_FETCH_INTEGRATION;
 

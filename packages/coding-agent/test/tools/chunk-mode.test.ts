@@ -2,15 +2,15 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { _resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { EditTool } from "@oh-my-pi/pi-coding-agent/edit";
-import { HASHLINE_NIBBLE_ALPHABET } from "@oh-my-pi/pi-coding-agent/edit/line-hash";
-import { getLanguageFromPath } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { GrepTool } from "@oh-my-pi/pi-coding-agent/tools/grep";
-import { ReadTool } from "@oh-my-pi/pi-coding-agent/tools/read";
-import { resolveFileDisplayMode } from "@oh-my-pi/pi-coding-agent/utils/file-display-mode";
-import { ChunkReadStatus, ChunkState } from "@oh-my-pi/pi-natives";
+import { ChunkReadStatus, ChunkState } from "@f5xc-salesdemos/pi-natives";
+import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { EditTool } from "@f5xc-salesdemos/xcsh/edit";
+import { HASHLINE_NIBBLE_ALPHABET } from "@f5xc-salesdemos/xcsh/edit/line-hash";
+import { getLanguageFromPath } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
+import type { ToolSession } from "@f5xc-salesdemos/xcsh/tools";
+import { GrepTool } from "@f5xc-salesdemos/xcsh/tools/grep";
+import { ReadTool } from "@f5xc-salesdemos/xcsh/tools/read";
+import { resolveFileDisplayMode } from "@f5xc-salesdemos/xcsh/utils/file-display-mode";
 import { applyChunkEdits } from "../../src/edit/modes/chunk";
 
 function getText(result: { content: Array<{ type: string; text?: string }> }): string {

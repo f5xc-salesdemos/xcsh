@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { ChunkState } from "@oh-my-pi/pi-natives";
+import { ChunkState } from "@f5xc-salesdemos/pi-natives";
 import { applyChunkEdits, formatChunkedRead, parseChunkReadPath } from "../../src/edit/modes/chunk";
 
 // ═══════════════════════════════════════════════════════════════════════════

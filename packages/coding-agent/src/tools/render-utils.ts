@@ -6,15 +6,15 @@
  */
 import * as os from "node:os";
 import * as path from "node:path";
-import type { Ellipsis } from "@oh-my-pi/pi-natives";
-import { replaceTabs, truncateToWidth } from "@oh-my-pi/pi-tui";
-import { pluralize } from "@oh-my-pi/pi-utils";
+import type { Ellipsis } from "@f5xc-salesdemos/pi-natives";
+import { replaceTabs, truncateToWidth } from "@f5xc-salesdemos/pi-tui";
+import { pluralize } from "@f5xc-salesdemos/pi-utils";
 import { settings } from "../config/settings";
 import type { Theme } from "../modes/theme/theme";
 import { formatDimensionNote, type ResizedImage } from "../utils/image-resize";
 
-export { Ellipsis } from "@oh-my-pi/pi-natives";
-export { replaceTabs, truncateToWidth } from "@oh-my-pi/pi-tui";
+export { Ellipsis } from "@f5xc-salesdemos/pi-natives";
+export { replaceTabs, truncateToWidth } from "@f5xc-salesdemos/pi-tui";
 
 // =============================================================================
 // Standardized Display Constants
@@ -106,7 +106,7 @@ export function getDomain(url: string): string {
 // Formatting Utilities
 // =============================================================================
 
-export { formatAge, formatBytes, formatCount, formatDuration, pluralize } from "@oh-my-pi/pi-utils";
+export { formatAge, formatBytes, formatCount, formatDuration, pluralize } from "@f5xc-salesdemos/pi-utils";
 
 // =============================================================================
 // Theme Helper Utilities

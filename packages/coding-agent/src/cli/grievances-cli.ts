@@ -1,5 +1,5 @@
 /**
- * CLI handler for `omp grievances` — view reported tool issues from auto-QA.
+ * CLI handler for `xcsh grievances` — view reported tool issues from auto-QA.
  */
 import { Database } from "bun:sqlite";
 import chalk from "chalk";

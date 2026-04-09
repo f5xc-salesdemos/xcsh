@@ -3,7 +3,7 @@
  * Standard Gemini models only (gemini-2.0-flash, gemini-2.5-*)
  */
 
-import { $env } from "@oh-my-pi/pi-utils";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import { getGeminiCliHeaders } from "../../providers/google-gemini-cli";
 import { OAuthCallbackFlow } from "./callback-server";
 import type { OAuthController, OAuthCredentials } from "./types";

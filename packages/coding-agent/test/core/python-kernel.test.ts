@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import { type KernelDisplayOutput, PythonKernel } from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import { PYTHON_PRELUDE } from "@oh-my-pi/pi-coding-agent/ipy/prelude";
-import { hookFetch } from "@oh-my-pi/pi-utils";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
+import { type KernelDisplayOutput, PythonKernel } from "@f5xc-salesdemos/xcsh/ipy/kernel";
+import { PYTHON_PRELUDE } from "@f5xc-salesdemos/xcsh/ipy/prelude";
 
 type JupyterMessage = {
 	channel: string;
@@ -74,7 +74,7 @@ function sendOkExecution(ws: FakeWebSocket, msgId: string, executionCount = 1) {
 		header: {
 			msg_id: `reply-${msgId}`,
 			session: "session",
-			username: "omp",
+			username: "xcsh",
 			date: new Date().toISOString(),
 			msg_type: "execute_reply",
 			version: "5.5",
@@ -88,7 +88,7 @@ function sendOkExecution(ws: FakeWebSocket, msgId: string, executionCount = 1) {
 		header: {
 			msg_id: `status-${msgId}`,
 			session: "session",
-			username: "omp",
+			username: "xcsh",
 			date: new Date().toISOString(),
 			msg_type: "status",
 			version: "5.5",
@@ -210,7 +210,7 @@ describe("PythonKernel (external gateway)", () => {
 					header: {
 						msg_id: "stream-1",
 						session: "session",
-						username: "omp",
+						username: "xcsh",
 						date: new Date().toISOString(),
 						msg_type: "stream",
 						version: "5.5",
@@ -224,7 +224,7 @@ describe("PythonKernel (external gateway)", () => {
 					header: {
 						msg_id: "display-1",
 						session: "session",
-						username: "omp",
+						username: "xcsh",
 						date: new Date().toISOString(),
 						msg_type: "execute_result",
 						version: "5.5",
@@ -243,7 +243,7 @@ describe("PythonKernel (external gateway)", () => {
 					header: {
 						msg_id: "reply-2",
 						session: "session",
-						username: "omp",
+						username: "xcsh",
 						date: new Date().toISOString(),
 						msg_type: "execute_reply",
 						version: "5.5",
@@ -257,7 +257,7 @@ describe("PythonKernel (external gateway)", () => {
 					header: {
 						msg_id: "status-2",
 						session: "session",
-						username: "omp",
+						username: "xcsh",
 						date: new Date().toISOString(),
 						msg_type: "status",
 						version: "5.5",
@@ -384,7 +384,7 @@ describe("PythonKernel (external gateway)", () => {
 					header: {
 						msg_id: "stream-docs",
 						session: "session",
-						username: "omp",
+						username: "xcsh",
 						date: new Date().toISOString(),
 						msg_type: "stream",
 						version: "5.5",
@@ -398,7 +398,7 @@ describe("PythonKernel (external gateway)", () => {
 					header: {
 						msg_id: "reply-docs",
 						session: "session",
-						username: "omp",
+						username: "xcsh",
 						date: new Date().toISOString(),
 						msg_type: "execute_reply",
 						version: "5.5",
@@ -412,7 +412,7 @@ describe("PythonKernel (external gateway)", () => {
 					header: {
 						msg_id: "status-docs",
 						session: "session",
-						username: "omp",
+						username: "xcsh",
 						date: new Date().toISOString(),
 						msg_type: "status",
 						version: "5.5",

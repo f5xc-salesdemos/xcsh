@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { Agent } from "@oh-my-pi/pi-agent-core";
-import { getBundledModel } from "@oh-my-pi/pi-ai";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import * as bashExecutor from "@oh-my-pi/pi-coding-agent/exec/bash-executor";
-import type { ExtensionRunner } from "@oh-my-pi/pi-coding-agent/extensibility/extensions";
-import * as pythonExecutor from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { TOOL_TIMEOUTS } from "@oh-my-pi/pi-coding-agent/tools/tool-timeouts";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Agent } from "@f5xc-salesdemos/pi-agent-core";
+import { getBundledModel } from "@f5xc-salesdemos/pi-ai";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import * as bashExecutor from "@f5xc-salesdemos/xcsh/exec/bash-executor";
+import type { ExtensionRunner } from "@f5xc-salesdemos/xcsh/extensibility/extensions";
+import * as pythonExecutor from "@f5xc-salesdemos/xcsh/ipy/executor";
+import { AgentSession } from "@f5xc-salesdemos/xcsh/session/agent-session";
+import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
+import { TOOL_TIMEOUTS } from "@f5xc-salesdemos/xcsh/tools/tool-timeouts";
 
 describe("AgentSession user shortcut hooks", () => {
 	let tempDir: TempDir;

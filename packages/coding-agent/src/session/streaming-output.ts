@@ -1,4 +1,4 @@
-import { sanitizeText } from "@oh-my-pi/pi-natives";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
 import { formatBytes } from "../tools/render-utils";
 import { sanitizeWithOptionalSixelPassthrough } from "../utils/sixel";
 

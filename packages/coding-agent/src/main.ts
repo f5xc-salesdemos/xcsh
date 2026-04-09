@@ -10,8 +10,16 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
-import type { ImageContent } from "@oh-my-pi/pi-ai";
-import { $env, getConfigDirName, getProjectDir, logger, postmortem, setProjectDir, VERSION } from "@oh-my-pi/pi-utils";
+import type { ImageContent } from "@f5xc-salesdemos/pi-ai";
+import {
+	$env,
+	getConfigDirName,
+	getProjectDir,
+	logger,
+	postmortem,
+	setProjectDir,
+	VERSION,
+} from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { invalidate as invalidateFsCache } from "./capability/fs";
 import type { Args } from "./cli/args";
@@ -56,7 +64,7 @@ async function checkForNewVersion(currentVersion: string): Promise<string | unde
 		return;
 	}
 	try {
-		const response = await fetch("https://registry.npmjs.org/@oh-my-pi/pi-coding-agent/latest");
+		const response = await fetch("https://registry.npmjs.org/@f5xc-salesdemos/xcsh/latest");
 		if (!response.ok) return undefined;
 
 		const data = (await response.json()) as { version?: string };
@@ -377,7 +385,7 @@ async function maybeAutoChdir(parsed: Args): Promise<void> {
 
 /** Discover SYSTEM.md file if no CLI system prompt was provided */
 function discoverSystemPromptFile(): string | undefined {
-	// Check project-local first (.omp/SYSTEM.md, .pi/SYSTEM.md legacy)
+	// Check project-local first (.xcsh/SYSTEM.md, .pi/SYSTEM.md legacy)
 	const projectPath = findConfigFile("SYSTEM.md", { user: false });
 	if (projectPath) {
 		return projectPath;

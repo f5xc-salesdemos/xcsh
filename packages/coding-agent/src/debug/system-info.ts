@@ -3,7 +3,7 @@
  */
 
 import * as os from "node:os";
-import { formatBytes, getProjectDir, VERSION } from "@oh-my-pi/pi-utils";
+import { formatBytes, getProjectDir, VERSION } from "@f5xc-salesdemos/pi-utils";
 
 export interface SystemInfo {
 	os: string;
@@ -82,7 +82,7 @@ export function formatSystemInfo(info: SystemInfo): string {
 		`CPU:     ${info.cpu}`,
 		`Memory:  ${formatBytes(info.memory.total)} (${formatBytes(info.memory.free)} free)`,
 		`Bun:     ${info.versions.bun}`,
-		`App:     omp ${info.versions.app}`,
+		`App:     xcsh ${info.versions.app}`,
 		`Node:    ${info.versions.node} (compat)`,
 		`CWD:     ${info.cwd}`,
 		`Shell:   ${info.shell}`,
