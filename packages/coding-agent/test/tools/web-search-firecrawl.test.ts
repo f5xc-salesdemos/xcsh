@@ -276,8 +276,6 @@ describe("searchFirecrawl — error handling", () => {
 
 	it("throws a clear error when FIRECRAWL_SEARCH_URL is not configured", async () => {
 		delete process.env.FIRECRAWL_SEARCH_URL;
-		await expect(searchFirecrawl({ query: "no config" })).rejects.toThrow(
-			"FIRECRAWL_SEARCH_URL is not configured",
-		);
+		await expect(searchFirecrawl({ query: "no config" })).rejects.toThrow("FIRECRAWL_SEARCH_URL is not configured");
 	});
 });

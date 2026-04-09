@@ -40,10 +40,7 @@ export function getFirecrawlUrl(): string | null {
 	return process.env.FIRECRAWL_SEARCH_URL ?? null;
 }
 
-async function callFirecrawlSearch(
-	baseUrl: string,
-	params: FirecrawlSearchParams,
-): Promise<FirecrawlSearchResponse> {
+async function callFirecrawlSearch(baseUrl: string, params: FirecrawlSearchParams): Promise<FirecrawlSearchResponse> {
 	const numResults = clampNumResults(params.num_results, DEFAULT_NUM_RESULTS, MAX_NUM_RESULTS);
 
 	const response = await fetch(`${baseUrl}/v1/search`, {
