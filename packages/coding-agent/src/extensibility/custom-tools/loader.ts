@@ -85,7 +85,7 @@ export class CustomToolLoader {
 	#seenNames: Set<string>;
 
 	constructor(
-		pi: typeof import("@f5xc-salesdemos/pi-coding-agent"),
+		pi: typeof import("@f5xc-salesdemos/xcsh"),
 		cwd: string,
 		builtInToolNames: string[],
 		pushPendingAction?: (action: {
@@ -170,12 +170,7 @@ export async function loadCustomTools(
 		reject?(reason: string): Promise<AgentToolResult<unknown> | undefined>;
 	}) => void,
 ) {
-	const loader = new CustomToolLoader(
-		await import("@f5xc-salesdemos/pi-coding-agent"),
-		cwd,
-		builtInToolNames,
-		pushPendingAction,
-	);
+	const loader = new CustomToolLoader(await import("@f5xc-salesdemos/xcsh"), cwd, builtInToolNames, pushPendingAction);
 	await loader.load(pathsWithSources);
 	return {
 		tools: loader.tools,
