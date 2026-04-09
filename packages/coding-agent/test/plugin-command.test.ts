@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { CliConfig } from "@xcsh/pi-utils/cli";
+import type { CliConfig } from "@f5xc-salesdemos/pi-utils/cli";
 import Plugin from "../src/commands/plugin";
 
 const TEST_CONFIG: CliConfig = {

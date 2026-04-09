@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@xcsh/pi-agent-core";
-import { type AssistantMessage, type Context, streamSimple } from "@xcsh/pi-ai";
-import { prompt } from "@xcsh/pi-utils";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import { type AssistantMessage, type Context, streamSimple } from "@f5xc-salesdemos/pi-ai";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import btwUserPrompt from "../../prompts/system/btw-user.md" with { type: "text" };
 import { toReasoningEffort } from "../../thinking";
 import { BtwPanelComponent } from "../components/btw-panel";

@@ -2,9 +2,9 @@ import { describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { type Skill as CapabilitySkill, skillCapability } from "@xcsh/pi-coding-agent/capability/skill";
-import { getCapability } from "@xcsh/pi-coding-agent/discovery";
-import { loadSkills, loadSkillsFromDir, type Skill } from "@xcsh/pi-coding-agent/extensibility/skills";
+import { type Skill as CapabilitySkill, skillCapability } from "@f5xc-salesdemos/xcsh/capability/skill";
+import { getCapability } from "@f5xc-salesdemos/xcsh/discovery";
+import { loadSkills, loadSkillsFromDir, type Skill } from "@f5xc-salesdemos/xcsh/extensibility/skills";
 
 const fixturesDir = path.resolve(import.meta.dirname, "fixtures/skills");
 const collisionFixturesDir = path.resolve(import.meta.dirname, "fixtures/skills-collision");

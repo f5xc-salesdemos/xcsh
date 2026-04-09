@@ -2,10 +2,10 @@
  * Generate commit messages from diffs using a smol, fast model.
  * Follows the same pattern as title-generator.ts.
  */
-import type { ThinkingLevel } from "@xcsh/pi-agent-core";
-import type { Api, Model } from "@xcsh/pi-ai";
-import { completeSimple } from "@xcsh/pi-ai";
-import { logger, prompt } from "@xcsh/pi-utils";
+import type { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import type { Api, Model } from "@f5xc-salesdemos/pi-ai";
+import { completeSimple } from "@f5xc-salesdemos/pi-ai";
+import { logger, prompt } from "@f5xc-salesdemos/pi-utils";
 import type { ModelRegistry } from "../config/model-registry";
 import { resolveModelRoleValue } from "../config/model-resolver";
 import type { Settings } from "../config/settings";

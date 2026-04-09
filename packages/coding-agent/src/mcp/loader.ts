@@ -3,7 +3,7 @@
  *
  * Integrates MCP tool discovery with the custom tools system.
  */
-import { logger } from "@xcsh/pi-utils";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import type { LoadedCustomTool } from "../extensibility/custom-tools/types";
 import { AgentStorage } from "../session/agent-storage";
 import type { AuthStorage } from "../session/auth-storage";

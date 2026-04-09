@@ -1,4 +1,4 @@
-import type { ImageContent } from "@xcsh/pi-ai";
+import type { ImageContent } from "@f5xc-salesdemos/pi-ai";
 import type { Args } from "./args";
 
 export interface InitialMessageInput {

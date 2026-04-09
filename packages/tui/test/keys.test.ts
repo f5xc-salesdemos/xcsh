@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { extractPrintableText, matchesKey, parseKey, setKittyProtocolActive } from "@xcsh/pi-tui/keys";
+import { extractPrintableText, matchesKey, parseKey, setKittyProtocolActive } from "@f5xc-salesdemos/pi-tui/keys";
 
 describe("matchesKey", () => {
 	it("matches ctrl+letter sequences", () => {

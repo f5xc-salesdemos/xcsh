@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { Effort, getBundledModel } from "@xcsh/pi-ai";
+import { Effort, getBundledModel } from "@f5xc-salesdemos/pi-ai";
 import { resolvePrimaryModel, resolveSmolModel } from "../src/commit/model-selection";
 
 function getModelOrThrow(id: string) {

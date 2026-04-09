@@ -5,12 +5,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { ModelRegistry } from "@xcsh/pi-coding-agent/config/model-registry";
-import { discoverAndLoadExtensions } from "@xcsh/pi-coding-agent/extensibility/extensions/loader";
-import { ExtensionRunner } from "@xcsh/pi-coding-agent/extensibility/extensions/runner";
-import { AuthStorage } from "@xcsh/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
-import { getProjectAgentDir, logger, TempDir } from "@xcsh/pi-utils";
+import { getProjectAgentDir, logger, TempDir } from "@f5xc-salesdemos/pi-utils";
+import { ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { discoverAndLoadExtensions } from "@f5xc-salesdemos/xcsh/extensibility/extensions/loader";
+import { ExtensionRunner } from "@f5xc-salesdemos/xcsh/extensibility/extensions/runner";
+import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 import { filterUserExtensionErrors, filterUserExtensions } from "./utils/filter-user-extensions";
 
 describe("ExtensionRunner", () => {

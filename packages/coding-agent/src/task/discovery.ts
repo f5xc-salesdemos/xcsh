@@ -14,7 +14,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { logger } from "@xcsh/pi-utils";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import { findAllNearestProjectConfigDirs, getConfigDirs } from "../config";
 import { listClaudePluginRoots } from "../discovery/helpers";
 import { loadBundledAgents, parseAgent } from "./agents";

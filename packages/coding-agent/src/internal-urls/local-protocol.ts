@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { isEnoent } from "@xcsh/pi-utils";
+import { isEnoent } from "@f5xc-salesdemos/pi-utils";
 import { parseInternalUrl } from "./parse";
 import { validateRelativePath } from "./skill-protocol";
 import type { InternalResource, InternalUrl, ProtocolHandler } from "./types";

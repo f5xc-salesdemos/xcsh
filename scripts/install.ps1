@@ -17,7 +17,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "f5xc-salesdemos/xcsh"
-$Package = "@xcsh/pi-coding-agent"
+$Package = "@f5xc-salesdemos/xcsh"
 $InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { "$env:LOCALAPPDATA\xcsh" }
 $BinaryName = "xcsh-windows-x64.exe"
 $NativeAddonNames = @("pi_natives.win32-x64-modern.node", "pi_natives.win32-x64-baseline.node")

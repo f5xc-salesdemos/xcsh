@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { createTools, type ToolSession } from "@xcsh/pi-coding-agent/tools";
-import { PendingActionStore } from "@xcsh/pi-coding-agent/tools/pending-action";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { createTools, type ToolSession } from "@f5xc-salesdemos/xcsh/tools";
+import { PendingActionStore } from "@f5xc-salesdemos/xcsh/tools/pending-action";
 
 function createTestSession(cwd: string, overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

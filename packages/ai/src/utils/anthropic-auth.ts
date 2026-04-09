@@ -8,7 +8,7 @@
  *   4. API key credentials in ~/.xcsh/agent/agent.db
  *   5. Generic Anthropic fallback (ANTHROPIC_API_KEY / ANTHROPIC_BASE_URL)
  */
-import { $env, getAgentDbPath } from "@xcsh/pi-utils";
+import { $env, getAgentDbPath } from "@f5xc-salesdemos/pi-utils";
 import { type AuthCredential, AuthCredentialStore } from "../auth-storage";
 import {
 	buildAnthropicHeaders as buildProviderAnthropicHeaders,

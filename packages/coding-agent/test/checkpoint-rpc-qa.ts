@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentEvent, AgentMessage } from "@xcsh/pi-agent-core";
+import type { AgentEvent, AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
 import { RpcClient } from "../src/modes/rpc/rpc-client";
 import {
 	type BranchSummaryEntry,

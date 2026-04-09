@@ -1,9 +1,14 @@
 import * as fs from "node:fs";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { ImageProtocol, TERMINAL, Text } from "@f5xc-salesdemos/pi-tui";
+import { $env, getProjectDir, isEnoent, prompt } from "@f5xc-salesdemos/pi-utils";
 import { Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import type { Component } from "@xcsh/pi-tui";
-import { ImageProtocol, TERMINAL, Text } from "@xcsh/pi-tui";
-import { $env, getProjectDir, isEnoent, prompt } from "@xcsh/pi-utils";
 import { type BashResult, executeBash } from "../exec/bash-executor";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";

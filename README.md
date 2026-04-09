@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@xcsh/pi-coding-agent"><img src="https://img.shields.io/npm/v/@xcsh/pi-coding-agent?style=flat&colorA=222222&colorB=CB3837" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/@f5xc-salesdemos/xcsh"><img src="https://img.shields.io/npm/v/@f5xc-salesdemos/xcsh?style=flat&colorA=222222&colorB=CB3837" alt="npm version"></a>
   <a href="https://github.com/f5xc-salesdemos/xcsh/blob/main/packages/coding-agent/CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-keep-E05735?style=flat&colorA=222222" alt="Changelog"></a>
   <a href="https://github.com/f5xc-salesdemos/xcsh/actions"><img src="https://img.shields.io/github/actions/workflow/status/f5xc-salesdemos/xcsh/ci.yml?style=flat&colorA=222222&colorB=3FB950" alt="CI"></a>
   <a href="https://github.com/f5xc-salesdemos/xcsh/blob/main/LICENSE"><img src="https://img.shields.io/github/license/f5xc-salesdemos/xcsh?style=flat&colorA=222222&colorB=58A6FF" alt="License"></a>
@@ -388,7 +388,7 @@ Supported platforms: `linux-x64`, `linux-arm64`, `darwin-x64`, `darwin-arm64`, `
 Requires [Bun](https://bun.sh) **>= 1.3.7**:
 
 ```bash
-bun install -g @xcsh/pi-coding-agent
+bun install -g @f5xc-salesdemos/xcsh
 ```
 
 ### Via installer script
@@ -1053,7 +1053,7 @@ Hook locations:
 - CLI: `--hook <path>`
 
 ```typescript
-import type { HookAPI } from "@xcsh/pi-coding-agent/hooks";
+import type { HookAPI } from "@f5xc-salesdemos/xcsh/hooks";
 
 export default function (xcsh: HookAPI) {
 	xcsh.on("tool_call", async (event, ctx) => {
@@ -1085,7 +1085,7 @@ Auto-discovered locations:
 
 ```typescript
 import { Type } from "@sinclair/typebox";
-import type { CustomToolFactory } from "@xcsh/pi-coding-agent";
+import type { CustomToolFactory } from "@f5xc-salesdemos/xcsh";
 const factory: CustomToolFactory = () => ({
 	name: "greet",
 	label: "Greeting",
@@ -1264,7 +1264,7 @@ For adding new tools, see [Custom Tools](#custom-tools).
 For embedding xcsh in Node.js/TypeScript applications, use the SDK:
 
 ```typescript
-import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@xcsh/pi-coding-agent";
+import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@f5xc-salesdemos/xcsh";
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);
 await modelRegistry.refresh();
@@ -1349,20 +1349,20 @@ For architecture and contribution guidelines, see [packages/coding-agent/DEVELOP
 
 | Package                                                   | Description                                                                |
 | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **[@xcsh/pi-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
-| **[@xcsh/pi-agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
-| **[@xcsh/pi-coding-agent](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
-| **[@xcsh/pi-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
-| **[@xcsh/pi-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
-| **[@xcsh/xcsh-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
-| **[@xcsh/pi-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
-| **[@xcsh/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
+| **[@f5xc-salesdemos/pi-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
+| **[@f5xc-salesdemos/pi-agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
+| **[@f5xc-salesdemos/xcsh](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
+| **[@f5xc-salesdemos/pi-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
+| **[@f5xc-salesdemos/pi-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
+| **[@f5xc-salesdemos/xcsh-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
+| **[@f5xc-salesdemos/pi-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
+| **[@f5xc-salesdemos/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
 
 ### Rust Crates
 
 | Crate                                                         | Description                                                                                  |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@xcsh/pi-natives`                                        |
+| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@f5xc-salesdemos/pi-natives`                                        |
 | **[brush-core-vendored](crates/brush-core-vendored)**         | Vendored fork of [brush-shell](https://github.com/reubeno/brush) for embedded bash execution |
 | **[brush-builtins-vendored](crates/brush-builtins-vendored)** | Vendored bash builtins (cd, echo, test, printf, read, export, etc.)                          |
 

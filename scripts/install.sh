@@ -11,7 +11,7 @@ set -e
 #   -r <ref>       Shorthand for --ref
 
 REPO="f5xc-salesdemos/xcsh"
-PACKAGE="@xcsh/pi-coding-agent"
+PACKAGE="@f5xc-salesdemos/xcsh"
 INSTALL_DIR="${PI_INSTALL_DIR:-$HOME/.local/bin}"
 MIN_BUN_VERSION="1.3.7"
 

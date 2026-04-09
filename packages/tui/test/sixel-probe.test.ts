@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { ImageProtocol, setTerminalImageProtocol, TERMINAL, TUI } from "@xcsh/pi-tui";
+import { ImageProtocol, setTerminalImageProtocol, TERMINAL, TUI } from "@f5xc-salesdemos/pi-tui";
 import { VirtualTerminal } from "./virtual-terminal";
 
 type MutableTerminalInfo = {

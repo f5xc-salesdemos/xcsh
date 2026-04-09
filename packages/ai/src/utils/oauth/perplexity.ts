@@ -12,7 +12,7 @@
  * Architecture reverse-engineered from Perplexity macOS app (ai.perplexity.mac).
  */
 import * as os from "node:os";
-import { $env } from "@xcsh/pi-utils";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import type { OAuthController, OAuthCredentials } from "./types";
 

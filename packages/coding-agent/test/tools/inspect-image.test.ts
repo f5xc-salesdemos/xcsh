@@ -2,15 +2,15 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import type { completeSimple, Model } from "@f5xc-salesdemos/pi-ai";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { getThemeByName } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
+import type { ToolSession } from "@f5xc-salesdemos/xcsh/tools";
+import { InspectImageTool } from "@f5xc-salesdemos/xcsh/tools/inspect-image";
+import { inspectImageToolRenderer } from "@f5xc-salesdemos/xcsh/tools/inspect-image-renderer";
+import { toolRenderers } from "@f5xc-salesdemos/xcsh/tools/renderers";
 import { Value } from "@sinclair/typebox/value";
-import type { completeSimple, Model } from "@xcsh/pi-ai";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { getThemeByName } from "@xcsh/pi-coding-agent/modes/theme/theme";
-import type { ToolSession } from "@xcsh/pi-coding-agent/tools";
-import { InspectImageTool } from "@xcsh/pi-coding-agent/tools/inspect-image";
-import { inspectImageToolRenderer } from "@xcsh/pi-coding-agent/tools/inspect-image-renderer";
-import { toolRenderers } from "@xcsh/pi-coding-agent/tools/renderers";
-import { sanitizeText } from "@xcsh/pi-natives";
 
 const TINY_PNG_BASE64 =
 	"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==";

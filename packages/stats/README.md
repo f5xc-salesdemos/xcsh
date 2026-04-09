@@ -1,4 +1,4 @@
-# @xcsh/xcsh-stats
+# @f5xc-salesdemos/xcsh-stats
 
 Local observability dashboard for AI usage statistics.
 
@@ -41,7 +41,7 @@ xcsh stats --json
 ### Programmatic
 
 ```typescript
-import { getDashboardStats, syncAllSessions } from "@xcsh/xcsh-stats";
+import { getDashboardStats, syncAllSessions } from "@f5xc-salesdemos/xcsh-stats";
 
 // Sync session logs to database
 const { processed, files } = await syncAllSessions();

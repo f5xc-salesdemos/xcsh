@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import type { AssistantMessage } from "@xcsh/pi-ai";
-import { calculateTokensPerSecond } from "@xcsh/pi-coding-agent/modes/components/status-line/token-rate";
+import type { AssistantMessage } from "@f5xc-salesdemos/pi-ai";
+import { calculateTokensPerSecond } from "@f5xc-salesdemos/xcsh/modes/components/status-line/token-rate";
 
 function assistantMessage(overrides?: Partial<AssistantMessage>): AssistantMessage {
 	return {

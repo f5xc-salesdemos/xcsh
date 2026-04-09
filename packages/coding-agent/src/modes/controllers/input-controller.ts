@@ -1,8 +1,8 @@
 import * as fs from "node:fs/promises";
-import { type AgentMessage, ThinkingLevel } from "@xcsh/pi-agent-core";
-import { sanitizeText } from "@xcsh/pi-natives";
-import type { AutocompleteProvider, SlashCommand } from "@xcsh/pi-tui";
-import { $env } from "@xcsh/pi-utils";
+import { type AgentMessage, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
+import type { AutocompleteProvider, SlashCommand } from "@f5xc-salesdemos/pi-tui";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import { settings } from "../../config/settings";
 import { createPromptActionAutocompleteProvider } from "../../modes/prompt-action-autocomplete";
 import { theme } from "../../modes/theme/theme";

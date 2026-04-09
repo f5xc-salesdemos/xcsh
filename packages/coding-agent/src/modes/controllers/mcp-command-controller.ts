@@ -3,8 +3,8 @@
  *
  * Handles /mcp subcommands for managing MCP servers.
  */
-import { Spacer, Text } from "@xcsh/pi-tui";
-import { getMCPConfigPath, getProjectDir } from "@xcsh/pi-utils";
+import { Spacer, Text } from "@f5xc-salesdemos/pi-tui";
+import { getMCPConfigPath, getProjectDir } from "@f5xc-salesdemos/pi-utils";
 import type { SourceMeta } from "../../capability/types";
 import { analyzeAuthError, discoverOAuthEndpoints, MCPManager } from "../../mcp";
 import { connectToServer, disconnectServer, listTools } from "../../mcp/client";

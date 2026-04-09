@@ -4,7 +4,7 @@
  * Uses brush-core via native bindings for shell execution.
  */
 import * as fs from "node:fs/promises";
-import { executeShell, Shell } from "@xcsh/pi-natives";
+import { executeShell, Shell } from "@f5xc-salesdemos/pi-natives";
 import { Settings } from "../config/settings";
 import { OutputSink } from "../session/streaming-output";
 import { getOrCreateSnapshot } from "../utils/shell-snapshot";

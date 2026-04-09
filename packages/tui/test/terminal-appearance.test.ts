@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import { ProcessTerminal } from "@xcsh/pi-tui/terminal";
+import { ProcessTerminal } from "@f5xc-salesdemos/pi-tui/terminal";
 
 const stdinIsTtyDescriptor = Object.getOwnPropertyDescriptor(process.stdin, "isTTY");
 const stdoutIsTtyDescriptor = Object.getOwnPropertyDescriptor(process.stdout, "isTTY");

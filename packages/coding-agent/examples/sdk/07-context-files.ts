@@ -3,7 +3,7 @@
  *
  * Context files provide project-specific instructions loaded into the system prompt.
  */
-import { createAgentSession, discoverContextFiles, SessionManager } from "@xcsh/pi-coding-agent";
+import { createAgentSession, discoverContextFiles, SessionManager } from "@f5xc-salesdemos/xcsh";
 
 // Discover AGENTS.md files walking up from cwd
 const discovered = discoverContextFiles();

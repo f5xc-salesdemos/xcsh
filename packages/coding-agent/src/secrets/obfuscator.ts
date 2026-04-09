@@ -1,4 +1,4 @@
-import type { Message, TextContent } from "@xcsh/pi-ai";
+import type { Message, TextContent } from "@f5xc-salesdemos/pi-ai";
 import type { SessionContext } from "../session/session-manager";
 import { compileSecretRegex } from "./regex";
 

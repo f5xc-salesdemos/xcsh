@@ -3,8 +3,8 @@
  *
  * Handles /ssh subcommands for managing SSH host configurations.
  */
-import { Spacer, Text } from "@xcsh/pi-tui";
-import { getProjectDir, getSSHConfigPath } from "@xcsh/pi-utils";
+import { Spacer, Text } from "@f5xc-salesdemos/pi-tui";
+import { getProjectDir, getSSHConfigPath } from "@f5xc-salesdemos/pi-utils";
 import { type SSHHost, sshCapability } from "../../capability/ssh";
 import { loadCapability } from "../../discovery";
 import { addSSHHost, readSSHConfigFile, removeSSHHost, type SSHHostConfig } from "../../ssh/config-writer";

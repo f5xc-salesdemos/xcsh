@@ -1,9 +1,15 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { ThinkingLevel } from "@xcsh/pi-agent-core";
-import { FileType, glob } from "@xcsh/pi-natives";
-import { CONFIG_DIR_NAME, getConfigDirName, getProjectDir, parseFrontmatter, tryParseJson } from "@xcsh/pi-utils";
+import type { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import { FileType, glob } from "@f5xc-salesdemos/pi-natives";
+import {
+	CONFIG_DIR_NAME,
+	getConfigDirName,
+	getProjectDir,
+	parseFrontmatter,
+	tryParseJson,
+} from "@f5xc-salesdemos/pi-utils";
 import { readDirEntries, readFile } from "../capability/fs";
 import { parseRuleConditionAndScope, type Rule, type RuleFrontmatter } from "../capability/rule";
 import type { Skill, SkillFrontmatter } from "../capability/skill";

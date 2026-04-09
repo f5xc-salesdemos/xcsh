@@ -1,5 +1,5 @@
-import type { AgentToolResult } from "@xcsh/pi-agent-core";
-import type { ImageContent, TextContent } from "@xcsh/pi-ai";
+import type { AgentToolResult } from "@f5xc-salesdemos/pi-agent-core";
+import type { ImageContent, TextContent } from "@f5xc-salesdemos/pi-ai";
 import type { OutputSummary, TruncationResult } from "../session/streaming-output";
 import type { OutputMeta, TruncationOptions, TruncationSummaryOptions, TruncationTextOptions } from "./output-meta";
 import { outputMeta } from "./output-meta";

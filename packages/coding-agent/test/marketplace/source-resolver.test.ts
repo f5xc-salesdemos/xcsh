@@ -3,8 +3,8 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 
-import type { MarketplacePluginEntry } from "@xcsh/pi-coding-agent/extensibility/plugins/marketplace";
-import { resolvePluginSource } from "@xcsh/pi-coding-agent/extensibility/plugins/marketplace";
+import type { MarketplacePluginEntry } from "@f5xc-salesdemos/xcsh/extensibility/plugins/marketplace";
+import { resolvePluginSource } from "@f5xc-salesdemos/xcsh/extensibility/plugins/marketplace";
 
 // Fixture: a cloned marketplace with a single plugin at ./plugins/hello-plugin
 const FIXTURE_DIR = path.resolve(import.meta.dir, "fixtures/valid-marketplace");

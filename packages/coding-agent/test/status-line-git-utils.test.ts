@@ -5,7 +5,7 @@ import {
 	isSamePrCacheContext,
 	parseDefaultBranch,
 	parseGitHubRepo,
-} from "@xcsh/pi-coding-agent/modes/components/status-line/git-utils";
+} from "@f5xc-salesdemos/xcsh/modes/components/status-line/git-utils";
 
 describe("parseGitHubRepo", () => {
 	test("parses HTTPS URL", () => {

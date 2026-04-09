@@ -2,8 +2,8 @@ import type { Dirent } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { projfsOverlayStart, projfsOverlayStop } from "@xcsh/pi-natives";
-import { $which, getWorktreeDir, isEnoent, logger, Snowflake } from "@xcsh/pi-utils";
+import { projfsOverlayStart, projfsOverlayStop } from "@f5xc-salesdemos/pi-natives";
+import { $which, getWorktreeDir, isEnoent, logger, Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import * as git from "../utils/git";
 

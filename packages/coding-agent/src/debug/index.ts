@@ -5,9 +5,9 @@
  */
 import * as fs from "node:fs/promises";
 import * as url from "node:url";
-import { getWorkProfile } from "@xcsh/pi-natives";
-import { Container, Loader, type SelectItem, SelectList, Spacer, Text } from "@xcsh/pi-tui";
-import { getSessionsDir } from "@xcsh/pi-utils";
+import { getWorkProfile } from "@f5xc-salesdemos/pi-natives";
+import { Container, Loader, type SelectItem, SelectList, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
+import { getSessionsDir } from "@f5xc-salesdemos/pi-utils";
 import { DynamicBorder } from "../modes/components/dynamic-border";
 import { getSelectListTheme, getSymbolTheme, theme } from "../modes/theme/theme";
 import type { InteractiveModeContext } from "../modes/types";

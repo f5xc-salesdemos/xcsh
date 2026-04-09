@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { logger, ptree } from "@xcsh/pi-utils";
+import { logger, ptree } from "@f5xc-salesdemos/pi-utils";
 import { NON_INTERACTIVE_ENV } from "../exec/non-interactive-env";
 import { DapClient } from "./client";
 import type {

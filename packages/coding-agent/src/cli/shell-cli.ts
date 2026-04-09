@@ -5,8 +5,8 @@
  */
 import * as path from "node:path";
 import { createInterface } from "node:readline/promises";
-import { Shell } from "@xcsh/pi-natives";
-import { APP_NAME, getProjectDir } from "@xcsh/pi-utils";
+import { Shell } from "@f5xc-salesdemos/pi-natives";
+import { APP_NAME, getProjectDir } from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { Settings } from "../config/settings";
 import { getOrCreateSnapshot } from "../utils/shell-snapshot";

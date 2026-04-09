@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import { createServer } from "node:net";
 import * as path from "node:path";
-import { getAgentDir, isEnoent, logger, procmgr } from "@xcsh/pi-utils";
+import { getAgentDir, isEnoent, logger, procmgr } from "@f5xc-salesdemos/pi-utils";
 import type { Subprocess } from "bun";
 import { Settings } from "../config/settings";
 import { getOrCreateSnapshot } from "../utils/shell-snapshot";

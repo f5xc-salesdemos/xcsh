@@ -1,7 +1,7 @@
 /**
  * View recently reported tool issues from automated QA.
  */
-import { Command, Flags } from "@xcsh/pi-utils/cli";
+import { Command, Flags } from "@f5xc-salesdemos/pi-utils/cli";
 import { listGrievances } from "../cli/grievances-cli";
 
 export default class Grievances extends Command {

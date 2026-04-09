@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { TUI } from "@xcsh/pi-tui";
-import { Loader } from "@xcsh/pi-tui/components/loader";
-import { visibleWidth } from "@xcsh/pi-tui/utils";
+import { TUI } from "@f5xc-salesdemos/pi-tui";
+import { Loader } from "@f5xc-salesdemos/pi-tui/components/loader";
+import { visibleWidth } from "@f5xc-salesdemos/pi-tui/utils";
 import { VirtualTerminal } from "./virtual-terminal";
 
 describe("Loader component", () => {

@@ -2,17 +2,17 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentEvent, AgentMessage } from "@xcsh/pi-agent-core";
-import { type AssistantMessage, Effort, type TextContent } from "@xcsh/pi-ai";
+import type { AgentEvent, AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import { type AssistantMessage, Effort, type TextContent } from "@f5xc-salesdemos/pi-ai";
+import { Snowflake } from "@f5xc-salesdemos/pi-utils";
 import {
 	type CompactionEntry,
 	type FileEntry,
 	parseSessionEntries,
 	type SessionMessageEntry,
-} from "@xcsh/pi-coding-agent";
-import { RpcClient } from "@xcsh/pi-coding-agent/modes/rpc/rpc-client";
-import type { BashExecutionMessage } from "@xcsh/pi-coding-agent/session/messages";
-import { Snowflake } from "@xcsh/pi-utils";
+} from "@f5xc-salesdemos/xcsh";
+import { RpcClient } from "@f5xc-salesdemos/xcsh/modes/rpc/rpc-client";
+import type { BashExecutionMessage } from "@f5xc-salesdemos/xcsh/session/messages";
 import { e2eApiKey } from "./utilities";
 
 type MessageEndEvent = Extract<AgentEvent, { type: "message_end" }>;

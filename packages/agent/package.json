@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "@xcsh/pi-agent-core",
+	"name": "@f5xc-salesdemos/pi-agent-core",
 	"version": "14.0.1",
 	"description": "General-purpose agent with transport abstraction, state management, and attachment support",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
@@ -35,8 +35,8 @@
 		"fmt": "biome format --write ."
 	},
 	"dependencies": {
-		"@xcsh/pi-ai": "workspace:*",
-		"@xcsh/pi-utils": "workspace:*"
+		"@f5xc-salesdemos/pi-ai": "workspace:*",
+		"@f5xc-salesdemos/pi-utils": "workspace:*"
 	},
 	"devDependencies": {
 		"@sinclair/typebox": "^0.34",

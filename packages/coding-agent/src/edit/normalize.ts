@@ -4,7 +4,7 @@
  * Handles line endings, BOM, whitespace, and Unicode normalization.
  */
 
-import { padding } from "@xcsh/pi-tui";
+import { padding } from "@f5xc-salesdemos/pi-tui";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Line Ending Utilities

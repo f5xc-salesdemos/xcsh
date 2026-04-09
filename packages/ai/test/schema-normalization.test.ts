@@ -8,7 +8,7 @@ import {
 	sanitizeSchemaForStrictMode,
 	stripResidualCombiners,
 	tryEnforceStrictSchema,
-} from "@xcsh/pi-ai/utils/schema";
+} from "@f5xc-salesdemos/pi-ai/utils/schema";
 
 // ---------------------------------------------------------------------------
 // mergeCompatibleEnumSchemas

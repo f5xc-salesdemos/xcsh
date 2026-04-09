@@ -1,11 +1,16 @@
 import type * as fs from "node:fs";
 import * as path from "node:path";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import type { ImageContent } from "@f5xc-salesdemos/pi-ai";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Markdown, Text } from "@f5xc-salesdemos/pi-tui";
+import { getProjectDir, prompt } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import type { ImageContent } from "@xcsh/pi-ai";
-import type { Component } from "@xcsh/pi-tui";
-import { Markdown, Text } from "@xcsh/pi-tui";
-import { getProjectDir, prompt } from "@xcsh/pi-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { executePython, getPreludeDocs, type PythonExecutorOptions, warmPythonEnvironment } from "../ipy/executor";
 import type { PreludeHelper, PythonStatusEvent } from "../ipy/kernel";

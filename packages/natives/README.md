@@ -1,4 +1,4 @@
-# @xcsh/pi-natives
+# @f5xc-salesdemos/pi-natives
 
 Native Rust functionality via N-API.
 
@@ -11,7 +11,7 @@ Native Rust functionality via N-API.
 ## Usage
 
 ```typescript
-import { grep, find, PhotonImage, SamplingFilter, ImageFormat } from "@xcsh/pi-natives";
+import { grep, find, PhotonImage, SamplingFilter, ImageFormat } from "@f5xc-salesdemos/pi-natives";
 
 // Grep for a pattern
 const results = await grep({

@@ -1,4 +1,4 @@
-import { $env } from "@xcsh/pi-utils";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 
 const SIXEL_START_REGEX = /\x1bP(?:[0-9;]*)q/u;
 const SIXEL_END_SEQUENCE = "\x1b\\";

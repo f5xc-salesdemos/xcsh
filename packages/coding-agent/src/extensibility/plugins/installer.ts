@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { getAgentDir, getProjectDir, isEnoent } from "@xcsh/pi-utils";
+import { getAgentDir, getProjectDir, isEnoent } from "@f5xc-salesdemos/pi-utils";
 import { extractPackageName } from "./parser";
 import type { InstalledPlugin } from "./types";
 

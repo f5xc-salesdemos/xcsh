@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import * as gatewayCoordinator from "@xcsh/pi-coding-agent/ipy/gateway-coordinator";
-import { PythonKernel } from "@xcsh/pi-coding-agent/ipy/kernel";
-import { hookFetch, TempDir } from "@xcsh/pi-utils";
+import { hookFetch, TempDir } from "@f5xc-salesdemos/pi-utils";
+import * as gatewayCoordinator from "@f5xc-salesdemos/xcsh/ipy/gateway-coordinator";
+import { PythonKernel } from "@f5xc-salesdemos/xcsh/ipy/kernel";
 import type { Subprocess } from "bun";
 
 type SpawnOptions = Bun.SpawnOptions.SpawnOptions<

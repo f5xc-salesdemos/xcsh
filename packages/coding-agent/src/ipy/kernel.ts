@@ -1,4 +1,4 @@
-import { $env, logger, Snowflake } from "@xcsh/pi-utils";
+import { $env, logger, Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import { Settings } from "../config/settings";
 import { htmlToBasicMarkdown } from "../web/scrapers/types";

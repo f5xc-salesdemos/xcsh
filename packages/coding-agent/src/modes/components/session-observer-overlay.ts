@@ -13,9 +13,9 @@
  *   - Esc from picker -> close overlay
  *   - Enter on main session -> close overlay (jump back)
  */
-import type { AssistantMessage, ToolResultMessage } from "@xcsh/pi-ai";
-import { Container, Markdown, matchesKey, type SelectItem, SelectList, Spacer, Text } from "@xcsh/pi-tui";
-import { formatDuration, formatNumber, logger } from "@xcsh/pi-utils";
+import type { AssistantMessage, ToolResultMessage } from "@f5xc-salesdemos/pi-ai";
+import { Container, Markdown, matchesKey, type SelectItem, SelectList, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
+import { formatDuration, formatNumber, logger } from "@f5xc-salesdemos/pi-utils";
 import type { KeyId } from "../../config/keybindings";
 import type { SessionMessageEntry } from "../../session/session-manager";
 import { parseSessionEntries } from "../../session/session-manager";

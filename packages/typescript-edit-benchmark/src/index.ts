@@ -11,10 +11,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
-import { type ResolvedThinkingLevel, ThinkingLevel } from "@xcsh/pi-agent-core";
-import { Effort, THINKING_EFFORTS } from "@xcsh/pi-ai";
-import { padding } from "@xcsh/pi-tui";
-import { TempDir } from "@xcsh/pi-utils";
+import { type ResolvedThinkingLevel, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import { Effort, THINKING_EFFORTS } from "@f5xc-salesdemos/pi-ai";
+import { padding } from "@f5xc-salesdemos/pi-tui";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
 import { generateJsonReport, generateReport } from "./report";
 import { type BenchmarkConfig, type ProgressEvent, runBenchmark } from "./runner";
 import { type EditTask, loadTasksFromDir, validateFixturesFromDir } from "./tasks";

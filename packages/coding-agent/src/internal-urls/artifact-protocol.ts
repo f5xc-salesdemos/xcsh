@@ -11,7 +11,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { isEnoent } from "@xcsh/pi-utils";
+import { isEnoent } from "@f5xc-salesdemos/pi-utils";
 import type { InternalResource, InternalUrl, ProtocolHandler } from "./types";
 
 export interface ArtifactProtocolOptions {

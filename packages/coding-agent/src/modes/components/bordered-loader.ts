@@ -1,4 +1,4 @@
-import { CancellableLoader, Container, Spacer, Text, type TUI } from "@xcsh/pi-tui";
+import { CancellableLoader, Container, Spacer, Text, type TUI } from "@f5xc-salesdemos/pi-tui";
 import type { Theme } from "../../modes/theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 

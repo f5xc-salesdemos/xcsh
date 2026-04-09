@@ -11,15 +11,15 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Agent } from "@xcsh/pi-agent-core";
-import { getBundledModel } from "@xcsh/pi-ai";
-import { ModelRegistry } from "@xcsh/pi-coding-agent/config/model-registry";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { AgentSession } from "@xcsh/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@xcsh/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@xcsh/pi-coding-agent/session/session-manager";
-import { createTools, type ToolSession } from "@xcsh/pi-coding-agent/tools";
-import { Snowflake } from "@xcsh/pi-utils";
+import { Agent } from "@f5xc-salesdemos/pi-agent-core";
+import { getBundledModel } from "@f5xc-salesdemos/pi-ai";
+import { Snowflake } from "@f5xc-salesdemos/pi-utils";
+import { ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { AgentSession } from "@f5xc-salesdemos/xcsh/session/agent-session";
+import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
+import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
+import { createTools, type ToolSession } from "@f5xc-salesdemos/xcsh/tools";
 import { e2eApiKey } from "./utilities";
 
 describe.skipIf(!e2eApiKey("ANTHROPIC_API_KEY"))("AgentSession branching", () => {

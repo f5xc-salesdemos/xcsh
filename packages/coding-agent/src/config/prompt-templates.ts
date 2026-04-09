@@ -1,7 +1,14 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { type ChunkAnchorStyle, formatAnchor } from "@xcsh/pi-natives";
-import { getProjectDir, getProjectPromptsDir, getPromptsDir, logger, parseFrontmatter, prompt } from "@xcsh/pi-utils";
+import { type ChunkAnchorStyle, formatAnchor } from "@f5xc-salesdemos/pi-natives";
+import {
+	getProjectDir,
+	getProjectPromptsDir,
+	getPromptsDir,
+	logger,
+	parseFrontmatter,
+	prompt,
+} from "@f5xc-salesdemos/pi-utils";
 import { computeLineHash } from "../edit/line-hash";
 import { jtdToTypeScript } from "../tools/jtd-to-typescript";
 import { parseCommandArgs, substituteArgs } from "../utils/command-args";

@@ -1,6 +1,6 @@
-import { INTENT_FIELD } from "@xcsh/pi-agent-core";
-import type { AssistantMessage, ImageContent } from "@xcsh/pi-ai";
-import { Loader, TERMINAL, Text } from "@xcsh/pi-tui";
+import { INTENT_FIELD } from "@f5xc-salesdemos/pi-agent-core";
+import type { AssistantMessage, ImageContent } from "@f5xc-salesdemos/pi-ai";
+import { Loader, TERMINAL, Text } from "@f5xc-salesdemos/pi-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
 import { ReadToolGroupComponent } from "../../modes/components/read-tool-group";

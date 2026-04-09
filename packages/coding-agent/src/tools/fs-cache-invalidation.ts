@@ -1,4 +1,4 @@
-import { invalidateFsScanCache } from "@xcsh/pi-natives";
+import { invalidateFsScanCache } from "@f5xc-salesdemos/pi-natives";
 import { invalidateChunkCache } from "../edit/modes/chunk";
 
 /**

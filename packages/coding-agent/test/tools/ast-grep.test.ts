@@ -2,8 +2,8 @@ import { describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { createTools, type ToolSession } from "@xcsh/pi-coding-agent/tools";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { createTools, type ToolSession } from "@f5xc-salesdemos/xcsh/tools";
 
 function createTestSession(cwd = "/tmp/test", overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

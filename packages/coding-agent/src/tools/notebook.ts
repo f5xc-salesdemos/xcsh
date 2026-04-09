@@ -1,9 +1,14 @@
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { isEnoent, untilAborted } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@xcsh/pi-agent-core";
-import { StringEnum } from "@xcsh/pi-ai";
-import type { Component } from "@xcsh/pi-tui";
-import { Text } from "@xcsh/pi-tui";
-import { isEnoent, untilAborted } from "@xcsh/pi-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import type { ToolSession } from "../sdk";

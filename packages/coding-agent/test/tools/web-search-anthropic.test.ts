@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { hookFetch } from "@xcsh/pi-utils";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
 import { searchAnthropic } from "../../src/web/search/providers/anthropic";
 
 type CapturedRequest = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { KeybindingsManager, TUI_KEYBINDINGS } from "@xcsh/pi-tui/keybindings";
+import { KeybindingsManager, TUI_KEYBINDINGS } from "@f5xc-salesdemos/pi-tui/keybindings";
 
 describe("KeybindingsManager", () => {
 	it("does not evict selector confirm when input submit is rebound", () => {

@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { type ContextFile, contextFileCapability } from "@xcsh/pi-coding-agent/capability/context-file";
-import { _resetSettingsForTest, Settings } from "@xcsh/pi-coding-agent/config/settings";
-import { initializeWithSettings, loadCapability } from "@xcsh/pi-coding-agent/discovery";
+import { type ContextFile, contextFileCapability } from "@f5xc-salesdemos/xcsh/capability/context-file";
+import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { initializeWithSettings, loadCapability } from "@f5xc-salesdemos/xcsh/discovery";
 
 describe("disabledExtensions runtime filtering", () => {
 	let tempDir = "";
