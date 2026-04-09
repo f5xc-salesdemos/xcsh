@@ -222,7 +222,10 @@ async function cmdRelease(version: string): Promise<void> {
 		publicPkgPaths.push(pkgPath);
 	}
 
-	await $`sd '"version": "[^"]+"' ${`"version": "${version}"`} ${publicPkgPaths}`;
+	for (const pkgPath of publicPkgPaths) {
+		const content = await Bun.file(pkgPath).text();
+		await Bun.write(pkgPath, content.replace(/"version": "[^"]+"/, `"version": "${version}"`));
+	}
 
 	// Verify
 	console.log("  Verifying versions:");
@@ -234,7 +237,8 @@ async function cmdRelease(version: string): Promise<void> {
 
 	// 3. Update Rust workspace version
 	console.log(`Updating Rust workspace version to ${version}…`);
-	await $`sd '^version = "[^"]+"' ${`version = "${version}"`} Cargo.toml`;
+	const cargoContent = await Bun.file("Cargo.toml").text();
+	await Bun.write("Cargo.toml", cargoContent.replace(/^version = "[^"]+"/m, `version = "${version}"`));
 
 	// Verify
 	const cargoToml = await Bun.file("Cargo.toml").text();
@@ -267,10 +271,14 @@ async function cmdRelease(version: string): Promise<void> {
 	await updateChangelogsForRelease(version);
 	console.log();
 
-	// 6. Run checks
-	console.log("Running checks...");
-	await $`bun run check`;
-	console.log();
+	// 6. Run checks (skip in CI — already validated by prerequisite jobs)
+	if (process.env.CI) {
+		console.log("Skipping checks (CI already validated).\n");
+	} else {
+		console.log("Running checks...");
+		await $`bun run check`;
+		console.log();
+	}
 
 	// 7. Commit and tag
 	console.log("Committing and tagging...");
@@ -302,6 +310,112 @@ async function cmdRelease(version: string): Promise<void> {
 }
 
 // =============================================================================
+// Auto version detection from conventional commits
+// =============================================================================
+
+type BumpType = "major" | "minor" | "patch" | "none";
+
+function classifyCommit(message: string): BumpType {
+	const firstLine = message.split("\n")[0]!;
+
+	// Check for breaking changes (! after type or BREAKING CHANGE in body)
+	if (/^[a-z]+(\(.+\))?!:/.test(firstLine) || message.includes("BREAKING CHANGE")) {
+		return "major";
+	}
+
+	const typeMatch = firstLine.match(/^([a-z]+)(\(.+\))?:/);
+	if (!typeMatch) return "none";
+
+	const type = typeMatch[1]!;
+	switch (type) {
+		case "feat":
+			return "minor";
+		case "fix":
+		case "perf":
+			return "patch";
+		default:
+			return "none";
+	}
+}
+
+function bumpVersion(current: string, bump: BumpType): string {
+	const [major, minor, patch] = parseVersion(current);
+	switch (bump) {
+		case "major":
+			return `${major + 1}.0.0`;
+		case "minor":
+			return `${major}.${minor + 1}.0`;
+		case "patch":
+			return `${major}.${minor}.${patch + 1}`;
+		default:
+			return current;
+	}
+}
+
+async function detectVersionBump(): Promise<{ version: string; bump: BumpType; commits: string[] } | null> {
+	const latestTag = (await $`git describe --tags --abbrev=0 --match ${"v*"}`.text().catch(() => "")).trim();
+	if (!latestTag) {
+		console.error("No tags found. Run a manual release first.");
+		process.exit(1);
+	}
+
+	const currentVersion = latestTag.replace(/^v/, "");
+	const log = (await $`git log ${`${latestTag}..HEAD`} --format=%B---COMMIT_SEP---`.text()).trim();
+
+	if (!log) {
+		return null;
+	}
+
+	const commitMessages = log
+		.split("---COMMIT_SEP---")
+		.map(m => m.trim())
+		.filter(Boolean);
+
+	let highestBump: BumpType = "none";
+	const releasableCommits: string[] = [];
+
+	for (const msg of commitMessages) {
+		const bump = classifyCommit(msg);
+		if (bump !== "none") {
+			releasableCommits.push(msg.split("\n")[0]!);
+			if (bump === "major" || (bump === "minor" && highestBump !== "major") || (bump === "patch" && highestBump === "none")) {
+				highestBump = bump;
+			}
+		}
+	}
+
+	if (highestBump === "none") {
+		return null;
+	}
+
+	return {
+		version: bumpVersion(currentVersion, highestBump),
+		bump: highestBump,
+		commits: releasableCommits,
+	};
+}
+
+async function cmdAutoRelease(): Promise<void> {
+	console.log("\n=== Auto Release Detection ===\n");
+
+	const result = await detectVersionBump();
+
+	if (!result) {
+		console.log("No releasable changes since last tag. Skipping release.");
+		process.exit(0);
+	}
+
+	console.log(`Detected ${result.bump} bump → v${result.version}`);
+	console.log(`Releasable commits (${result.commits.length}):`);
+	for (const c of result.commits) {
+		console.log(`  - ${c}`);
+	}
+	console.log();
+
+	await cmdRelease(result.version);
+}
+
+// =============================================================================
 // Main
 // =============================================================================
 
@@ -309,19 +423,23 @@ const arg = process.argv[2];
 
 if (!arg) {
 	console.error("Usage:");
-	console.error("  bun scripts/release.ts <version>   Full release");
+	console.error("  bun scripts/release.ts <version>   Full release with explicit version");
+	console.error("  bun scripts/release.ts auto        Auto-detect version from conventional commits");
 	console.error("  bun scripts/release.ts watch       Watch CI for current commit");
 	process.exit(1);
 }
 
 if (arg === "watch") {
 	await cmdWatch();
+} else if (arg === "auto") {
+	await cmdAutoRelease();
 } else if (/^\d+\.\d+\.\d+/.test(arg)) {
 	await cmdRelease(arg);
 } else {
 	console.error(`Unknown command or invalid version: ${arg}`);
 	console.error("Usage:");
-	console.error("  bun scripts/release.ts <version>   Full release");
+	console.error("  bun scripts/release.ts <version>   Full release with explicit version");
+	console.error("  bun scripts/release.ts auto        Auto-detect version from conventional commits");
 	console.error("  bun scripts/release.ts watch       Watch CI for current commit");
 	process.exit(1);
 }

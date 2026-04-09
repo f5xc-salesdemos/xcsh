@@ -53,13 +53,17 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ startsWith(github.ref, 'refs/tags/v') && fromJSON('[
-          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"baseline modern","rust_checks":true},
+          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"baseline","rust_checks":true},
+          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"modern"},
           {"os":"ubuntu-22.04","platform":"linux","arch":"arm64","target":"aarch64-unknown-linux-gnu"},
-          {"os":"macos-15-intel","platform":"darwin","arch":"x64","variants":"baseline modern"},
+          {"os":"macos-15-intel","platform":"darwin","arch":"x64","variants":"baseline"},
+          {"os":"macos-15-intel","platform":"darwin","arch":"x64","variants":"modern"},
           {"os":"macos-14","platform":"darwin","arch":"arm64"},
-          {"os":"windows-latest","platform":"win32","arch":"x64","variants":"baseline modern"}
+          {"os":"windows-latest","platform":"win32","arch":"x64","variants":"baseline"},
+          {"os":"windows-latest","platform":"win32","arch":"x64","variants":"modern"}
           ]') || fromJSON('[
-          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"baseline modern","rust_checks":true}
+          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"baseline","rust_checks":true},
+          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"modern"}
           ]') }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -76,7 +80,7 @@ jobs:
         run: rustup target add ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.target }}
+          key: ${{ matrix.target }}${{ matrix.variants }}
           cache-workspace-crates: true
       - uses: oven-sh/setup-bun@v2
         with:
@@ -106,7 +110,7 @@ jobs:
       - name: Upload native addon(s)
         uses: actions/upload-artifact@v4
         with:
-          name: pi-natives-${{ matrix.platform }}-${{ matrix.arch }}
+          name: pi-natives-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.variants && format('-{0}', matrix.variants) || '' }}
           path: packages/natives/native/pi_natives.${{ matrix.platform }}-${{ matrix.arch }}*.node
           if-no-files-found: error
 
@@ -192,6 +196,35 @@ jobs:
       - name: Install method smoke tests
         run: bun run ci:test:install-methods
 
+  auto-release:
+    if: github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message, 'chore:')
+    needs: [check, native, test, install_methods]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Auto-detect version and release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: bun scripts/release.ts auto
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [check, native, test, install_methods]
@@ -202,6 +235,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          token: ${{ secrets.RELEASE_TOKEN }}
           lfs: true
       - uses: oven-sh/setup-bun@v2
         with:
@@ -229,9 +263,12 @@ jobs:
         run: bun run ci:release:build-binaries
       - name: Stage native addons for release
         run: cp packages/natives/native/*.node packages/coding-agent/binaries/
+      - name: Package archives for Homebrew
+        run: bun scripts/ci-release-homebrew.ts --package-only
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.RELEASE_TOKEN }}
           files: packages/coding-agent/binaries/*
           generate_release_notes: true
       - name: Publish to npm
@@ -239,3 +276,7 @@ jobs:
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: bun run ci:release:publish
+      - name: Update Homebrew tap
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: bun scripts/ci-release-homebrew.ts --update-tap
