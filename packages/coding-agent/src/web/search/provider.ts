@@ -3,6 +3,7 @@ import type { SearchProvider } from "./providers/base";
 import { BraveProvider } from "./providers/brave";
 import { CodexProvider } from "./providers/codex";
 import { ExaProvider } from "./providers/exa";
+import { FirecrawlProvider } from "./providers/firecrawl";
 import { GeminiProvider } from "./providers/gemini";
 import { JinaProvider } from "./providers/jina";
 import { KagiProvider } from "./providers/kagi";
@@ -30,10 +31,12 @@ const SEARCH_PROVIDERS: Record<SearchProviderId, SearchProvider> = {
 	tavily: new TavilyProvider(),
 	parallel: new ParallelProvider(),
 	kagi: new KagiProvider(),
+	firecrawl: new FirecrawlProvider(),
 	synthetic: new SyntheticProvider(),
 } as const;
 
 export const SEARCH_PROVIDER_ORDER: SearchProviderId[] = [
+	"firecrawl",
 	"tavily",
 	"perplexity",
 	"brave",

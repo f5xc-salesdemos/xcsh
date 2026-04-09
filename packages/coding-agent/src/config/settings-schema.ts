@@ -1580,6 +1580,7 @@ export const SETTINGS_SCHEMA = {
 		type: "enum",
 		values: [
 			"auto",
+			"firecrawl",
 			"exa",
 			"brave",
 			"jina",
