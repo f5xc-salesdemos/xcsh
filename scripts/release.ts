@@ -222,7 +222,10 @@ async function cmdRelease(version: string): Promise<void> {
 		publicPkgPaths.push(pkgPath);
 	}
 
-	await $`sd '"version": "[^"]+"' ${`"version": "${version}"`} ${publicPkgPaths}`;
+	for (const pkgPath of publicPkgPaths) {
+		const content = await Bun.file(pkgPath).text();
+		await Bun.write(pkgPath, content.replace(/"version": "[^"]+"/, `"version": "${version}"`));
+	}
 
 	// Verify
 	console.log("  Verifying versions:");
@@ -234,7 +237,8 @@ async function cmdRelease(version: string): Promise<void> {
 
 	// 3. Update Rust workspace version
 	console.log(`Updating Rust workspace version to ${version}…`);
-	await $`sd '^version = "[^"]+"' ${`version = "${version}"`} Cargo.toml`;
+	const cargoContent = await Bun.file("Cargo.toml").text();
+	await Bun.write("Cargo.toml", cargoContent.replace(/^version = "[^"]+"/m, `version = "${version}"`));
 
 	// Verify
 	const cargoToml = await Bun.file("Cargo.toml").text();
