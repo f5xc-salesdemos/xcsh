@@ -531,8 +531,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		} else if (this.isPythonMode) {
 			this.editor.borderColor = theme.getPythonModeBorderColor();
 		} else {
-			const level = this.session.thinkingLevel ?? ThinkingLevel.Off;
-			this.editor.borderColor = theme.getThinkingBorderColor(level);
+			this.editor.borderColor = (str: string) => theme.fg("border", str);
 		}
 		this.updateEditorTopBorder();
 		this.ui.requestRender();
