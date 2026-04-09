@@ -70,13 +70,13 @@ for pkg in utils natives ai agent tui stats coding-agent; do
 	)
 done
 
-utils_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-utils-*.tgz)"
-natives_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-natives-*.tgz)"
-ai_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-ai-*.tgz)"
-agent_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-agent-core-*.tgz)"
-tui_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-tui-*.tgz)"
-stats_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-xcsh-stats-*.tgz)"
-coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/xcsh-pi-coding-agent-*.tgz)"
+utils_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-utils-*.tgz)"
+natives_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-natives-*.tgz)"
+ai_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-ai-*.tgz)"
+agent_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-agent-core-*.tgz)"
+tui_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-tui-*.tgz)"
+stats_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-xcsh-stats-*.tgz)"
+coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-xcsh-[0-9]*.tgz)"
 
 TARBALL_APP_DIR="$WORK_DIR/tarball-install"
 mkdir -p "$TARBALL_APP_DIR"
