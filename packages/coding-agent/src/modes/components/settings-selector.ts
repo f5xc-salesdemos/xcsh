@@ -48,7 +48,7 @@ class TextInputSubmenu extends Container {
 	) {
 		super();
 
-		this.addChild(new Text(theme.bold(theme.fg("accent", label)), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", label)), 0, 0));
 		if (description) {
 			this.addChild(new Spacer(1));
 			this.addChild(new Text(theme.fg("muted", description), 0, 0));
@@ -96,7 +96,7 @@ class SelectSubmenu extends Container {
 		super();
 
 		// Title
-		this.addChild(new Text(theme.bold(theme.fg("accent", title)), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", title)), 0, 0));
 
 		// Description
 		if (description) {

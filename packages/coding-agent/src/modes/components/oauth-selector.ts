@@ -152,8 +152,8 @@ export class OAuthSelectorComponent extends Container {
 
 			let line = "";
 			if (isSelected) {
-				const prefix = theme.fg("accent", `${theme.nav.cursor} `);
-				const text = isAvailable ? theme.fg("accent", provider.name) : theme.fg("dim", provider.name);
+				const prefix = theme.fg("chromeAccent", `${theme.nav.cursor} `);
+				const text = isAvailable ? theme.fg("contentAccent", provider.name) : theme.fg("dim", provider.name);
 				line = prefix + text + statusIndicator;
 			} else {
 				const text = isAvailable ? `  ${provider.name}` : theme.fg("dim", `  ${provider.name}`);

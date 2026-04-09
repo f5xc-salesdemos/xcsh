@@ -34,9 +34,9 @@ export function renderFileList(options: FileListOptions, theme: Theme): string[]
 				const icon = !showIcons
 					? ""
 					: isDirectory
-						? theme.fg("accent", theme.icon.folder)
+						? theme.fg("contentAccent", theme.icon.folder)
 						: theme.fg("muted", theme.getLangIcon(lang));
-				const labelColor = isDirectory ? "accent" : "toolOutput";
+				const labelColor = isDirectory ? "contentAccent" : "toolOutput";
 				const meta = entry.meta ? ` ${theme.fg("dim", entry.meta)}` : "";
 				const iconPrefix = icon ? `${icon} ` : "";
 				return `${iconPrefix}${theme.fg(labelColor, displayPath)}${meta}`;

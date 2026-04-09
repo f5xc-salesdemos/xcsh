@@ -505,13 +505,13 @@ function renderAgentProgress(
 			? "success"
 			: progress.status === "failed" || progress.status === "aborted"
 				? "error"
-				: "accent";
+				: "contentAccent";
 
 	// Main status line: id: description [status] · stats · ⟨agent⟩
 	const description = progress.description?.trim();
 	const displayId = formatTaskId(progress.id);
 	const titlePart = description ? `${theme.bold(displayId)}: ${description}` : displayId;
-	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("accent", titlePart)}`;
+	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("contentAccent", titlePart)}`;
 
 	// Only show badge for non-running states (spinner already indicates running)
 	if (progress.status === "failed" || progress.status === "aborted") {
@@ -760,7 +760,7 @@ function renderAgentResult(result: SingleResult, isLast: boolean, expanded: bool
 	const description = result.description?.trim();
 	const displayId = formatTaskId(result.id);
 	const titlePart = description ? `${theme.bold(displayId)}: ${description}` : displayId;
-	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("accent", titlePart)} ${formatBadge(
+	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("contentAccent", titlePart)} ${formatBadge(
 		statusText,
 		iconColor,
 		theme,

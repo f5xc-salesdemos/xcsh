@@ -634,7 +634,7 @@ export class DebugLogViewerComponent implements Component {
 
 	#filterText(): string {
 		const sanitized = replaceTabs(sanitizeText(this.#model.filterQuery));
-		const query = sanitized.length === 0 ? "" : theme.fg("accent", sanitized);
+		const query = sanitized.length === 0 ? "" : theme.fg("contentAccent", sanitized);
 		const pidStatus = this.#model.isProcessFilterEnabled()
 			? theme.fg("success", "pid:on")
 			: theme.fg("muted", "pid:off");
@@ -740,7 +740,7 @@ export class DebugLogViewerComponent implements Component {
 
 			if (row.kind === "load-older") {
 				const active = this.#model.cursorRowIndex === rowIndex;
-				const marker = active ? theme.fg("accent", "❯") : " ";
+				const marker = active ? theme.fg("chromeAccent", "❯") : " ";
 				const prefix = `${marker}  `;
 				const contentWidth = Math.max(1, innerWidth - visibleWidth(prefix));
 				const label = truncateToWidth(LOAD_OLDER_LABEL, contentWidth);
@@ -756,8 +756,8 @@ export class DebugLogViewerComponent implements Component {
 			const cursorLogIndex = this.#model.cursorLogIndex;
 			const active = cursorLogIndex !== undefined && cursorLogIndex === logIndex;
 			const expanded = this.#model.isExpanded(logIndex);
-			const marker = active ? theme.fg("accent", "❯") : selected ? theme.fg("accent", "•") : " ";
-			const fold = expanded ? theme.fg("accent", "▾") : theme.fg("muted", "▸");
+			const marker = active ? theme.fg("chromeAccent", "❯") : selected ? theme.fg("chromeAccent", "•") : " ";
+			const fold = expanded ? theme.fg("contentAccent", "▾") : theme.fg("muted", "▸");
 			const prefix = `${marker}${fold} `;
 			const contentWidth = Math.max(1, innerWidth - visibleWidth(prefix));
 

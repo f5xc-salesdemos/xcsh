@@ -399,7 +399,7 @@ export const writeToolRenderer = {
 		const filePath = shortenPath(rawPath);
 		const lang = getLanguageFromPath(rawPath) ?? "text";
 		const langIcon = uiTheme.fg("muted", uiTheme.getLangIcon(lang));
-		const pathDisplay = filePath ? uiTheme.fg("accent", filePath) : uiTheme.fg("toolOutput", "…");
+		const pathDisplay = filePath ? uiTheme.fg("contentAccent", filePath) : uiTheme.fg("toolOutput", "…");
 		const spinner =
 			options?.spinnerFrame !== undefined ? formatStatusIcon("running", uiTheme, options.spinnerFrame) : "";
 
@@ -426,7 +426,7 @@ export const writeToolRenderer = {
 		const fileContent = args?.content || "";
 		const lang = getLanguageFromPath(rawPath);
 		const langIcon = uiTheme.fg("muted", uiTheme.getLangIcon(lang));
-		const pathDisplay = filePath ? uiTheme.fg("accent", filePath) : uiTheme.fg("toolOutput", "…");
+		const pathDisplay = filePath ? uiTheme.fg("contentAccent", filePath) : uiTheme.fg("toolOutput", "…");
 		const lineCount = countLines(fileContent);
 
 		// Build header with status icon

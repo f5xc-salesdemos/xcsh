@@ -113,7 +113,7 @@ export class UiHelpers {
 						const line = [
 							theme.fg("success", `${theme.status.success} Background job completed`),
 							theme.fg("dim", typeLabel),
-							theme.fg("accent", jobId),
+							theme.fg("contentAccent", jobId),
 							duration ? theme.fg("dim", `(${duration})`) : undefined,
 						]
 							.filter(Boolean)
@@ -164,7 +164,7 @@ export class UiHelpers {
 								: `(${file.lineCount} lines)`;
 					}
 					const text = `${theme.fg("dim", `${theme.tree.last} `)}${theme.fg("muted", "Read")} ${theme.fg(
-						"accent",
+						"chromeAccent",
 						file.path,
 					)} ${theme.fg("dim", suffix)}`;
 					this.ctx.chatContainer.addChild(new Text(text, 0, 0));
@@ -434,7 +434,7 @@ export class UiHelpers {
 				theme.bold(theme.fg("warning", "Update Available")) +
 					"\n" +
 					theme.fg("muted", `New version ${newVersion} is available. Run: `) +
-					theme.fg("accent", "xcsh update"),
+					theme.fg("contentAccent", "xcsh update"),
 				1,
 				0,
 			),

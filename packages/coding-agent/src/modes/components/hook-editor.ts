@@ -43,7 +43,7 @@ export class HookEditorComponent extends Container {
 		this.addChild(new Spacer(1));
 
 		// Title
-		this.addChild(new Text(theme.fg("accent", title), 1, 0));
+		this.addChild(new Text(theme.fg("contentAccent", title), 1, 0));
 		this.addChild(new Spacer(1));
 
 		// Editor

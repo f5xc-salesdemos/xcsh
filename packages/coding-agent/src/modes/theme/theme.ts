@@ -805,8 +805,11 @@ const ThemeJsonSchema = Type.Object({
 	name: Type.String(),
 	vars: Type.Optional(Type.Record(Type.String(), ColorValueSchema)),
 	colors: Type.Object({
-		// Core UI (10 colors)
+		// Core UI (12 colors)
 		accent: ColorValueSchema,
+		chromeAccent: Type.Optional(ColorValueSchema),
+		spinnerAccent: Type.Optional(ColorValueSchema),
+		contentAccent: Type.Optional(ColorValueSchema),
 		border: ColorValueSchema,
 		borderAccent: ColorValueSchema,
 		borderMuted: ColorValueSchema,
@@ -898,6 +901,9 @@ const validateThemeJson = TypeCompiler.Compile(ThemeJsonSchema as any);
 
 export type ThemeColor =
 	| "accent"
+	| "chromeAccent"
+	| "spinnerAccent"
+	| "contentAccent"
 	| "border"
 	| "borderAccent"
 	| "borderMuted"
@@ -960,6 +966,9 @@ export type ThemeColor =
 /** Set of all valid ThemeColor string values for runtime validation */
 const THEME_COLOR_RECORD = {
 	accent: true,
+	chromeAccent: true,
+	spinnerAccent: true,
+	contentAccent: true,
 	border: true,
 	borderAccent: true,
 	borderMuted: true,
@@ -1229,6 +1238,10 @@ export class Theme {
 		for (const [key, value] of Object.entries(fgColors) as [ThemeColor, string | number][]) {
 			this.#fgColors[key] = fgAnsi(value, mode);
 		}
+		// Fallback: chromeAccent and contentAccent inherit from accent when not defined
+		this.#fgColors.chromeAccent ??= this.#fgColors.accent;
+		this.#fgColors.spinnerAccent ??= this.#fgColors.accent;
+		this.#fgColors.contentAccent ??= this.#fgColors.accent;
 		this.#bgColors = {} as Record<ThemeBg, string>;
 		for (const [key, value] of Object.entries(bgColors) as [ThemeBg, string | number][]) {
 			this.#bgColors[key] = bgAnsi(value, mode);
@@ -2353,8 +2366,8 @@ export function getMarkdownTheme(): MarkdownTheme {
 
 export function getSelectListTheme(): SelectListTheme {
 	return {
-		selectedPrefix: (text: string) => theme.fg("accent", text),
-		selectedText: (text: string) => theme.fg("accent", text),
+		selectedPrefix: (text: string) => theme.fg("chromeAccent", text),
+		selectedText: (text: string) => theme.fg("chromeAccent", text),
 		description: (text: string) => theme.fg("muted", text),
 		scrollInfo: (text: string) => theme.fg("muted", text),
 		noMatch: (text: string) => theme.fg("muted", text),
@@ -2373,10 +2386,11 @@ export function getEditorTheme(): EditorTheme {
 
 export function getSettingsListTheme(): import("@f5xc-salesdemos/pi-tui").SettingsListTheme {
 	return {
-		label: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : text),
-		value: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : theme.fg("muted", text)),
+		label: (text: string, selected: boolean) => (selected ? theme.fg("contentAccent", text) : text),
+		value: (text: string, selected: boolean) =>
+			selected ? theme.fg("contentAccent", text) : theme.fg("muted", text),
 		description: (text: string) => theme.fg("dim", text),
-		cursor: theme.fg("accent", `${theme.nav.cursor} `),
+		cursor: theme.fg("chromeAccent", `${theme.nav.cursor} `),
 		hint: (text: string) => theme.fg("dim", text),
 	};
 }

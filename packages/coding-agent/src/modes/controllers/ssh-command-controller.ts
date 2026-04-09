@@ -57,7 +57,7 @@ export class SSHCommandController {
 			"",
 			"Manage SSH host configurations for remote command execution.",
 			"",
-			theme.fg("accent", "Commands:"),
+			theme.fg("contentAccent", "Commands:"),
 			"  /ssh add <name> --host <host> [--user <user>] [--port <port>] [--key <keyPath>] [--desc <description>] [--compat] [--scope project|user]",
 			"  /ssh list             List all configured SSH hosts",
 			"  /ssh remove <name> [--scope project|user]    Remove an SSH host (default: project)",
@@ -216,7 +216,7 @@ export class SSHCommandController {
 			if (description) lines.push(`  Desc: ${description}`);
 			if (compat) lines.push(`  Compat: true`);
 			lines.push("");
-			lines.push(theme.fg("muted", `Run ${theme.fg("accent", "/ssh list")} to see all configured hosts.`));
+			lines.push(theme.fg("muted", `Run ${theme.fg("contentAccent", "/ssh list")} to see all configured hosts.`));
 			lines.push("");
 
 			this.#showMessage(lines.join("\n"));
@@ -225,7 +225,7 @@ export class SSHCommandController {
 
 			let helpText = "";
 			if (errorMsg.includes("already exists")) {
-				helpText = `\n\nTip: Use ${theme.fg("accent", "/ssh remove")} first, or choose a different name.`;
+				helpText = `\n\nTip: Use ${theme.fg("contentAccent", "/ssh remove")} first, or choose a different name.`;
 			}
 
 			this.ctx.showError(`Failed to add host: ${errorMsg}${helpText}`);
@@ -267,7 +267,7 @@ export class SSHCommandController {
 						"",
 						theme.fg("muted", "No SSH hosts configured."),
 						"",
-						`Use ${theme.fg("accent", "/ssh add")} to add a host.`,
+						`Use ${theme.fg("contentAccent", "/ssh add")} to add a host.`,
 						"",
 					].join("\n"),
 				);
@@ -278,22 +278,22 @@ export class SSHCommandController {
 
 			// Show user-level hosts
 			if (userHosts.length > 0) {
-				lines.push(theme.fg("accent", "User level") + theme.fg("muted", ` (~/.xcsh/agent/ssh.json):`));
+				lines.push(theme.fg("contentAccent", "User level") + theme.fg("muted", ` (~/.xcsh/agent/ssh.json):`));
 				for (const name of userHosts) {
 					const config = userConfig.hosts![name];
 					const details = this.#formatHostDetails(config);
-					lines.push(`  ${theme.fg("accent", name)} ${details}`);
+					lines.push(`  ${theme.fg("contentAccent", name)} ${details}`);
 				}
 				lines.push("");
 			}
 
 			// Show project-level hosts
 			if (projectHosts.length > 0) {
-				lines.push(theme.fg("accent", "Project level") + theme.fg("muted", ` (.xcsh/ssh.json):`));
+				lines.push(theme.fg("contentAccent", "Project level") + theme.fg("muted", ` (.xcsh/ssh.json):`));
 				for (const name of projectHosts) {
 					const config = projectConfig.hosts![name];
 					const details = this.#formatHostDetails(config);
-					lines.push(`  ${theme.fg("accent", name)} ${details}`);
+					lines.push(`  ${theme.fg("contentAccent", name)} ${details}`);
 				}
 				lines.push("");
 			}
@@ -318,7 +318,7 @@ export class SSHCommandController {
 					const sourcePath = key.slice(sepIdx + 1);
 					const shortPath = shortenPath(sourcePath);
 					lines.push(
-						theme.fg("accent", "Discovered") +
+						theme.fg("contentAccent", "Discovered") +
 							theme.fg("muted", ` (${providerName}: ${shortPath}):`) +
 							theme.fg("dim", " read-only"),
 					);
@@ -328,7 +328,7 @@ export class SSHCommandController {
 							username: host.username,
 							port: host.port,
 						});
-						lines.push(`  ${theme.fg("accent", host.name)} ${details}`);
+						lines.push(`  ${theme.fg("contentAccent", host.name)} ${details}`);
 					}
 					lines.push("");
 				}

@@ -501,12 +501,12 @@ export class ModelSelectorComponent extends Container {
 
 			let line = "";
 			if (isSelected) {
-				const prefix = theme.fg("accent", `${theme.nav.cursor} `);
+				const prefix = theme.fg("chromeAccent", `${theme.nav.cursor} `);
 				if (showProvider) {
 					const providerPrefix = theme.fg("dim", `${item.provider}/`);
-					line = `${prefix}${providerPrefix}${theme.fg("accent", item.id)}${badgeText}`;
+					line = `${prefix}${providerPrefix}${theme.fg("contentAccent", item.id)}${badgeText}`;
 				} else {
-					line = `${prefix}${theme.fg("accent", item.id)}${badgeText}`;
+					line = `${prefix}${theme.fg("contentAccent", item.id)}${badgeText}`;
 				}
 			} else {
 				const prefix = "  ";
@@ -626,7 +626,7 @@ export class ModelSelectorComponent extends Container {
 			const lineText = optionLines[i];
 			if (!lineText) continue;
 			const isSelected = i === this.#menuSelectedIndex;
-			const line = isSelected ? theme.fg("accent", lineText) : theme.fg("muted", lineText);
+			const line = isSelected ? theme.fg("contentAccent", lineText) : theme.fg("muted", lineText);
 			this.#menuContainer.addChild(new Text(line, 0, 0));
 		}
 

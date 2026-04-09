@@ -12,7 +12,7 @@ export class BorderedLoader extends Container {
 		this.addChild(new DynamicBorder(borderColor));
 		this.#loader = new CancellableLoader(
 			tui,
-			s => theme.fg("accent", s),
+			s => theme.fg("spinnerAccent", s),
 			s => theme.fg("muted", s),
 			message,
 		);

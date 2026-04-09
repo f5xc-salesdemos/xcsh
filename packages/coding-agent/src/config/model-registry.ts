@@ -50,7 +50,7 @@ export interface ModelRoleInfo {
 export const MODEL_ROLES: Record<ModelRole, ModelRoleInfo> = {
 	default: { tag: "DEFAULT", name: "Default", color: "success" },
 	smol: { tag: "SMOL", name: "Fast", color: "warning" },
-	slow: { tag: "SLOW", name: "Thinking", color: "accent" },
+	slow: { tag: "SLOW", name: "Thinking", color: "contentAccent" },
 	vision: { tag: "VISION", name: "Vision", color: "error" },
 	plan: { tag: "PLAN", name: "Architect", color: "muted" },
 	commit: { tag: "COMMIT", name: "Commit", color: "dim" },
