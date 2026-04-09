@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# OMP Coding Agent Installer
+# XCSH Coding Agent Installer
 # Usage: curl -fsSL https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.sh | sh
 #
 # Options:

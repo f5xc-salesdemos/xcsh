@@ -1,4 +1,4 @@
-# OMP Coding Agent Installer for Windows
+# XCSH Coding Agent Installer for Windows
 # Usage: irm https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/scripts/install.ps1 | iex
 #
 # Or with options:
@@ -148,7 +148,7 @@ function Configure-BashShell {
         } else {
             Write-Host ""
             Write-Host "⚠ No bash shell found!" -ForegroundColor Yellow
-            Write-Host "  OMP requires a bash shell on Windows. Options:" -ForegroundColor Yellow
+            Write-Host "  XCSH requires a bash shell on Windows. Options:" -ForegroundColor Yellow
             Write-Host "    1. Install Git for Windows: https://git-scm.com/download/win" -ForegroundColor Yellow
             Write-Host "    2. Use WSL, Cygwin, or MSYS2" -ForegroundColor Yellow
             Write-Host ""
