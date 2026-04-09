@@ -28,7 +28,18 @@ const userDataDir =
 	process.platform === "win32"
 		? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "xcsh")
 		: path.join(os.homedir(), ".local", "bin");
+// PI_COMPILED is replaced with `true` at compile time by bun build --define PI_COMPILED=true.
+// In non-compiled contexts the identifier is undefined, so wrap in try-catch.
+// The __filename checks are kept as a secondary heuristic but are unreliable
+// in Bun compiled binaries where __filename resolves to the original build path.
+let _piCompiledFlag = false;
+try {
+	_piCompiledFlag = !!PI_COMPILED;
+} catch {
+	// Not a compiled binary (PI_COMPILED is not defined)
+}
 const isCompiledBinary =
+	_piCompiledFlag ||
 	process.env.PI_COMPILED ||
 	__filename.includes("$bunfs") ||
 	__filename.includes("~BUN") ||
