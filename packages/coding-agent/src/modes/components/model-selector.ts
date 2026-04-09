@@ -1,5 +1,5 @@
-import { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { getSupportedEfforts, type Model, modelsAreEqual } from "@oh-my-pi/pi-ai";
+import { ThinkingLevel } from "@xcsh/pi-agent-core";
+import { getSupportedEfforts, type Model, modelsAreEqual } from "@xcsh/pi-ai";
 import {
 	Container,
 	getKeybindings,
@@ -11,7 +11,7 @@ import {
 	Text,
 	type TUI,
 	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@xcsh/pi-tui";
 import type { ModelRegistry } from "../../config/model-registry";
 import { getKnownRoleIds, getRoleInfo, MODEL_ROLE_IDS, MODEL_ROLES } from "../../config/model-registry";
 import { resolveModelRoleValue } from "../../config/model-resolver";

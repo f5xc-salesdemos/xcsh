@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { loadPythonModules, type PythonModuleExecutor } from "@oh-my-pi/pi-coding-agent/ipy/modules";
-import { getAgentModulesDir, getProjectModulesDir, TempDir } from "@oh-my-pi/pi-utils";
+import { loadPythonModules, type PythonModuleExecutor } from "@xcsh/pi-coding-agent/ipy/modules";
+import { getAgentModulesDir, getProjectModulesDir, TempDir } from "@xcsh/pi-utils";
 
 const fixturesDir = path.resolve(import.meta.dir, "../../test/fixtures/python-modules");
 
@@ -26,13 +26,13 @@ describe("python modules", () => {
 	});
 
 	it("loads modules in sorted order and forwards startup execute options", async () => {
-		tempRoot = TempDir.createSync("@omp-python-modules-");
+		tempRoot = TempDir.createSync("@xcsh-python-modules-");
 		const agentDir = path.join(tempRoot.path(), "agent");
 		const cwd = path.join(tempRoot.path(), "project");
 		const signal = new AbortController().signal;
 
-		await writeModule(getAgentModulesDir(agentDir), "beta.py", "user-omp");
-		await writeModule(getAgentModulesDir(agentDir), "alpha.py", "user-omp");
+		await writeModule(getAgentModulesDir(agentDir), "beta.py", "user-xcsh");
+		await writeModule(getAgentModulesDir(agentDir), "alpha.py", "user-xcsh");
 
 		const calls: Array<{
 			name: string;
@@ -54,12 +54,12 @@ describe("python modules", () => {
 	});
 
 	it("derives module execution timeout from the remaining deadline", async () => {
-		tempRoot = TempDir.createSync("@omp-python-modules-");
+		tempRoot = TempDir.createSync("@xcsh-python-modules-");
 		const agentDir = path.join(tempRoot.path(), "agent");
 		const cwd = path.join(tempRoot.path(), "project");
 		const signal = new AbortController().signal;
 
-		await writeModule(getProjectModulesDir(cwd), "alpha.py", "project-omp");
+		await writeModule(getProjectModulesDir(cwd), "alpha.py", "project-xcsh");
 
 		const execute = vi.fn(
 			async (
@@ -86,13 +86,13 @@ describe("python modules", () => {
 	});
 
 	it("fails fast when the module deadline expires before the next execution starts", async () => {
-		tempRoot = TempDir.createSync("@omp-python-modules-");
+		tempRoot = TempDir.createSync("@xcsh-python-modules-");
 		const agentDir = path.join(tempRoot.path(), "agent");
 		const cwd = path.join(tempRoot.path(), "project");
 		const signal = new AbortController().signal;
 
-		await writeModule(getProjectModulesDir(cwd), "alpha.py", "project-omp");
-		await writeModule(getProjectModulesDir(cwd), "beta.py", "project-omp");
+		await writeModule(getProjectModulesDir(cwd), "alpha.py", "project-xcsh");
+		await writeModule(getProjectModulesDir(cwd), "beta.py", "project-xcsh");
 
 		const execute = vi.fn(async () => ({ status: "ok" as const, cancelled: false }));
 		const executor: PythonModuleExecutor = { execute };
@@ -112,11 +112,11 @@ describe("python modules", () => {
 	});
 
 	it("preserves timeout classification when module execution is cancelled", async () => {
-		tempRoot = TempDir.createSync("@omp-python-modules-");
+		tempRoot = TempDir.createSync("@xcsh-python-modules-");
 		const agentDir = path.join(tempRoot.path(), "agent");
 		const cwd = path.join(tempRoot.path(), "project");
 
-		await writeModule(getProjectModulesDir(cwd), "alpha.py", "project-omp");
+		await writeModule(getProjectModulesDir(cwd), "alpha.py", "project-xcsh");
 
 		const execute = vi.fn(async () => ({ status: "ok" as const, cancelled: true, timedOut: true }));
 		const executor: PythonModuleExecutor = { execute };
@@ -129,12 +129,12 @@ describe("python modules", () => {
 	});
 
 	it("fails fast when a module fails to execute", async () => {
-		tempRoot = TempDir.createSync("@omp-python-modules-");
+		tempRoot = TempDir.createSync("@xcsh-python-modules-");
 		const agentDir = path.join(tempRoot.path(), "agent");
 		const cwd = path.join(tempRoot.path(), "project");
 
-		await writeModule(getAgentModulesDir(agentDir), "alpha.py", "user-omp");
-		await writeModule(getProjectModulesDir(cwd), "beta.py", "project-omp");
+		await writeModule(getAgentModulesDir(agentDir), "alpha.py", "user-xcsh");
+		await writeModule(getProjectModulesDir(cwd), "beta.py", "project-xcsh");
 
 		const executor: PythonModuleExecutor = {
 			execute: async (code: string) => {

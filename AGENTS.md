@@ -15,7 +15,7 @@ This repo contains multiple packages, but **`packages/coding-agent/`** is the pr
 | `packages/coding-agent` | Main CLI application (primary focus)                 |
 | `packages/tui`          | Terminal UI library with differential rendering      |
 | `packages/natives`      | bindings for native text/image/grep operations       |
-| `packages/stats`        | Local observability dashboard (`omp stats`)          |
+| `packages/stats`        | Local observability dashboard (`xcsh stats`)          |
 | `packages/utils`        | Shared utilities (logger, streams, temp files)       |
 | `crates/pi-natives`     | Rust crate for performance-critical text/grep ops    |
 
@@ -194,7 +194,7 @@ if (await Bun.file(path).exists()) {
 }
 
 // GOOD: One syscall, atomic, type-safe error handling
-import { isEnoent } from "@oh-my-pi/pi-utils";
+import { isEnoent } from "@xcsh/pi-utils";
 
 try {
 	return await Bun.file(path).json();
@@ -339,7 +339,7 @@ const wrapped = Bun.wrapAnsi(text, width, {
 | File read/write | `Bun.file()`, `Bun.write()`           | `readFileSync`, `writeFileSync` |
 | Spawn process   | `$\`cmd\``, `Bun.spawn()`             | `child_process`                 |
 | Sleep           | `Bun.sleep(ms)`                       | `setTimeout` promise            |
-| Binary lookup   | `$which("git")` from `@oh-my-pi/pi-utils` | `spawnSync(["which", "git"])`   |
+| Binary lookup   | `$which("git")` from `@xcsh/pi-utils` | `spawnSync(["which", "git"])`   |
 | HTTP server     | `Bun.serve()`                         | `http.createServer()`           |
 | SQLite          | `bun:sqlite`                          | `better-sqlite3`                |
 | Hashing         | `Bun.hash()`, Web Crypto              | `node:crypto`                   |
@@ -383,14 +383,14 @@ const valid = await Bun.password.verify("password", hash);
 Use the centralized logger instead:
 
 ```typescript
-import { logger } from "@oh-my-pi/pi-utils";
+import { logger } from "@xcsh/pi-utils";
 
 logger.error("MCP request failed", { url, method });
 logger.warn("Theme file invalid, using fallback", { path });
 logger.debug("LSP fallback triggered", { reason });
 ```
 
-Logs go to `~/.omp/logs/omp.YYYY-MM-DD.log` with automatic rotation.
+Logs go to `~/.xcsh/logs/xcsh.YYYY-MM-DD.log` with automatic rotation.
 
 ## TUI Rendering Sanitization
 
@@ -398,7 +398,7 @@ All text displayed in tool renderers must be sanitized before output. Raw conten
 
 ### Rules
 
-- **Tabs → spaces**: Always pass displayed text through `replaceTabs()` before rendering. Tabs produce variable-width gaps in terminals and cause visual holes in the TUI. Import from `@oh-my-pi/pi-tui` or `../tools/render-utils`.
+- **Tabs → spaces**: Always pass displayed text through `replaceTabs()` before rendering. Tabs produce variable-width gaps in terminals and cause visual holes in the TUI. Import from `@xcsh/pi-tui` or `../tools/render-utils`.
 - **Line truncation**: Truncate displayed lines with `truncateToWidth()` or `ui.truncate()` to prevent horizontal overflow. Use constants from `TRUNCATE_LENGTHS` for consistency.
 - **Path shortening**: Use `shortenPath()` for file paths shown to users — replaces home directory prefix with `~`.
 - **Content preview limits**: Use `PREVIEW_LIMITS` constants for collapsed/expanded line counts. Don't invent ad-hoc limits.
@@ -514,8 +514,8 @@ Use these sections under `## [Unreleased]`:
 
 ### Attribution
 
-- **Internal changes (from issues)**: `Fixed foo bar ([#123](https://github.com/can1357/oh-my-pi/issues/123))`
-- **External contributions**: `Added feature X ([#456](https://github.com/can1357/oh-my-pi/pull/456) by [@username](https://github.com/username))`
+- **Internal changes (from issues)**: `Fixed foo bar ([#123](https://github.com/f5xc-salesdemos/xcsh/issues/123))`
+- **External contributions**: `Added feature X ([#456](https://github.com/f5xc-salesdemos/xcsh/pull/456) by [@username](https://github.com/username))`
 
 ## Releasing
 

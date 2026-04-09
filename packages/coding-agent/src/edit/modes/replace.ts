@@ -4,9 +4,10 @@
  * Provides both character-level and line-level fuzzy matching with progressive
  * fallback strategies for finding text in files.
  */
-import type { AgentToolResult } from "@oh-my-pi/pi-agent-core";
-import { isEnoent } from "@oh-my-pi/pi-utils";
+
 import { type Static, Type } from "@sinclair/typebox";
+import type { AgentToolResult } from "@xcsh/pi-agent-core";
+import { isEnoent } from "@xcsh/pi-utils";
 import type { WritethroughCallback, WritethroughDeferredHandle } from "../../lsp";
 import type { ToolSession } from "../../tools";
 import { invalidateFsScanAfterWrite } from "../../tools/fs-cache-invalidation";

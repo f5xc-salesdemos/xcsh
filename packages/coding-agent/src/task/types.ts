@@ -1,7 +1,7 @@
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { Usage } from "@oh-my-pi/pi-ai";
-import { $env } from "@oh-my-pi/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
+import type { ThinkingLevel } from "@xcsh/pi-agent-core";
+import type { Usage } from "@xcsh/pi-ai";
+import { $env } from "@xcsh/pi-utils";
 import type { NestedRepoPatch } from "./worktree";
 
 /** Source of an agent definition */

@@ -1,6 +1,6 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { $env, $which, logger } from "@oh-my-pi/pi-utils";
+import { $env, $which, logger } from "@xcsh/pi-utils";
 import { TOML } from "bun";
 
 /**

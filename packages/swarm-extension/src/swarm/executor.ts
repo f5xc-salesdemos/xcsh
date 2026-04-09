@@ -1,5 +1,5 @@
 /**
- * Swarm agent execution via oh-my-pi's subagent infrastructure.
+ * Swarm agent execution via xcsh's subagent infrastructure.
  *
  * Wraps `runSubprocess` to spawn individual swarm agents with full tool access.
  * Each agent runs in the swarm workspace with its task instructions as the user prompt.
@@ -13,8 +13,8 @@ import type {
 	ModelRegistry,
 	Settings,
 	SingleResult,
-} from "@oh-my-pi/pi-coding-agent";
-import { runSubprocess } from "@oh-my-pi/pi-coding-agent";
+} from "@xcsh/pi-coding-agent";
+import { runSubprocess } from "@xcsh/pi-coding-agent";
 import type { SwarmAgent } from "./schema";
 import type { StateTracker } from "./state";
 
@@ -32,7 +32,7 @@ export interface SwarmExecutorOptions {
 }
 
 /**
- * Execute a single swarm agent as an oh-my-pi subagent.
+ * Execute a single swarm agent as an xcsh subagent.
  *
  * The agent receives:
  * - System prompt: built from role + extra_context

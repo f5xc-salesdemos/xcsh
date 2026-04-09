@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { enforceStrictSchema, sanitizeSchemaForStrictMode, tryEnforceStrictSchema } from "@oh-my-pi/pi-ai/utils/schema";
 import { Type } from "@sinclair/typebox";
+import { enforceStrictSchema, sanitizeSchemaForStrictMode, tryEnforceStrictSchema } from "@xcsh/pi-ai/utils/schema";
 
 describe("sanitizeSchemaForStrictMode", () => {
 	it("infers object type, strips non-structural keywords, and converts const to enum", () => {

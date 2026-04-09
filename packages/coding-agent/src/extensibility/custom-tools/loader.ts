@@ -5,8 +5,8 @@
  * to avoid import resolution issues with custom tools loaded from user directories.
  */
 import * as path from "node:path";
-import { logger } from "@oh-my-pi/pi-utils";
 import * as typebox from "@sinclair/typebox";
+import { logger } from "@xcsh/pi-utils";
 import { toolCapability } from "../../capability/tool";
 import { type CustomTool, loadCapability } from "../../discovery";
 import type { ExecOptions } from "../../exec/exec";
@@ -85,7 +85,7 @@ export class CustomToolLoader {
 	#seenNames: Set<string>;
 
 	constructor(
-		pi: typeof import("@oh-my-pi/pi-coding-agent"),
+		pi: typeof import("@xcsh/pi-coding-agent"),
 		cwd: string,
 		builtInToolNames: string[],
 		pendingActionStore?: PendingActionStore,
@@ -162,7 +162,7 @@ export async function loadCustomTools(
 	pendingActionStore?: PendingActionStore,
 ) {
 	const loader = new CustomToolLoader(
-		await import("@oh-my-pi/pi-coding-agent"),
+		await import("@xcsh/pi-coding-agent"),
 		cwd,
 		builtInToolNames,
 		pendingActionStore,
@@ -180,7 +180,7 @@ export async function loadCustomTools(
 /**
  * Discover and load tools from standard locations via capability system:
  * 1. User and project tools discovered by capability providers
- * 2. Installed plugins (~/.omp/plugins/node_modules/*)
+ * 2. Installed plugins (~/.xcsh/plugins/node_modules/*)
  * 3. Explicitly configured paths from settings or CLI
  *
  * @param configuredPaths - Explicit paths from settings.json and CLI --tool flags
@@ -215,7 +215,7 @@ export async function discoverAndLoadCustomTools(
 		});
 	}
 
-	// 2. Plugin tools: ~/.omp/plugins/node_modules/*/
+	// 2. Plugin tools: ~/.xcsh/plugins/node_modules/*/
 	for (const pluginPath of await getAllPluginToolPaths(cwd)) {
 		addPath(pluginPath, { provider: "plugin", providerName: "Plugin", level: "user" });
 	}

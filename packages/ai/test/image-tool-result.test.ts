@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { Api, Context, Model, Tool, ToolResultMessage } from "@oh-my-pi/pi-ai";
-import { complete, getBundledModel } from "@oh-my-pi/pi-ai";
-import type { OptionsForApi } from "@oh-my-pi/pi-ai/types";
 import { Type } from "@sinclair/typebox";
+import type { Api, Context, Model, Tool, ToolResultMessage } from "@xcsh/pi-ai";
+import { complete, getBundledModel } from "@xcsh/pi-ai";
+import type { OptionsForApi } from "@xcsh/pi-ai/types";
 import { e2eApiKey, resolveApiKey } from "./oauth";
 
 // Resolve OAuth tokens at module level (async, runs before tests)

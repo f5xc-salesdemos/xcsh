@@ -1,4 +1,4 @@
-import { structuredCloneJSON } from "@oh-my-pi/pi-utils";
+import { structuredCloneJSON } from "@xcsh/pi-utils";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import type { Tool, ToolCall } from "../types";

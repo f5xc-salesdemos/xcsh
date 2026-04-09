@@ -1,5 +1,5 @@
-import { $env, logger } from "@oh-my-pi/pi-utils";
 import type { TSchema } from "@sinclair/typebox";
+import { $env, logger } from "@xcsh/pi-utils";
 import type { CustomTool, CustomToolResult } from "../extensibility/custom-tools/types";
 import { callMCP } from "../mcp/json-rpc";
 import type {

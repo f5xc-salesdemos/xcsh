@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { getAgentDir, getProjectDir, isEnoent, logger } from "@oh-my-pi/pi-utils";
+import { getAgentDir, getProjectDir, isEnoent, logger } from "@xcsh/pi-utils";
 import { OutputSink } from "../session/streaming-output";
 import { shutdownSharedGateway } from "./gateway-coordinator";
 import {
@@ -261,7 +261,7 @@ async function buildPreludeCacheState(cwd: string): Promise<PreludeCacheState> {
 		.map(module => ({ path: module.path, hash: hashPreludeContent(module.content) }))
 		.sort((a, b) => a.path.localeCompare(b.path));
 	const sources: PreludeCacheSource[] = [
-		{ path: "omp:prelude", hash: hashPreludeContent(PYTHON_PRELUDE) },
+		{ path: "xcsh:prelude", hash: hashPreludeContent(PYTHON_PRELUDE) },
 		...moduleSources,
 	];
 	const composite = sources.map(source => `${source.path}:${source.hash}`).join("|");

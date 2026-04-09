@@ -1,7 +1,8 @@
 import * as fs from "node:fs/promises";
 import * as nodePath from "node:path";
-import type { AgentToolResult } from "@oh-my-pi/pi-agent-core";
-import { StringEnum } from "@oh-my-pi/pi-coding-agent";
+import { type Static, Type } from "@sinclair/typebox";
+import type { AgentToolResult } from "@xcsh/pi-agent-core";
+import { StringEnum } from "@xcsh/pi-coding-agent";
 import {
 	ChunkAnchorStyle,
 	ChunkEditOp,
@@ -10,8 +11,7 @@ import {
 	type ChunkReadTarget,
 	ChunkState,
 	type EditOperation as NativeEditOperation,
-} from "@oh-my-pi/pi-natives";
-import { type Static, Type } from "@sinclair/typebox";
+} from "@xcsh/pi-natives";
 import type { BunFile } from "bun";
 import { LRUCache } from "lru-cache";
 import type { Settings } from "../../config/settings";

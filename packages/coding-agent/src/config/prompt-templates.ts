@@ -1,14 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { type ChunkAnchorStyle, formatAnchor } from "@oh-my-pi/pi-natives";
-import {
-	getProjectDir,
-	getProjectPromptsDir,
-	getPromptsDir,
-	logger,
-	parseFrontmatter,
-	prompt,
-} from "@oh-my-pi/pi-utils";
+import { type ChunkAnchorStyle, formatAnchor } from "@xcsh/pi-natives";
+import { getProjectDir, getProjectPromptsDir, getPromptsDir, logger, parseFrontmatter, prompt } from "@xcsh/pi-utils";
 import { computeLineHash } from "../edit/line-hash";
 import { jtdToTypeScript } from "../tools/jtd-to-typescript";
 import { parseCommandArgs, substituteArgs } from "../utils/command-args";
@@ -210,7 +203,7 @@ export interface LoadPromptTemplatesOptions {
 /**
  * Load all prompt templates from:
  * 1. Global: agentDir/prompts/
- * 2. Project: cwd/.omp/prompts/
+ * 2. Project: cwd/.xcsh/prompts/
  */
 export async function loadPromptTemplates(options: LoadPromptTemplatesOptions = {}): Promise<PromptTemplate[]> {
 	const resolvedCwd = options.cwd ?? getProjectDir();
@@ -223,7 +216,7 @@ export async function loadPromptTemplates(options: LoadPromptTemplatesOptions = 
 	const globalPromptsDir = options.agentDir ? path.join(options.agentDir, "prompts") : resolvedAgentDir;
 	templates.push(...(await loadTemplatesFromDir(globalPromptsDir, "user")));
 
-	// 2. Load project templates from cwd/.omp/prompts/
+	// 2. Load project templates from cwd/.xcsh/prompts/
 	const projectPromptsDir = getProjectPromptsDir(resolvedCwd);
 	templates.push(...(await loadTemplatesFromDir(projectPromptsDir, "project")));
 

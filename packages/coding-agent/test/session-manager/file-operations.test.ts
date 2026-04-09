@@ -9,8 +9,8 @@ import {
 	resolveResumableSession,
 	type SessionHeader,
 	SessionManager,
-} from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { getConfigRootDir, getSessionsDir, Snowflake, setAgentDir } from "@oh-my-pi/pi-utils";
+} from "@xcsh/pi-coding-agent/session/session-manager";
+import { getConfigRootDir, getSessionsDir, Snowflake, setAgentDir } from "@xcsh/pi-utils";
 
 describe("loadEntriesFromFile", () => {
 	let tempDir: string;
@@ -220,7 +220,7 @@ describe("SessionManager temp cwd session dirs", () => {
 	}
 
 	beforeEach(() => {
-		testAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), "omp-session-dir-test-"));
+		testAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), "xcsh-session-dir-test-"));
 		setAgentDir(testAgentDir);
 	});
 
@@ -239,9 +239,9 @@ describe("SessionManager temp cwd session dirs", () => {
 
 		const projectsRoot = path.join(os.homedir(), "Projects");
 		fs.mkdirSync(projectsRoot, { recursive: true });
-		const realProjectDir = fs.mkdtempSync(path.join(projectsRoot, "omp-session-home-"));
+		const realProjectDir = fs.mkdtempSync(path.join(projectsRoot, "xcsh-session-home-"));
 		const nestedDir = path.join(realProjectDir, "nested");
-		const aliasRoot = fs.mkdtempSync(path.join(os.tmpdir(), "omp-session-home-alias-"));
+		const aliasRoot = fs.mkdtempSync(path.join(os.tmpdir(), "xcsh-session-home-alias-"));
 		const homeAlias = path.join(aliasRoot, "home-link");
 
 		try {
@@ -323,7 +323,7 @@ describe("SessionManager legacy session migration persistence", () => {
 	}
 
 	beforeEach(() => {
-		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "omp-session-manager-legacy-"));
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "xcsh-session-manager-legacy-"));
 	});
 
 	afterEach(() => {

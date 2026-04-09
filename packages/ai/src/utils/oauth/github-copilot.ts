@@ -1,7 +1,7 @@
 /**
  * GitHub Copilot OAuth flow
  */
-import { abortableSleep } from "@oh-my-pi/pi-utils";
+import { abortableSleep } from "@xcsh/pi-utils";
 import { getBundledModels } from "../../models";
 import type { OAuthCredentials } from "./types";
 

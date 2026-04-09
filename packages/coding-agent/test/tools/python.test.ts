@@ -1,14 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "bun:test";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import * as pythonExecutor from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import { createTools, type ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { PythonTool } from "@oh-my-pi/pi-coding-agent/tools/python";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Settings } from "@xcsh/pi-coding-agent/config/settings";
+import * as pythonExecutor from "@xcsh/pi-coding-agent/ipy/executor";
+import { createTools, type ToolSession } from "@xcsh/pi-coding-agent/tools";
+import { PythonTool } from "@xcsh/pi-coding-agent/tools/python";
+import { TempDir } from "@xcsh/pi-utils";
 
 let previousSkipCheck: string | undefined;
 let tempDir: TempDir;
 beforeAll(() => {
-	tempDir = TempDir.createSync("@omp-python-test-");
+	tempDir = TempDir.createSync("@xcsh-python-test-");
 	previousSkipCheck = Bun.env.PI_PYTHON_SKIP_CHECK;
 	Bun.env.PI_PYTHON_SKIP_CHECK = "1";
 });

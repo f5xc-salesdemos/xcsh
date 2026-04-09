@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import type { Tool, ToolCall } from "@oh-my-pi/pi-ai/types";
-import { enforceStrictSchema } from "@oh-my-pi/pi-ai/utils/schema";
-import { validateToolArguments } from "@oh-my-pi/pi-ai/utils/validation";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { SubmitResultTool } from "@oh-my-pi/pi-coding-agent/tools/submit-result";
+import type { Tool, ToolCall } from "@xcsh/pi-ai/types";
+import { enforceStrictSchema } from "@xcsh/pi-ai/utils/schema";
+import { validateToolArguments } from "@xcsh/pi-ai/utils/validation";
+import { Settings } from "@xcsh/pi-coding-agent/config/settings";
+import type { ToolSession } from "@xcsh/pi-coding-agent/tools";
+import { SubmitResultTool } from "@xcsh/pi-coding-agent/tools/submit-result";
 
 function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

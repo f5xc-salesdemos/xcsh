@@ -1,7 +1,7 @@
 /**
- * Centralized file logger for omp.
+ * Centralized file logger for xcsh.
  *
- * Logs to ~/.omp/logs/ with size-based rotation, supporting concurrent omp instances.
+ * Logs to ~/.xcsh/logs/ with size-based rotation, supporting concurrent xcsh instances.
  * Each log entry includes process.pid for traceability.
  */
 import * as fs from "node:fs";
@@ -41,7 +41,7 @@ const logFormat = winston.format.combine(
 /** Size-based rotating file transport */
 const fileTransport = new DailyRotateFile({
 	dirname: ensureLogsDir(),
-	filename: "omp.%DATE%.log",
+	filename: "xcsh.%DATE%.log",
 	datePattern: "YYYY-MM-DD",
 	maxSize: "10m",
 	maxFiles: 5,
