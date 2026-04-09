@@ -96,6 +96,8 @@ import porcelain from "./porcelain.json" with { type: "json" };
 import quartz from "./quartz.json" with { type: "json" };
 import sandstone from "./sandstone.json" with { type: "json" };
 import titanium from "./titanium.json" with { type: "json" };
+import xcshDark from "./xcsh-dark.json" with { type: "json" };
+import xcshLight from "./xcsh-light.json" with { type: "json" };
 
 export const defaultThemes = {
 	alabaster: alabaster,
@@ -196,4 +198,6 @@ export const defaultThemes = {
 	quartz: quartz,
 	sandstone: sandstone,
 	titanium: titanium,
+	"xcsh-dark": xcshDark,
+	"xcsh-light": xcshLight,
 };
