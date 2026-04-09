@@ -65,7 +65,8 @@ const modelSegment: StatusLineSegment = {
 			if (level !== ThinkingLevel.Off) {
 				const thinkingText = theme.thinking[level as keyof typeof theme.thinking];
 				if (thinkingText) {
-					content += `${theme.sep.dot}${thinkingText}`;
+					const coloredThinking = theme.getThinkingBorderColor(level)(thinkingText);
+					content += `${theme.sep.dot}${coloredThinking}`;
 				}
 			}
 		}
