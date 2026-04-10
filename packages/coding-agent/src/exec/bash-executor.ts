@@ -64,7 +64,11 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 
 	// Apply command prefix if configured
 	const prefixedCommand = prefix ? `${prefix} ${command}` : command;
-	const finalCommand = prefixedCommand;
+
+	// CWD capture sentinels — used to detect directory changes from cd commands.
+	// Only appended for persistent shell sessions (one-shot shells don't persist CWD).
+	const CWD_SENTINEL_START = "__XCSH_CWD__:";
+	const CWD_SENTINEL_END = ":__XCSH_CWD_END__";
 
 	// Create output sink for truncation and artifact handling
 	const sink = new OutputSink({
@@ -102,6 +106,11 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 		shellSession = new Shell({ sessionEnv: shellEnv, snapshotPath: snapshotPath ?? undefined });
 		shellSessions.set(sessionKey, shellSession);
 	}
+
+	// Append CWD sentinel only for persistent shell sessions
+	const finalCommand = shellSession
+		? `${prefixedCommand}\nprintf '${CWD_SENTINEL_START}%s${CWD_SENTINEL_END}\\n' "$PWD"`
+		: prefixedCommand;
 	const userSignal = options?.signal;
 	const runAbortController = new AbortController();
 	const abortCurrentExecution = () => {
@@ -206,21 +215,26 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 			};
 		}
 
-		// Capture actual CWD from the persistent shell after the command ran.
-		// This lets the caller detect directory changes from cd commands.
+		// Parse CWD sentinel from output, strip it from the displayed result.
+		const dumpResult = await sink.dump();
 		let newCwd: string | undefined;
 		if (shellSession) {
-			let captured = "";
-			try {
-				await shellSession.run({ command: 'printf "%s" "$PWD"' }, (_err, chunk) => {
-					captured += chunk;
-				});
-				const trimmed = captured.trim();
-				if (trimmed) {
-					newCwd = trimmed;
+			const sentinelIdx = dumpResult.output.lastIndexOf(CWD_SENTINEL_START);
+			if (sentinelIdx !== -1) {
+				const endIdx = dumpResult.output.indexOf(CWD_SENTINEL_END, sentinelIdx);
+				if (endIdx !== -1) {
+					const captured = dumpResult.output.slice(sentinelIdx + CWD_SENTINEL_START.length, endIdx).trim();
+					if (captured) newCwd = captured;
+					// Strip the sentinel from displayed output (from sentinel start to end of its line)
+					const afterLine = dumpResult.output.indexOf("\n", endIdx + CWD_SENTINEL_END.length);
+					const stripEnd = afterLine === -1 ? dumpResult.output.length : afterLine + 1;
+					const strippedBytes = stripEnd - sentinelIdx;
+					dumpResult.output = dumpResult.output.slice(0, sentinelIdx) + dumpResult.output.slice(stripEnd);
+					dumpResult.totalBytes = Math.max(0, dumpResult.totalBytes - strippedBytes);
+					dumpResult.totalLines = Math.max(0, dumpResult.totalLines - 1);
+					dumpResult.outputBytes = dumpResult.output.length;
+					dumpResult.outputLines = Math.max(0, dumpResult.outputLines - 1);
 				}
-			} catch {
-				// Best-effort; ignore failures
 			}
 		}
 
@@ -229,7 +243,7 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 			exitCode: winner.result.exitCode,
 			cancelled: false,
 			newCwd,
-			...(await sink.dump()),
+			...dumpResult,
 		};
 	} catch (err) {
 		resetSession = true;
