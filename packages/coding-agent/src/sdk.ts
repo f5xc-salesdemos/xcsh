@@ -23,7 +23,6 @@ import {
 	postmortem,
 	prompt,
 } from "@f5xc-salesdemos/pi-utils";
-import chalk from "chalk";
 import { AsyncJobManager } from "./async";
 import { createAutoresearchExtension } from "./autoresearch";
 import { loadCapability } from "./capability";
@@ -1000,8 +999,8 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	if (enableMCP) {
 		const mcpResult = await logger.time("discoverAndLoadMCPTools", discoverAndLoadMCPTools, cwd, {
 			onConnecting: serverNames => {
-				if (options.hasUI && serverNames.length > 0) {
-					process.stderr.write(`${chalk.gray(`Connecting to MCP servers: ${serverNames.join(", ")}…`)}\n`);
+				if (serverNames.length > 0) {
+					logger.debug("Connecting to MCP servers", { servers: serverNames });
 				}
 			},
 			enableProjectConfig: settings.get("mcp.enableProjectConfig") ?? true,

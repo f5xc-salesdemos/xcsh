@@ -200,7 +200,16 @@ export class StatusLineComponent implements Component {
 		return branch === this.#defaultBranch;
 	}
 
-	#getGitStatus(): { staged: number; unstaged: number; untracked: number; conflicted: number; ahead: number; behind: number; stashes: number; action: string } | null {
+	#getGitStatus(): {
+		staged: number;
+		unstaged: number;
+		untracked: number;
+		conflicted: number;
+		ahead: number;
+		behind: number;
+		stashes: number;
+		action: string;
+	} | null {
 		if (this.#gitStatusInFlight || Date.now() - this.#gitStatusLastFetch < 1000) {
 			return this.#cachedGitStatus;
 		}

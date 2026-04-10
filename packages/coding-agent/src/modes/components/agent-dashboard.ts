@@ -911,7 +911,11 @@ export class AgentDashboard extends Container {
 			const suggestions = this.#getModelSuggestions(draft);
 
 			this.addChild(
-				new Text(theme.bold(theme.fg("contentAccent", `Model override: ${replaceTabs(this.#editingAgentName)}`)), 0, 0),
+				new Text(
+					theme.bold(theme.fg("contentAccent", `Model override: ${replaceTabs(this.#editingAgentName)}`)),
+					0,
+					0,
+				),
 			);
 			this.addChild(new Spacer(1));
 			this.addChild(new Text(theme.fg("muted", "Enter model pattern (empty clears override)"), 0, 0));

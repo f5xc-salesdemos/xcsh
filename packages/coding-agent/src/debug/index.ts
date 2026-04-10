@@ -121,7 +121,9 @@ export class DebugSelectorComponent extends Container {
 
 		// Show message and wait for keypress
 		this.ctx.chatContainer.addChild(new Spacer(1));
-		this.ctx.chatContainer.addChild(new Text(theme.fg("contentAccent", `${theme.status.info} CPU profiling started`), 1, 0));
+		this.ctx.chatContainer.addChild(
+			new Text(theme.fg("contentAccent", `${theme.status.info} CPU profiling started`), 1, 0),
+		);
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(
 			new Text(theme.fg("muted", "Reproduce the performance issue, then press Enter to stop profiling."), 1, 0),

@@ -4,7 +4,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { type Agent, type AgentMessage, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import type { Agent, AgentMessage, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
 import {
 	type AssistantMessage,
 	type ImageContent,
@@ -15,7 +15,7 @@ import {
 } from "@f5xc-salesdemos/pi-ai";
 import type { Component, SlashCommand } from "@f5xc-salesdemos/pi-tui";
 import { Container, Loader, Markdown, ProcessTerminal, Spacer, Text, TUI, visibleWidth } from "@f5xc-salesdemos/pi-tui";
-import { APP_NAME, getProjectDir, hsvToRgb, isEnoent, logger, postmortem, prompt } from "@f5xc-salesdemos/pi-utils";
+import { getProjectDir, hsvToRgb, isEnoent, logger, postmortem, prompt } from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { KeybindingsManager } from "../config/keybindings";
 import { type Settings, settings } from "../config/settings";
@@ -396,7 +396,6 @@ export class InteractiveMode implements InteractiveModeContext {
 		setSessionTerminalTitle(this.sessionManager.getSessionName(), this.sessionManager.getCwd());
 		this.#syncEditorMaxHeight();
 		this.isInitialized = true;
-		
 
 		// Initialize hooks with TUI-based UI context
 		await this.initHooksAndCustomTools();
@@ -882,7 +881,7 @@ export class InteractiveMode implements InteractiveModeContext {
 				await ttyHandle.close();
 			}
 			const clearScreen = settings.get("startup.clearScreen");
-		this.ui.start(clearScreen);
+			this.ui.start(clearScreen);
 			this.ui.requestRender(true);
 		}
 	}
@@ -1040,7 +1039,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		await this.session.dispose();
 
 		if (this.isInitialized) {
-			this.ui.requestRender(true);
+			this.ui.requestRender();
 		}
 
 		// Wait for any pending renders to complete
@@ -1105,27 +1104,8 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#uiHelpers.showWarning(message);
 	}
 
-	#handleLspStartupEvent(event: LspStartupEvent): void {
+	#handleLspStartupEvent(_event: LspStartupEvent): void {
 		this.#updateWelcomeLspServers();
-
-		if (event.type === "failed") {
-			this.showWarning(`LSP startup failed: ${event.error}. It will retry lazily on write.`);
-			return;
-		}
-
-		const failedServers = event.servers.filter(server => server.status === "error");
-
-		if (failedServers.length === 1) {
-			const failedServer = failedServers[0];
-			const detail = failedServer.error ? `: ${failedServer.error}` : "";
-			this.showWarning(`LSP startup failed for ${failedServer.name}${detail}. It will retry lazily on write.`);
-			return;
-		}
-
-		if (failedServers.length > 1) {
-			const failedNames = failedServers.map(server => server.name).join(", ");
-			this.showWarning(`LSP startup failed for ${failedNames}. It will retry lazily on write.`);
-		}
 	}
 
 	#getWelcomeLspServers(): WelcomeLspServerInfo[] {
