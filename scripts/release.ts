@@ -200,12 +200,16 @@ async function cmdRelease(version: string): Promise<void> {
 	}
 	console.log("  Working directory clean");
 
-	const latestTag = (await $`git describe --tags --abbrev=0`.text()).trim();
-	if (compareVersions(version, latestTag) <= 0) {
-		console.error(`Error: Version ${version} must be greater than latest tag ${latestTag}`);
-		process.exit(1);
+	const latestTag = (await $`git describe --tags --abbrev=0 --match ${"v*"}`.text().catch(() => "")).trim();
+	if (latestTag) {
+		if (compareVersions(version, latestTag) <= 0) {
+			console.error(`Error: Version ${version} must be greater than latest tag ${latestTag}`);
+			process.exit(1);
+		}
+		console.log(`  Version ${version} > ${latestTag}\n`);
+	} else {
+		console.log(`  No existing tags found. Creating initial release v${version}\n`);
 	}
-	console.log(`  Version ${version} > ${latestTag}\n`);
 
 	// 2. Update package versions
 	console.log(`Updating package versions to ${version}…`);
@@ -353,14 +357,23 @@ function bumpVersion(current: string, bump: BumpType): string {
 }
 
 async function detectVersionBump(): Promise<{ version: string; bump: BumpType; commits: string[] } | null> {
-	const latestTag = (await $`git describe --tags --abbrev=0 --match ${"v*"}`.text().catch(() => "")).trim();
-	if (!latestTag) {
-		console.error("No tags found. Run a manual release first.");
-		process.exit(1);
+	let latestTag = (await $`git describe --tags --abbrev=0 --match ${"v*"}`.text().catch(() => "")).trim();
+	let currentVersion: string;
+	let hasRealTag = false;
+
+	if (latestTag) {
+		currentVersion = latestTag.replace(/^v/, "");
+		hasRealTag = true;
+	} else {
+		// No reachable tags — bootstrap from package.json version
+		const codingAgentPkg = await Bun.file("packages/coding-agent/package.json").json();
+		currentVersion = codingAgentPkg.version;
+		latestTag = `v${currentVersion}`;
+		console.log(`No reachable tags found. Bootstrapping from package.json version: ${currentVersion}`);
 	}
 
-	const currentVersion = latestTag.replace(/^v/, "");
-	const log = (await $`git log ${`${latestTag}..HEAD`} --format=%B---COMMIT_SEP---`.text()).trim();
+	const logRange = hasRealTag ? `${latestTag}..HEAD` : "HEAD~50..HEAD";
+	const log = (await $`git log ${logRange} --format=%B---COMMIT_SEP---`.text()).trim();
 
 	if (!log) {
 		return null;
