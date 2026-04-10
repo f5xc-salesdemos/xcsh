@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "@f5xc-salesdemos/pi-tui",
-	"version": "14.4.1",
+	"version": "14.5.0",
 	"description": "Terminal User Interface library with differential rendering for efficient text-based applications",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",
