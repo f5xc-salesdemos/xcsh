@@ -350,9 +350,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			if (this.#changelogMarkdown) {
 				this.ui.addChild(new DynamicBorder());
 				if (settings.get("collapseChangelog")) {
-					const versionMatch = this.#changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
-					const latestVersion = versionMatch ? versionMatch[1] : this.#version;
-					const condensedText = `Updated to v${latestVersion}. Use ${theme.bold("/changelog")} to view full changelog.`;
+					const condensedText = `Updated to v${this.#version}. Use ${theme.bold("/changelog")} to view full changelog.`;
 					this.ui.addChild(new Text(condensedText, 1, 0));
 				} else {
 					this.ui.addChild(new Text(theme.bold(theme.fg("contentAccent", "What's New")), 1, 0));
