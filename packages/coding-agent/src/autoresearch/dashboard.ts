@@ -148,7 +148,10 @@ function renderExpandedHeader(runtime: AutoresearchRuntime, width: number, theme
 	const label = state.name ? ` autoresearch: ${replaceTabs(state.name)} ` : " autoresearch ";
 	const hint = theme.fg("dim", ` ctrl+x collapse  ctrl+shift+x overlay${status ? `  ${status}` : ""} `);
 	const fillWidth = Math.max(0, width - visibleWidth(label) - visibleWidth(hint));
-	return truncateToWidth(theme.fg("contentAccent", label) + theme.fg("borderMuted", "-".repeat(fillWidth)) + hint, width);
+	return truncateToWidth(
+		theme.fg("contentAccent", label) + theme.fg("borderMuted", "-".repeat(fillWidth)) + hint,
+		width,
+	);
 }
 
 function renderCollapsedLine(runtime: AutoresearchRuntime, state: ExperimentState, theme: Theme): string {

@@ -185,7 +185,15 @@ export function formatEmptyMessage(message: string, theme: Theme): string {
 // =============================================================================
 
 export type ToolUIStatus = "success" | "error" | "warning" | "info" | "pending" | "running" | "aborted";
-export type ToolUIColor = "success" | "error" | "warning" | "accent" | "chromeAccent" | "spinnerAccent" | "contentAccent" | "muted";
+export type ToolUIColor =
+	| "success"
+	| "error"
+	| "warning"
+	| "accent"
+	| "chromeAccent"
+	| "spinnerAccent"
+	| "contentAccent"
+	| "muted";
 
 export interface ToolUITitleOptions {
 	bold?: boolean;

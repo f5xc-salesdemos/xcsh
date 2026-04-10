@@ -4,7 +4,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { type Agent, type AgentMessage, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import type { Agent, AgentMessage, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
 import {
 	type AssistantMessage,
 	type ImageContent,
@@ -15,7 +15,7 @@ import {
 } from "@f5xc-salesdemos/pi-ai";
 import type { Component, SlashCommand } from "@f5xc-salesdemos/pi-tui";
 import { Container, Loader, Markdown, ProcessTerminal, Spacer, Text, TUI, visibleWidth } from "@f5xc-salesdemos/pi-tui";
-import { APP_NAME, getProjectDir, hsvToRgb, isEnoent, logger, postmortem, prompt } from "@f5xc-salesdemos/pi-utils";
+import { getProjectDir, hsvToRgb, isEnoent, logger, postmortem, prompt } from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { KeybindingsManager } from "../config/keybindings";
 import { type Settings, settings } from "../config/settings";
@@ -245,7 +245,6 @@ export class InteractiveMode implements InteractiveModeContext {
 			logger.warn("History storage unavailable", { error: String(error) });
 		}
 		this.hookWidgetContainerAbove = new Container();
-		this.hookWidgetContainerAbove.addChild(new Spacer(1));
 		this.hookWidgetContainerBelow = new Container();
 		this.editorContainer = new Container();
 		this.editorContainer.addChild(this.editor);
@@ -348,9 +347,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			if (this.#changelogMarkdown) {
 				this.ui.addChild(new DynamicBorder());
 				if (settings.get("collapseChangelog")) {
-					const versionMatch = this.#changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
-					const latestVersion = versionMatch ? versionMatch[1] : this.#version;
-					const condensedText = `Updated to v${latestVersion}. Use ${theme.bold("/changelog")} to view full changelog.`;
+					const condensedText = `Updated to v${this.#version}. Use ${theme.bold("/changelog")} to view full changelog.`;
 					this.ui.addChild(new Text(condensedText, 1, 0));
 				} else {
 					this.ui.addChild(new Text(theme.bold(theme.fg("contentAccent", "What's New")), 1, 0));
@@ -390,12 +387,12 @@ export class InteractiveMode implements InteractiveModeContext {
 		await this.#loadTodoList();
 
 		// Start the UI
-		this.ui.start();
+		const clearScreen = settings.get("startup.clearScreen");
+		this.ui.start(clearScreen);
 		pushTerminalTitle();
 		setSessionTerminalTitle(this.sessionManager.getSessionName(), this.sessionManager.getCwd());
 		this.#syncEditorMaxHeight();
 		this.isInitialized = true;
-		this.ui.requestRender(true);
 
 		// Initialize hooks with TUI-based UI context
 		await this.initHooksAndCustomTools();
@@ -422,6 +419,11 @@ export class InteractiveMode implements InteractiveModeContext {
 
 		// Set up git branch watcher
 		this.statusLine.watchBranch(() => {
+			this.updateEditorTopBorder();
+			this.ui.requestRender();
+		});
+
+		this.statusLine.onStatusChanged(() => {
 			this.updateEditorTopBorder();
 			this.ui.requestRender();
 		});
@@ -875,7 +877,8 @@ export class InteractiveMode implements InteractiveModeContext {
 			if (ttyHandle) {
 				await ttyHandle.close();
 			}
-			this.ui.start();
+			const clearScreen = settings.get("startup.clearScreen");
+			this.ui.start(clearScreen);
 			this.ui.requestRender(true);
 		}
 	}
@@ -1033,7 +1036,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		await this.session.dispose();
 
 		if (this.isInitialized) {
-			this.ui.requestRender(true);
+			this.ui.requestRender();
 		}
 
 		// Wait for any pending renders to complete
@@ -1046,12 +1049,10 @@ export class InteractiveMode implements InteractiveModeContext {
 		popTerminalTitle();
 		this.stop();
 
-		// Print resumption hint if this is a persisted session
-		const sessionId = this.sessionManager.getSessionId();
-		const sessionFile = this.sessionManager.getSessionFile();
-		if (sessionId && sessionFile) {
-			process.stderr.write(`\n${chalk.dim(`Resume this session with ${APP_NAME} --resume ${sessionId}`)}\n`);
-		}
+		// Transient prompt: erase the 2-line textarea frame and replace with green ❯
+		// After stop(), cursor is 1 line below frame (stop() writes \r\n).
+		// Move up 3 (2 frame lines + 1 blank), erase to end of screen, print prompt.
+		process.stderr.write(`\x1b[3A\x1b[0J\x1b[32m❯\x1b[0m\n`);
 
 		await postmortem.quit(0);
 	}
@@ -1100,27 +1101,8 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#uiHelpers.showWarning(message);
 	}
 
-	#handleLspStartupEvent(event: LspStartupEvent): void {
+	#handleLspStartupEvent(_event: LspStartupEvent): void {
 		this.#updateWelcomeLspServers();
-
-		if (event.type === "failed") {
-			this.showWarning(`LSP startup failed: ${event.error}. It will retry lazily on write.`);
-			return;
-		}
-
-		const failedServers = event.servers.filter(server => server.status === "error");
-
-		if (failedServers.length === 1) {
-			const failedServer = failedServers[0];
-			const detail = failedServer.error ? `: ${failedServer.error}` : "";
-			this.showWarning(`LSP startup failed for ${failedServer.name}${detail}. It will retry lazily on write.`);
-			return;
-		}
-
-		if (failedServers.length > 1) {
-			const failedNames = failedServers.map(server => server.name).join(", ");
-			this.showWarning(`LSP startup failed for ${failedNames}. It will retry lazily on write.`);
-		}
 	}
 
 	#getWelcomeLspServers(): WelcomeLspServerInfo[] {

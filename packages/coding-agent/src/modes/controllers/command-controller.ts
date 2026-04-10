@@ -541,7 +541,9 @@ export class CommandController {
 			}
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(new DynamicBorder());
-			this.ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("contentAccent", "Memory Injection Payload")), 1, 0));
+			this.ctx.chatContainer.addChild(
+				new Text(theme.bold(theme.fg("contentAccent", "Memory Injection Payload")), 1, 0),
+			);
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(new Markdown(payload, 1, 1, getMarkdownTheme()));
 			this.ctx.chatContainer.addChild(new DynamicBorder());
@@ -873,7 +875,11 @@ export class CommandController {
 
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(
-				new Text(`${theme.fg("contentAccent", `${theme.status.success} New session started with handoff context`)}`, 1, 1),
+				new Text(
+					`${theme.fg("contentAccent", `${theme.status.success} New session started with handoff context`)}`,
+					1,
+					1,
+				),
 			);
 			if (result.savedPath) {
 				this.ctx.showStatus(`Handoff document saved to: ${result.savedPath}`);

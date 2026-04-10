@@ -820,7 +820,9 @@ export class MCPCommandController {
 				lines.push("");
 			} else {
 				lines.push(theme.fg("warning", `⚠ Server added but not yet connected`));
-				lines.push(theme.fg("muted", `  Run ${theme.fg("contentAccent", `/mcp test ${name}`)} to test the connection.`));
+				lines.push(
+					theme.fg("muted", `  Run ${theme.fg("contentAccent", `/mcp test ${name}`)} to test the connection.`),
+				);
 				lines.push("");
 			}
 

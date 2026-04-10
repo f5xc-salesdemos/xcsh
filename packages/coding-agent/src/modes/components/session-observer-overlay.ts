@@ -321,7 +321,9 @@ export class SessionObserverOverlayComponent extends Container {
 
 		// Tool call header with intent
 		const intentStr = call.intent ? theme.fg("dim", ` ${truncateToWidth(call.intent, 50)}`) : "";
-		c.addChild(new Text(`${theme.fg("contentAccent", "▸")} ${theme.bold(theme.fg("muted", call.name))}${intentStr}`, 1, 0));
+		c.addChild(
+			new Text(`${theme.fg("contentAccent", "▸")} ${theme.bold(theme.fg("muted", call.name))}${intentStr}`, 1, 0),
+		);
 
 		// Key arguments (skip very long ones, show summary)
 		const argEntries = Object.entries(call.arguments);

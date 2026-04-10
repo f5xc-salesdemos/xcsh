@@ -93,8 +93,8 @@ export async function queryGitStatus(directory: string, timeoutMs = 3000): Promi
 		stdin.flush();
 
 		const reader = (daemon.proc.stdout as ReadableStream<Uint8Array>).getReader();
-		const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
-		const readPromise = reader.read().then(({ value }) => value ? new TextDecoder().decode(value) : null);
+		const timeoutPromise = new Promise<null>(resolve => setTimeout(() => resolve(null), timeoutMs));
+		const readPromise = reader.read().then(({ value }) => (value ? new TextDecoder().decode(value) : null));
 
 		const response = await Promise.race([readPromise, timeoutPromise]);
 		reader.releaseLock();
