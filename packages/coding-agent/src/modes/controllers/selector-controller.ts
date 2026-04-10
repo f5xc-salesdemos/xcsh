@@ -42,6 +42,7 @@ import { PluginSelectorComponent } from "../components/plugin-selector";
 import { SessionObserverOverlayComponent } from "../components/session-observer-overlay";
 import { SessionSelectorComponent } from "../components/session-selector";
 import { SettingsSelectorComponent } from "../components/settings-selector";
+import { getPreset } from "../components/status-line/presets";
 import { ToolExecutionComponent } from "../components/tool-execution";
 import { TreeSelectorComponent } from "../components/tree-selector";
 import { UserMessageSelectorComponent } from "../components/user-message-selector";
@@ -329,20 +330,20 @@ export class SelectorController {
 				this.ctx.session.agent.repetitionPenalty = repetitionPenalty >= 0 ? repetitionPenalty : undefined;
 				break;
 			}
-			case "statusLinePreset":
-			case "statusLineSeparator":
-			case "statusLineShowHooks":
-			case "statusLineSegments":
-			case "statusLineModelThinking":
-			case "statusLinePathAbbreviate":
-			case "statusLinePathMaxLength":
-			case "statusLinePathStripWorkPrefix":
-			case "statusLineGitShowBranch":
-			case "statusLineGitShowStaged":
-			case "statusLineGitShowUnstaged":
-			case "statusLineGitShowUntracked":
-			case "statusLineTimeFormat":
-			case "statusLineTimeShowSeconds": {
+			case "statusLine.preset":
+			case "statusLine.separator":
+			case "statusLine.showHookStatus":
+			case "statusLine.leftSegments":
+			case "statusLine.rightSegments":
+			case "statusLine.segmentOptions": {
+				// When selecting a non-custom preset, sync the preset's separator
+				// to the store so #resolveSettings picks it up correctly.
+				if (id === "statusLine.preset" && value !== "custom") {
+					const presetDef = getPreset(value as Parameters<typeof getPreset>[0]);
+					if (presetDef.separator) {
+						settings.set("statusLine.separator", presetDef.separator);
+					}
+				}
 				const statusLineSettings = {
 					preset: settings.get("statusLine.preset"),
 					leftSegments: settings.get("statusLine.leftSegments"),

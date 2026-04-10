@@ -490,19 +490,18 @@ export class StatusLineComponent implements Component {
 			}
 		}
 
-		// Render a group of segments with per-segment backgrounds and powerline transitions
+		// Render a group of segments with per-segment backgrounds and separators
 		const renderGroup = (parts: SegPart[], direction: "left" | "right"): string => {
 			if (parts.length === 0) return "";
 
 			const hasPowerline = separatorDef.endCaps?.useBgAsFg;
-			const powerlineSep = direction === "left" ? separatorDef.left : separatorDef.right;
+			const sep = direction === "left" ? separatorDef.left : separatorDef.right;
 
 			// Check if any segment has a custom bg (different from default)
 			const hasCustomBg = parts.some(p => p.bg !== defaultBg);
 
 			// Fast path: no custom bgs, use original flat rendering
-			if (!hasCustomBg || !hasPowerline) {
-				const sep = direction === "left" ? separatorDef.left : separatorDef.right;
+			if (!hasCustomBg) {
 				const cap = separatorDef.endCaps
 					? direction === "left"
 						? separatorDef.endCaps.right
@@ -521,7 +520,7 @@ export class StatusLineComponent implements Component {
 				return content;
 			}
 
-			// Per-segment powerline rendering
+			// Per-segment colored rendering
 			let output = "";
 			for (let i = 0; i < parts.length; i++) {
 				const seg = parts[i];
@@ -531,15 +530,24 @@ export class StatusLineComponent implements Component {
 				output += `${seg.bg}${seg.fg} ${seg.content} `;
 
 				if (nextBg !== null) {
-					// Powerline transition: fg = this segment's bg color, bg = next segment's bg
-					const transFg = seg.bg.replace("\x1b[48;", "\x1b[38;");
-					output += `\x1b[0m${transFg}${nextBg}${powerlineSep}`;
+					if (hasPowerline) {
+						// Powerline transition: fg = this segment's bg, bg = next segment's bg
+						const transFg = seg.bg.replace("\x1b[48;", "\x1b[38;");
+						output += `\x1b[0m${transFg}${nextBg}${sep}`;
+					} else {
+						// Non-powerline: separator between colored segments
+						output += `\x1b[0m${sepAnsi}${sep}\x1b[0m`;
+					}
 				}
 			}
-			// End cap: transition from last segment's bg to terminal default
-			const lastBg = parts[parts.length - 1].bg;
-			const endFg = lastBg.replace("\x1b[48;", "\x1b[38;");
-			output += `\x1b[0m${endFg}${powerlineSep}\x1b[0m`;
+			// End cap / trailing edge
+			if (hasPowerline) {
+				const lastBg = parts[parts.length - 1].bg;
+				const endFg = lastBg.replace("\x1b[48;", "\x1b[38;");
+				output += `\x1b[0m${endFg}${sep}\x1b[0m`;
+			} else {
+				output += "\x1b[0m";
+			}
 
 			return output;
 		};
