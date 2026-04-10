@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [15.0.0] - 2026-04-10
+
 ### Fixed
 
 - Fixed cached Ollama discovery rows so upgraded installs switch to the OpenAI Responses transport instead of staying on the old completions transport

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [15.0.0] - 2026-04-10
+
 ### Fixed
 
 - Fixed Ollama discovery cache normalization so cached models upgrade to the OpenAI Responses transport after the provider change
