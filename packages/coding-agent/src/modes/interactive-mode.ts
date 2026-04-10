@@ -426,6 +426,11 @@ export class InteractiveMode implements InteractiveModeContext {
 			this.ui.requestRender();
 		});
 
+		this.statusLine.onStatusChanged(() => {
+			this.updateEditorTopBorder();
+			this.ui.requestRender();
+		});
+
 		// Initial top border update
 		this.updateEditorTopBorder();
 	}
@@ -1046,12 +1051,10 @@ export class InteractiveMode implements InteractiveModeContext {
 		popTerminalTitle();
 		this.stop();
 
-		// Print resumption hint if this is a persisted session
-		const sessionId = this.sessionManager.getSessionId();
-		const sessionFile = this.sessionManager.getSessionFile();
-		if (sessionId && sessionFile) {
-			process.stderr.write(`\n${chalk.dim(`Resume this session with ${APP_NAME} --resume ${sessionId}`)}\n`);
-		}
+		// Transient prompt: erase the 2-line textarea frame and replace with green ❯
+		// After stop(), cursor is 1 line below frame (stop() writes \r\n).
+		// Move up 3 (2 frame lines + 1 blank), erase to end of screen, print prompt.
+		process.stderr.write(`\x1b[3A\x1b[0J\x1b[32m❯\x1b[0m\n`);
 
 		await postmortem.quit(0);
 	}

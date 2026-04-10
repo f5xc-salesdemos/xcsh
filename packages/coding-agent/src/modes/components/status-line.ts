@@ -52,6 +52,7 @@ export class StatusLineComponent implements Component {
 	#cachedBranchRepoId: string | null | undefined = undefined;
 	#gitWatcher: fs.FSWatcher | null = null;
 	#onBranchChange: (() => void) | null = null;
+	#onStatusChanged: (() => void) | null = null;
 	#autoCompactEnabled: boolean = true;
 	#hookStatuses: Map<string, string> = new Map();
 	#subagentCount: number = 0;
@@ -117,6 +118,10 @@ export class StatusLineComponent implements Component {
 		} else {
 			this.#hookStatuses.set(key, text);
 		}
+	}
+
+	onStatusChanged(callback: () => void): void {
+		this.#onStatusChanged = callback;
 	}
 
 	watchBranch(onBranchChange: () => void): void {
@@ -229,6 +234,7 @@ export class StatusLineComponent implements Component {
 			} finally {
 				this.#gitStatusLastFetch = Date.now();
 				this.#gitStatusInFlight = false;
+				this.#onStatusChanged?.();
 			}
 		})();
 
