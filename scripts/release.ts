@@ -24,7 +24,7 @@ async function watchCI(): Promise<boolean> {
 	console.log(`  Commit: ${commitSha.slice(0, 8)}`);
 
 	while (true) {
-		const runsOutput = await $`gh run list --commit ${commitSha} --json databaseId,status,conclusion,name`.text();
+		const runsOutput = await $`gh run list --commit ${commitSha} --event push --json databaseId,status,conclusion,name`.text();
 		const runs: Array<{ databaseId: number; status: string; conclusion: string | null; name: string }> =
 			JSON.parse(runsOutput);
 
