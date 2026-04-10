@@ -711,6 +711,13 @@ export class CommandController {
 				{ excludeFromContext },
 			);
 
+			// Update CWD if the shell changed directory (e.g. via cd)
+			if (result.newCwd && result.newCwd !== this.ctx.sessionManager.getCwd()) {
+				setProjectDir(result.newCwd);
+				this.ctx.statusLine.invalidate();
+				this.ctx.ui.requestRender();
+			}
+
 			if (this.ctx.bashComponent) {
 				const meta = outputMeta().truncationFromSummary(result, { direction: "tail" }).get();
 				this.ctx.bashComponent.setComplete(result.exitCode, result.cancelled, {
