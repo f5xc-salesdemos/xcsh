@@ -1012,13 +1012,9 @@ export class TUI extends Container {
 			let buffer = "\x1b[?2026h"; // Begin synchronized output
 			// Skip clearing scrollback (3J) in multiplexers — users actively navigate scrollback history
 			if (clear) buffer += isMultiplexer ? "\x1b[2J\x1b[H" : "\x1b[2J\x1b[H\x1b[3J";
-			// On the first non-clearing render, move cursor up to absorb the blank
-			// line the shell leaves between the command and the process's cursor.
-			if (!clear && this.#fullRedrawCount === 1) buffer += "\x1b[2A";
 			const reset = SEGMENT_RESET;
 			for (let i = 0; i < newLines.length; i++) {
 				if (i > 0) buffer += "\r\n";
-				buffer += "\x1b[2K"; // Erase line before writing content
 				const line = newLines[i];
 				buffer += TERMINAL.isImageLine(line) ? line : line + reset;
 			}
