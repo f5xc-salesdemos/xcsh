@@ -82,6 +82,15 @@
 		"statusLineOutput": "f5DarkRed",
 		"statusLineCost": "warmAmber",
 		"statusLineSubagents": "f5Red",
+		"statusLineOsIconBg": "#d0d0d0",
+		"statusLineOsIconFg": "#1a1a1a",
+		"statusLinePathBg": "#1e5fa8",
+		"statusLinePathFg": "#ffffff",
+		"statusLineGitCleanBg": "#2d7d2d",
+		"statusLineGitDirtyBg": "#b8860b",
+		"statusLineGitUntrackedBg": "#0088aa",
+		"statusLineGitConflictBg": "#cc3333",
+		"statusLineGitFg": "#1a1a1a",
 		"pythonMode": "#f0c040"
 	},
 	"export": {

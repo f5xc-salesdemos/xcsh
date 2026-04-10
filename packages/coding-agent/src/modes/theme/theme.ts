@@ -881,6 +881,16 @@ const ThemeJsonSchema = Type.Object({
 		statusLineOutput: ColorValueSchema,
 		statusLineCost: ColorValueSchema,
 		statusLineSubagents: ColorValueSchema,
+		// Powerline segment backgrounds
+		statusLineOsIconBg: Type.Optional(ColorValueSchema),
+		statusLineOsIconFg: Type.Optional(ColorValueSchema),
+		statusLinePathBg: Type.Optional(ColorValueSchema),
+		statusLinePathFg: Type.Optional(ColorValueSchema),
+		statusLineGitCleanBg: Type.Optional(ColorValueSchema),
+		statusLineGitDirtyBg: Type.Optional(ColorValueSchema),
+		statusLineGitUntrackedBg: Type.Optional(ColorValueSchema),
+		statusLineGitConflictBg: Type.Optional(ColorValueSchema),
+		statusLineGitFg: Type.Optional(ColorValueSchema),
 	}),
 	export: Type.Optional(
 		Type.Object({
@@ -959,7 +969,16 @@ export type ThemeColor =
 	| "statusLineUntracked"
 	| "statusLineOutput"
 	| "statusLineCost"
-	| "statusLineSubagents";
+	| "statusLineSubagents"
+	| "statusLineOsIconBg"
+	| "statusLineOsIconFg"
+	| "statusLinePathBg"
+	| "statusLinePathFg"
+	| "statusLineGitCleanBg"
+	| "statusLineGitDirtyBg"
+	| "statusLineGitUntrackedBg"
+	| "statusLineGitConflictBg"
+	| "statusLineGitFg";
 
 /** Set of all valid ThemeColor string values for runtime validation */
 const THEME_COLOR_RECORD = {
@@ -1025,6 +1044,15 @@ const THEME_COLOR_RECORD = {
 	statusLineOutput: true,
 	statusLineCost: true,
 	statusLineSubagents: true,
+	statusLineOsIconBg: true,
+	statusLineOsIconFg: true,
+	statusLinePathBg: true,
+	statusLinePathFg: true,
+	statusLineGitCleanBg: true,
+	statusLineGitDirtyBg: true,
+	statusLineGitUntrackedBg: true,
+	statusLineGitConflictBg: true,
+	statusLineGitFg: true,
 } satisfies Record<ThemeColor, true>;
 
 const VALID_THEME_COLORS: ReadonlySet<string> = new Set(Object.keys(THEME_COLOR_RECORD));
@@ -1239,6 +1267,16 @@ export class Theme {
 		// Fallback: chromeAccent and contentAccent inherit from accent when not defined
 		this.#fgColors.chromeAccent ??= this.#fgColors.accent;
 		this.#fgColors.spinnerAccent ??= this.#fgColors.accent;
+		// Powerline segment bg/fg fallbacks
+		this.#fgColors.statusLineOsIconBg ??= this.#fgColors.muted;
+		this.#fgColors.statusLineOsIconFg ??= this.#fgColors.text;
+		this.#fgColors.statusLinePathBg ??= this.#fgColors.statusLinePath;
+		this.#fgColors.statusLinePathFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineGitCleanBg ??= this.#fgColors.statusLineGitClean;
+		this.#fgColors.statusLineGitDirtyBg ??= this.#fgColors.statusLineGitDirty;
+		this.#fgColors.statusLineGitUntrackedBg ??= this.#fgColors.statusLineUntracked;
+		this.#fgColors.statusLineGitConflictBg ??= this.#fgColors.error;
+		this.#fgColors.statusLineGitFg ??= this.#fgColors.text;
 		this.#fgColors.contentAccent ??= this.#fgColors.accent;
 		this.#bgColors = {} as Record<ThemeBg, string>;
 		for (const [key, value] of Object.entries(bgColors) as [ThemeBg, string | number][]) {
