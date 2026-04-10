@@ -81,8 +81,8 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 	},
 
 	xcsh: {
-		leftSegments: ["os_icon", "path", "git", "model", "plan_mode"],
-		rightSegments: ["context_pct", "token_total", "cost"],
+		leftSegments: ["os_icon", "path", "git"],
+		rightSegments: ["plan_mode", "context_pct", "token_total", "cost"],
 		separator: "powerline",
 		segmentOptions: {
 			model: { showThinkingLevel: true },
