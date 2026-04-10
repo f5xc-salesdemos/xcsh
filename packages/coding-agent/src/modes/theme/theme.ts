@@ -1332,6 +1332,11 @@ export class Theme {
 		return ansi;
 	}
 
+	/** Convert a ThemeColor's fg ANSI code to a bg ANSI code (swap \x1b[38; → \x1b[48;). */
+	fgColorAsBg(color: ThemeColor): string {
+		return this.getFgAnsi(color).replace("\x1b[38;", "\x1b[48;");
+	}
+
 	getBgAnsi(color: ThemeBg): string {
 		const ansi = this.#bgColors[color];
 		if (!ansi) throw new Error(`Unknown theme background color: ${color}`);

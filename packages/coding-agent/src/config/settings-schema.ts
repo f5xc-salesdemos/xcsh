@@ -55,6 +55,7 @@ export const TAB_METADATA: Record<SettingTab, { label: string; icon: `tab.${stri
 
 /** Status line segment identifiers */
 export type StatusLineSegmentId =
+	| "os_icon"
 	| "pi"
 	| "model"
 	| "plan_mode"
@@ -278,7 +279,7 @@ export const SETTINGS_SCHEMA = {
 	// Status line
 	"statusLine.preset": {
 		type: "enum",
-		values: ["default", "minimal", "compact", "full", "nerd", "ascii", "custom"] as const,
+		values: ["default", "minimal", "compact", "full", "nerd", "ascii", "xcsh", "custom"] as const,
 		default: "default",
 		ui: {
 			tab: "appearance",

@@ -80,6 +80,17 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 		},
 	},
 
+	xcsh: {
+		leftSegments: ["os_icon", "path", "git", "model", "plan_mode"],
+		rightSegments: ["context_pct", "token_total", "cost"],
+		separator: "powerline",
+		segmentOptions: {
+			model: { showThinkingLevel: true },
+			path: { abbreviate: true, maxLength: 40, stripWorkPrefix: true },
+			git: { showBranch: true, showStaged: true, showUnstaged: true, showUntracked: true },
+		},
+	},
+
 	custom: {
 		// User-defined - these are just defaults that get overridden
 		leftSegments: ["model", "plan_mode", "path", "git", "pr"],

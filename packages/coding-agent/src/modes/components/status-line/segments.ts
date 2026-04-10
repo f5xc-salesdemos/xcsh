@@ -34,6 +34,19 @@ function normalizePremiumRequests(value: number): number {
 // Segment Implementations
 // ═══════════════════════════════════════════════════════════════════════════
 
+const osIconSegment: StatusLineSegment = {
+	id: "os_icon",
+	render(_ctx) {
+		const icon = process.platform === "darwin" ? "\uf179" : process.platform === "win32" ? "\uf17a" : "\uf17c";
+		return {
+			content: icon,
+			visible: true,
+			bg: theme.fgColorAsBg("statusLineOsIconBg"),
+			fg: theme.getFgAnsi("statusLineOsIconFg"),
+		};
+	},
+};
+
 const piSegment: StatusLineSegment = {
 	id: "pi",
 	render(_ctx) {
@@ -112,7 +125,12 @@ const pathSegment: StatusLineSegment = {
 		}
 
 		const content = withIcon(theme.icon.folder, pwd);
-		return { content: theme.fg("statusLinePath", content), visible: true };
+		return {
+			content: theme.fg("statusLinePathFg", content),
+			visible: true,
+			bg: theme.fgColorAsBg("statusLinePathBg"),
+			fg: theme.getFgAnsi("statusLinePathFg"),
+		};
 	},
 };
 
@@ -124,7 +142,6 @@ const gitSegment: StatusLineSegment = {
 
 		const opts = ctx.options.git ?? {};
 		const gitStatus = status;
-		const isDirty = gitStatus && (gitStatus.staged > 0 || gitStatus.unstaged > 0 || gitStatus.untracked > 0);
 
 		const showBranch = opts.showBranch !== false;
 		let content = "";
@@ -156,8 +173,21 @@ const gitSegment: StatusLineSegment = {
 
 		if (!content) return { content: "", visible: false };
 
-		const colorName = isDirty ? "statusLineGitDirty" : "statusLineGitClean";
-		return { content: theme.fg(colorName, content), visible: true };
+		// Dynamic background: green=clean, amber=dirty, cyan=untracked-only
+		const hasUntracked = gitStatus && gitStatus.untracked > 0;
+		const hasStagedOrUnstaged = gitStatus && (gitStatus.staged > 0 || gitStatus.unstaged > 0);
+		const bgToken = hasStagedOrUnstaged
+			? "statusLineGitDirtyBg"
+			: hasUntracked
+				? "statusLineGitUntrackedBg"
+				: "statusLineGitCleanBg";
+
+		return {
+			content: theme.fg("statusLineGitFg", content),
+			visible: true,
+			bg: theme.fgColorAsBg(bgToken),
+			fg: theme.getFgAnsi("statusLineGitFg"),
+		};
 	},
 };
 
@@ -360,6 +390,7 @@ const cacheWriteSegment: StatusLineSegment = {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
+	os_icon: osIconSegment,
 	pi: piSegment,
 	model: modelSegment,
 	plan_mode: planModeSegment,
