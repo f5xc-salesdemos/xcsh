@@ -1015,6 +1015,7 @@ export class TUI extends Container {
 			const reset = SEGMENT_RESET;
 			for (let i = 0; i < newLines.length; i++) {
 				if (i > 0) buffer += "\r\n";
+				buffer += "\x1b[2K"; // Erase line before writing content
 				const line = newLines[i];
 				buffer += TERMINAL.isImageLine(line) ? line : line + reset;
 			}
