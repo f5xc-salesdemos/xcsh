@@ -280,7 +280,7 @@ export const SETTINGS_SCHEMA = {
 	"statusLine.preset": {
 		type: "enum",
 		values: ["default", "minimal", "compact", "full", "nerd", "ascii", "xcsh", "custom"] as const,
-		default: "default",
+		default: "xcsh",
 		ui: {
 			tab: "appearance",
 			label: "Status Line Preset",
