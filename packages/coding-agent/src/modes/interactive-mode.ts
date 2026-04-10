@@ -390,12 +390,13 @@ export class InteractiveMode implements InteractiveModeContext {
 		await this.#loadTodoList();
 
 		// Start the UI
-		this.ui.start();
+		const clearScreen = settings.get("startup.clearScreen");
+		this.ui.start(clearScreen);
 		pushTerminalTitle();
 		setSessionTerminalTitle(this.sessionManager.getSessionName(), this.sessionManager.getCwd());
 		this.#syncEditorMaxHeight();
 		this.isInitialized = true;
-		this.ui.requestRender(true);
+		
 
 		// Initialize hooks with TUI-based UI context
 		await this.initHooksAndCustomTools();
@@ -880,7 +881,8 @@ export class InteractiveMode implements InteractiveModeContext {
 			if (ttyHandle) {
 				await ttyHandle.close();
 			}
-			this.ui.start();
+			const clearScreen = settings.get("startup.clearScreen");
+		this.ui.start(clearScreen);
 			this.ui.requestRender(true);
 		}
 	}

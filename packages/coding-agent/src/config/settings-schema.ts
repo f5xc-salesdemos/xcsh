@@ -648,6 +648,16 @@ export const SETTINGS_SCHEMA = {
 		},
 	},
 
+	"startup.clearScreen": {
+		type: "boolean",
+		default: false,
+		ui: {
+			tab: "interaction",
+			label: "Clear Screen on Startup",
+			description: "Clear the terminal screen when xcsh starts",
+		},
+	},
+
 	"startup.checkUpdate": {
 		type: "boolean",
 		default: true,

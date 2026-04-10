@@ -385,7 +385,7 @@ export class TUI extends Container {
 		for (const overlay of this.overlayStack) overlay.component.invalidate?.();
 	}
 
-	start(): void {
+	start(clearScreen = true): void {
 		this.#stopped = false;
 		this.terminal.start(
 			data => this.#handleInput(data),
@@ -394,7 +394,7 @@ export class TUI extends Container {
 		this.terminal.hideCursor();
 		this.#querySixelSupport();
 		this.#queryCellSize();
-		this.requestRender(true);
+		this.requestRender(clearScreen);
 	}
 
 	addInputListener(listener: InputListener): () => void {
