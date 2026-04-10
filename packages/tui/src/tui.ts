@@ -1014,7 +1014,7 @@ export class TUI extends Container {
 			if (clear) buffer += isMultiplexer ? "\x1b[2J\x1b[H" : "\x1b[2J\x1b[H\x1b[3J";
 			// On the first non-clearing render, move cursor up to absorb the blank
 			// line the shell leaves between the command and the process's cursor.
-			if (!clear && this.#fullRedrawCount === 1) buffer += "\x1b[A";
+			if (!clear && this.#fullRedrawCount === 1) buffer += "\x1b[2A";
 			const reset = SEGMENT_RESET;
 			for (let i = 0; i < newLines.length; i++) {
 				if (i > 0) buffer += "\r\n";
