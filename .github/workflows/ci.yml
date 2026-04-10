@@ -259,6 +259,8 @@ jobs:
         run: bun run ci:release:build-binaries
       - name: Stage native addons for release
         run: cp packages/natives/native/*.node packages/coding-agent/binaries/
+      - name: Package archives for Homebrew
+        run: bun scripts/ci-release-homebrew.ts --package-only
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -270,3 +272,7 @@ jobs:
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: bun run ci:release:publish
+      - name: Update Homebrew tap
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: bun scripts/ci-release-homebrew.ts --update-tap
