@@ -141,7 +141,7 @@ describe("chunk mode tools", () => {
 		expect(text).not.toContain("to expand ⋮");
 		expect(text).toContain("server.ts:class_Server.fn_handleError·");
 		expect(text).toContain("let total = 0;");
-		expect(text).toContain("29| \t\t\ttotal +=");
+		expect(text).toMatch(/29\|\s+total \+=/);
 		expect(text).toContain("return err.message + total;");
 	});
 

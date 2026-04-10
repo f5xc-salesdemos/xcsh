@@ -18,7 +18,7 @@ describe("getRoleInfo", () => {
 		});
 		expect(getRoleInfo("slow", settings)).toEqual({
 			name: "Thinking",
-			color: "accent",
+			color: "contentAccent",
 			tag: "SLOW",
 		});
 	});

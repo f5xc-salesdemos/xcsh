@@ -497,8 +497,8 @@ describe("pi-natives", () => {
 
 			const entries = await fs.readdir(nativeDir);
 			const nodeFiles = entries
-				.filter((e) => e.startsWith("pi_natives.") && e.includes(platformTag) && e.endsWith(".node"))
-				.map((e) => path.join(nativeDir, e));
+				.filter(e => e.startsWith("pi_natives.") && e.includes(platformTag) && e.endsWith(".node"))
+				.map(e => path.join(nativeDir, e));
 
 			expect(nodeFiles.length).toBeGreaterThan(0);
 
@@ -509,7 +509,7 @@ describe("pi-natives", () => {
 
 				const undefinedScannerSymbols = output
 					.split("\n")
-					.filter((line) => /\bU\b.*tree_sitter_\w+_external_scanner_/.test(line));
+					.filter(line => /\bU\b.*tree_sitter_\w+_external_scanner_/.test(line));
 
 				expect(undefinedScannerSymbols).toEqual([]);
 			}

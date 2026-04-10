@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as natives from "@f5xc-salesdemos/pi-natives";
+import * as piUtils from "@f5xc-salesdemos/pi-utils";
 import { hookFetch, ptree, Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { type SettingPath, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
 import type { ToolSession } from "@f5xc-salesdemos/xcsh/tools";
@@ -14,9 +15,11 @@ import * as scraperUtils from "@f5xc-salesdemos/xcsh/web/scrapers/utils";
 
 const withMissingSystemPython = () => {
 	const whichSpy = vi.spyOn(Bun, "which").mockImplementation(() => null);
+	const $whichSpy = vi.spyOn(piUtils, "$which").mockImplementation(() => null);
 	return {
 		[Symbol.dispose]() {
 			whichSpy.mockRestore();
+			$whichSpy.mockRestore();
 		},
 	};
 };

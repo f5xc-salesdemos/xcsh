@@ -92,7 +92,7 @@ export class WelcomeComponent implements Component {
 		];
 
 		// Apply F5 branding colors to logo
-		const logoColored = f5Logo.map((line) => this.#f5ColorLine(line));
+		const logoColored = f5Logo.map(line => this.#f5ColorLine(line));
 
 		// Center the logo as a block (widest line = 46 chars), preserving internal alignment
 		const logoMaxWidth = 46;
@@ -100,7 +100,7 @@ export class WelcomeComponent implements Component {
 		const logoPadStr = padding(logoBlockPad);
 
 		// Left column - logo only
-		const leftLines = [...logoColored.map((l) => logoPadStr + l), ""];
+		const leftLines = [...logoColored.map(l => logoPadStr + l), ""];
 
 		// Right column separator
 		const separatorWidth = Math.max(0, rightCol - 2); // padding on each side
