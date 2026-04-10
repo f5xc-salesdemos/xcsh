@@ -1,6 +1,6 @@
 {
 	"name": "@f5xc-salesdemos/pi-natives",
-	"version": "15.0.0",
+	"version": "15.0.1",
 	"description": "Native Rust bindings for grep, clipboard, image processing, syntax highlighting, PTY, and shell operations via N-API",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",
