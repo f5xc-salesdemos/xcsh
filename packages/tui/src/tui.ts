@@ -392,11 +392,6 @@ export class TUI extends Container {
 			() => this.requestRender(),
 		);
 		this.terminal.hideCursor();
-		if (!clearScreen) {
-			// Move cursor up to absorb the blank line between the shell command
-			// and the TUI's first render when not clearing the screen.
-			this.terminal.write("\x1b[A");
-		}
 		this.#querySixelSupport();
 		this.#queryCellSize();
 		this.requestRender(clearScreen);
