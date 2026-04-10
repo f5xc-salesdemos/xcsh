@@ -34,6 +34,8 @@ export interface BashResult {
 	outputLines: number;
 	outputBytes: number;
 	artifactId?: string;
+	/** Actual working directory after the command ran (persistent shell only). */
+	newCwd?: string;
 }
 
 const HARD_TIMEOUT_GRACE_MS = 5_000;
@@ -204,10 +206,29 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 			};
 		}
 
+		// Capture actual CWD from the persistent shell after the command ran.
+		// This lets the caller detect directory changes from cd commands.
+		let newCwd: string | undefined;
+		if (shellSession) {
+			let captured = "";
+			try {
+				await shellSession.run({ command: 'printf "%s" "$PWD"' }, (_err, chunk) => {
+					captured += chunk;
+				});
+				const trimmed = captured.trim();
+				if (trimmed) {
+					newCwd = trimmed;
+				}
+			} catch {
+				// Best-effort; ignore failures
+			}
+		}
+
 		// Normal completion
 		return {
 			exitCode: winner.result.exitCode,
 			cancelled: false,
+			newCwd,
 			...(await sink.dump()),
 		};
 	} catch (err) {

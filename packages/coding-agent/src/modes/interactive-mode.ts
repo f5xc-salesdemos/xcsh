@@ -213,6 +213,9 @@ export class InteractiveMode implements InteractiveModeContext {
 				eventBus.on(LSP_STARTUP_EVENT_CHANNEL, data => {
 					this.#handleLspStartupEvent(data as LspStartupEvent);
 				}),
+				eventBus.on("cwd:changed", () => {
+					this.ui.requestRender();
+				}),
 			);
 		}
 

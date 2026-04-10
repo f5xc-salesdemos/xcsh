@@ -7,7 +7,7 @@ import type {
 } from "@f5xc-salesdemos/pi-agent-core";
 import type { Component } from "@f5xc-salesdemos/pi-tui";
 import { ImageProtocol, TERMINAL, Text } from "@f5xc-salesdemos/pi-tui";
-import { $env, getProjectDir, isEnoent, prompt } from "@f5xc-salesdemos/pi-utils";
+import { $env, getProjectDir, isEnoent, prompt, setProjectDir } from "@f5xc-salesdemos/pi-utils";
 import { Type } from "@sinclair/typebox";
 import { type BashResult, executeBash } from "../exec/bash-executor";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
@@ -433,6 +433,13 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 						}
 					},
 				});
+		// Update working directory if the persistent shell changed it
+		if ("newCwd" in result && result.newCwd && result.newCwd !== this.session.cwd) {
+			this.session.cwd = result.newCwd;
+			setProjectDir(result.newCwd);
+			this.session.eventBus?.emit("cwd:changed", result.newCwd);
+		}
+
 		if (result.cancelled) {
 			if (signal?.aborted) {
 				throw new ToolAbortError(normalizeResultOutput(result) || "Command aborted");
