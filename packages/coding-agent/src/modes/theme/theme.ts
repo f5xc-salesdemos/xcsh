@@ -891,6 +891,10 @@ const ThemeJsonSchema = Type.Object({
 		statusLineGitUntrackedBg: Type.Optional(ColorValueSchema),
 		statusLineGitConflictBg: Type.Optional(ColorValueSchema),
 		statusLineGitFg: Type.Optional(ColorValueSchema),
+		statusLineGitCleanFg: Type.Optional(ColorValueSchema),
+		statusLineGitDirtyFg: Type.Optional(ColorValueSchema),
+		statusLineGitUntrackedFg: Type.Optional(ColorValueSchema),
+		statusLineGitConflictFg: Type.Optional(ColorValueSchema),
 	}),
 	export: Type.Optional(
 		Type.Object({
@@ -978,6 +982,10 @@ export type ThemeColor =
 	| "statusLineGitDirtyBg"
 	| "statusLineGitUntrackedBg"
 	| "statusLineGitConflictBg"
+	| "statusLineGitCleanFg"
+	| "statusLineGitDirtyFg"
+	| "statusLineGitUntrackedFg"
+	| "statusLineGitConflictFg"
 	| "statusLineGitFg";
 
 /** Set of all valid ThemeColor string values for runtime validation */
@@ -1053,6 +1061,10 @@ const THEME_COLOR_RECORD = {
 	statusLineGitUntrackedBg: true,
 	statusLineGitConflictBg: true,
 	statusLineGitFg: true,
+	statusLineGitCleanFg: true,
+	statusLineGitDirtyFg: true,
+	statusLineGitUntrackedFg: true,
+	statusLineGitConflictFg: true,
 } satisfies Record<ThemeColor, true>;
 
 const VALID_THEME_COLORS: ReadonlySet<string> = new Set(Object.keys(THEME_COLOR_RECORD));
@@ -1277,6 +1289,10 @@ export class Theme {
 		this.#fgColors.statusLineGitUntrackedBg ??= this.#fgColors.statusLineUntracked;
 		this.#fgColors.statusLineGitConflictBg ??= this.#fgColors.error;
 		this.#fgColors.statusLineGitFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineGitCleanFg ??= this.#fgColors.statusLineGitFg;
+		this.#fgColors.statusLineGitDirtyFg ??= this.#fgColors.statusLineGitFg;
+		this.#fgColors.statusLineGitUntrackedFg ??= this.#fgColors.statusLineGitFg;
+		this.#fgColors.statusLineGitConflictFg ??= this.#fgColors.statusLineGitFg;
 		this.#fgColors.contentAccent ??= this.#fgColors.accent;
 		this.#bgColors = {} as Record<ThemeBg, string>;
 		for (const [key, value] of Object.entries(bgColors) as [ThemeBg, string | number][]) {

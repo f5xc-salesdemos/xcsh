@@ -9,6 +9,7 @@ import { theme } from "../../modes/theme/theme";
 import type { AgentSession } from "../../session/agent-session";
 import { calculatePromptTokens } from "../../session/compaction/compaction";
 import * as git from "../../utils/git";
+import { queryGitStatus } from "../../utils/gitstatus";
 import { sanitizeStatusText } from "../shared";
 import {
 	canReuseCachedPr,
@@ -58,7 +59,16 @@ export class StatusLineComponent implements Component {
 	#planModeStatus: { enabled: boolean; paused: boolean } | null = null;
 
 	// Git status caching (1s TTL)
-	#cachedGitStatus: { staged: number; unstaged: number; untracked: number } | null = null;
+	#cachedGitStatus: {
+		staged: number;
+		unstaged: number;
+		untracked: number;
+		conflicted: number;
+		ahead: number;
+		behind: number;
+		stashes: number;
+		action: string;
+	} | null = null;
 	#gitStatusLastFetch = 0;
 	#gitStatusInFlight = false;
 
@@ -185,7 +195,7 @@ export class StatusLineComponent implements Component {
 		return branch === this.#defaultBranch;
 	}
 
-	#getGitStatus(): { staged: number; unstaged: number; untracked: number } | null {
+	#getGitStatus(): { staged: number; unstaged: number; untracked: number; conflicted: number; ahead: number; behind: number; stashes: number; action: string } | null {
 		if (this.#gitStatusInFlight || Date.now() - this.#gitStatusLastFetch < 1000) {
 			return this.#cachedGitStatus;
 		}
@@ -194,7 +204,26 @@ export class StatusLineComponent implements Component {
 
 		(async () => {
 			try {
-				this.#cachedGitStatus = await git.status.summary(getProjectDir());
+				// Prefer gitstatusd daemon (10x faster than git CLI)
+				const gsResult = await queryGitStatus(getProjectDir());
+				if (gsResult) {
+					this.#cachedGitStatus = {
+						staged: gsResult.staged,
+						unstaged: gsResult.unstaged,
+						untracked: gsResult.untracked,
+						conflicted: gsResult.conflicted,
+						ahead: gsResult.ahead,
+						behind: gsResult.behind,
+						stashes: gsResult.stashes,
+						action: gsResult.action,
+					};
+				} else {
+					// Fallback to git CLI
+					const summary = await git.status.summary(getProjectDir());
+					this.#cachedGitStatus = summary
+						? { ...summary, conflicted: 0, ahead: 0, behind: 0, stashes: 0, action: "" }
+						: null;
+				}
 			} catch {
 				this.#cachedGitStatus = null;
 			} finally {

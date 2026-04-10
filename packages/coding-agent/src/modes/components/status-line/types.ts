@@ -41,7 +41,16 @@ export interface SegmentContext {
 	sessionStartTime: number;
 	git: {
 		branch: string | null;
-		status: { staged: number; unstaged: number; untracked: number } | null;
+		status: {
+			staged: number;
+			unstaged: number;
+			untracked: number;
+			conflicted: number;
+			ahead: number;
+			behind: number;
+			stashes: number;
+			action: string;
+		} | null;
 		pr: { number: number; url: string } | null;
 	};
 }

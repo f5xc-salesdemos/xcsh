@@ -149,44 +149,41 @@ const gitSegment: StatusLineSegment = {
 			content = withIcon(theme.icon.branch, branch);
 		}
 
-		// Add status indicators
+		// p10k-style indicators: ⇡N ⇣M *N ~N +N !N ?N
 		if (gitStatus) {
-			const indicators: string[] = [];
-			if (opts.showUnstaged !== false && gitStatus.unstaged > 0) {
-				indicators.push(theme.fg("statusLineDirty", `*${gitStatus.unstaged}`));
-			}
-			if (opts.showStaged !== false && gitStatus.staged > 0) {
-				indicators.push(theme.fg("statusLineStaged", `+${gitStatus.staged}`));
-			}
-			if (opts.showUntracked !== false && gitStatus.untracked > 0) {
-				indicators.push(theme.fg("statusLineUntracked", `?${gitStatus.untracked}`));
-			}
-			if (indicators.length > 0) {
-				const indicatorText = indicators.join(" ");
-				if (!content && showBranch === false) {
-					content = withIcon(theme.icon.git, indicatorText);
-				} else {
-					content += content ? ` ${indicatorText}` : indicatorText;
-				}
+			const parts: string[] = [];
+			if (gitStatus.ahead > 0) parts.push(`⇡${gitStatus.ahead}`);
+			if (gitStatus.behind > 0) parts.push(`⇣${gitStatus.behind}`);
+			if (gitStatus.stashes > 0) parts.push(`*${gitStatus.stashes}`);
+			if (gitStatus.action) parts.push(gitStatus.action);
+			if (gitStatus.conflicted > 0) parts.push(`~${gitStatus.conflicted}`);
+			if (opts.showStaged !== false && gitStatus.staged > 0) parts.push(`+${gitStatus.staged}`);
+			if (opts.showUnstaged !== false && gitStatus.unstaged > 0) parts.push(`!${gitStatus.unstaged}`);
+			if (opts.showUntracked !== false && gitStatus.untracked > 0) parts.push(`?${gitStatus.untracked}`);
+			if (parts.length > 0) {
+				content += content ? ` ${parts.join(" ")}` : parts.join(" ");
 			}
 		}
 
 		if (!content) return { content: "", visible: false };
 
-		// Dynamic background: green=clean, amber=dirty, cyan=untracked-only
+		// State priority: conflicted > modified > untracked > clean (matches p10k)
+		const hasConflict = gitStatus && gitStatus.conflicted > 0;
+		const hasModified = gitStatus && (gitStatus.staged > 0 || gitStatus.unstaged > 0);
 		const hasUntracked = gitStatus && gitStatus.untracked > 0;
-		const hasStagedOrUnstaged = gitStatus && (gitStatus.staged > 0 || gitStatus.unstaged > 0);
-		const bgToken = hasStagedOrUnstaged
-			? "statusLineGitDirtyBg"
-			: hasUntracked
-				? "statusLineGitUntrackedBg"
-				: "statusLineGitCleanBg";
+		const [bgToken, fgToken] = hasConflict
+			? (["statusLineGitConflictBg", "statusLineGitConflictFg"] as const)
+			: hasModified
+				? (["statusLineGitDirtyBg", "statusLineGitDirtyFg"] as const)
+				: hasUntracked
+					? (["statusLineGitUntrackedBg", "statusLineGitUntrackedFg"] as const)
+					: (["statusLineGitCleanBg", "statusLineGitCleanFg"] as const);
 
 		return {
-			content: theme.fg("statusLineGitFg", content),
+			content: theme.fg(fgToken, content),
 			visible: true,
 			bg: theme.fgColorAsBg(bgToken),
-			fg: theme.getFgAnsi("statusLineGitFg"),
+			fg: theme.getFgAnsi(fgToken),
 		};
 	},
 };
