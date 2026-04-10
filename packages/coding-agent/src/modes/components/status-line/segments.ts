@@ -34,6 +34,19 @@ function normalizePremiumRequests(value: number): number {
 // Segment Implementations
 // ═══════════════════════════════════════════════════════════════════════════
 
+const osIconSegment: StatusLineSegment = {
+	id: "os_icon",
+	render(_ctx) {
+		const icon = process.platform === "darwin" ? "\uf179" : process.platform === "win32" ? "\uf17a" : "\uf17c";
+		return {
+			content: icon,
+			visible: true,
+			bg: theme.fgColorAsBg("statusLineOsIconBg"),
+			fg: theme.getFgAnsi("statusLineOsIconFg"),
+		};
+	},
+};
+
 const piSegment: StatusLineSegment = {
 	id: "pi",
 	render(_ctx) {
@@ -112,7 +125,12 @@ const pathSegment: StatusLineSegment = {
 		}
 
 		const content = withIcon(theme.icon.folder, pwd);
-		return { content: theme.fg("statusLinePath", content), visible: true };
+		return {
+			content: theme.fg("statusLinePathFg", content),
+			visible: true,
+			bg: theme.fgColorAsBg("statusLinePathBg"),
+			fg: theme.getFgAnsi("statusLinePathFg"),
+		};
 	},
 };
 
@@ -124,7 +142,6 @@ const gitSegment: StatusLineSegment = {
 
 		const opts = ctx.options.git ?? {};
 		const gitStatus = status;
-		const isDirty = gitStatus && (gitStatus.staged > 0 || gitStatus.unstaged > 0 || gitStatus.untracked > 0);
 
 		const showBranch = opts.showBranch !== false;
 		let content = "";
@@ -132,32 +149,42 @@ const gitSegment: StatusLineSegment = {
 			content = withIcon(theme.icon.branch, branch);
 		}
 
-		// Add status indicators
+		// p10k-style indicators: ⇡N ⇣M *N ~N +N !N ?N
 		if (gitStatus) {
-			const indicators: string[] = [];
-			if (opts.showUnstaged !== false && gitStatus.unstaged > 0) {
-				indicators.push(theme.fg("statusLineDirty", `*${gitStatus.unstaged}`));
-			}
-			if (opts.showStaged !== false && gitStatus.staged > 0) {
-				indicators.push(theme.fg("statusLineStaged", `+${gitStatus.staged}`));
-			}
-			if (opts.showUntracked !== false && gitStatus.untracked > 0) {
-				indicators.push(theme.fg("statusLineUntracked", `?${gitStatus.untracked}`));
-			}
-			if (indicators.length > 0) {
-				const indicatorText = indicators.join(" ");
-				if (!content && showBranch === false) {
-					content = withIcon(theme.icon.git, indicatorText);
-				} else {
-					content += content ? ` ${indicatorText}` : indicatorText;
-				}
+			const parts: string[] = [];
+			if (gitStatus.ahead > 0) parts.push(`⇡${gitStatus.ahead}`);
+			if (gitStatus.behind > 0) parts.push(`⇣${gitStatus.behind}`);
+			if (gitStatus.stashes > 0) parts.push(`*${gitStatus.stashes}`);
+			if (gitStatus.action) parts.push(gitStatus.action);
+			if (gitStatus.conflicted > 0) parts.push(`~${gitStatus.conflicted}`);
+			if (opts.showStaged !== false && gitStatus.staged > 0) parts.push(`+${gitStatus.staged}`);
+			if (opts.showUnstaged !== false && gitStatus.unstaged > 0) parts.push(`!${gitStatus.unstaged}`);
+			if (opts.showUntracked !== false && gitStatus.untracked > 0) parts.push(`?${gitStatus.untracked}`);
+			if (parts.length > 0) {
+				content += content ? ` ${parts.join(" ")}` : parts.join(" ");
 			}
 		}
 
 		if (!content) return { content: "", visible: false };
 
-		const colorName = isDirty ? "statusLineGitDirty" : "statusLineGitClean";
-		return { content: theme.fg(colorName, content), visible: true };
+		// State priority: conflicted > modified > untracked > clean (matches p10k)
+		const hasConflict = gitStatus && gitStatus.conflicted > 0;
+		const hasModified = gitStatus && (gitStatus.staged > 0 || gitStatus.unstaged > 0);
+		const hasUntracked = gitStatus && gitStatus.untracked > 0;
+		const [bgToken, fgToken] = hasConflict
+			? (["statusLineGitConflictBg", "statusLineGitConflictFg"] as const)
+			: hasModified
+				? (["statusLineGitDirtyBg", "statusLineGitDirtyFg"] as const)
+				: hasUntracked
+					? (["statusLineGitUntrackedBg", "statusLineGitUntrackedFg"] as const)
+					: (["statusLineGitCleanBg", "statusLineGitCleanFg"] as const);
+
+		return {
+			content: theme.fg(fgToken, content),
+			visible: true,
+			bg: theme.fgColorAsBg(bgToken),
+			fg: theme.getFgAnsi(fgToken),
+		};
 	},
 };
 
@@ -360,6 +387,7 @@ const cacheWriteSegment: StatusLineSegment = {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
+	os_icon: osIconSegment,
 	pi: piSegment,
 	model: modelSegment,
 	plan_mode: planModeSegment,

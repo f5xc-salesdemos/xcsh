@@ -9,6 +9,7 @@ import { theme } from "../../modes/theme/theme";
 import type { AgentSession } from "../../session/agent-session";
 import { calculatePromptTokens } from "../../session/compaction/compaction";
 import * as git from "../../utils/git";
+import { queryGitStatus } from "../../utils/gitstatus";
 import { sanitizeStatusText } from "../shared";
 import {
 	canReuseCachedPr,
@@ -58,7 +59,16 @@ export class StatusLineComponent implements Component {
 	#planModeStatus: { enabled: boolean; paused: boolean } | null = null;
 
 	// Git status caching (1s TTL)
-	#cachedGitStatus: { staged: number; unstaged: number; untracked: number } | null = null;
+	#cachedGitStatus: {
+		staged: number;
+		unstaged: number;
+		untracked: number;
+		conflicted: number;
+		ahead: number;
+		behind: number;
+		stashes: number;
+		action: string;
+	} | null = null;
 	#gitStatusLastFetch = 0;
 	#gitStatusInFlight = false;
 
@@ -185,7 +195,7 @@ export class StatusLineComponent implements Component {
 		return branch === this.#defaultBranch;
 	}
 
-	#getGitStatus(): { staged: number; unstaged: number; untracked: number } | null {
+	#getGitStatus(): { staged: number; unstaged: number; untracked: number; conflicted: number; ahead: number; behind: number; stashes: number; action: string } | null {
 		if (this.#gitStatusInFlight || Date.now() - this.#gitStatusLastFetch < 1000) {
 			return this.#cachedGitStatus;
 		}
@@ -194,7 +204,26 @@ export class StatusLineComponent implements Component {
 
 		(async () => {
 			try {
-				this.#cachedGitStatus = await git.status.summary(getProjectDir());
+				// Prefer gitstatusd daemon (10x faster than git CLI)
+				const gsResult = await queryGitStatus(getProjectDir());
+				if (gsResult) {
+					this.#cachedGitStatus = {
+						staged: gsResult.staged,
+						unstaged: gsResult.unstaged,
+						untracked: gsResult.untracked,
+						conflicted: gsResult.conflicted,
+						ahead: gsResult.ahead,
+						behind: gsResult.behind,
+						stashes: gsResult.stashes,
+						action: gsResult.action,
+					};
+				} else {
+					// Fallback to git CLI
+					const summary = await git.status.summary(getProjectDir());
+					this.#cachedGitStatus = summary
+						? { ...summary, conflicted: 0, ahead: 0, behind: 0, stashes: 0, action: "" }
+						: null;
+				}
 			} catch {
 				this.#cachedGitStatus = null;
 			} finally {
@@ -381,83 +410,123 @@ export class StatusLineComponent implements Component {
 		const effectiveSettings = this.#resolveSettings();
 		const separatorDef = getSeparator(effectiveSettings.separator ?? "powerline-thin", theme);
 
-		const bgAnsi = theme.getBgAnsi("statusLineBg");
-		const fgAnsi = theme.getFgAnsi("text");
+		const defaultBg = theme.getBgAnsi("statusLineBg");
+		const defaultFg = theme.getFgAnsi("text");
 		const sepAnsi = theme.getFgAnsi("statusLineSep");
 
-		// Collect visible segment contents
-		const leftParts: string[] = [];
-		for (const segId of effectiveSettings.leftSegments) {
-			const rendered = renderSegment(segId, ctx);
-			if (rendered.visible && rendered.content) {
-				leftParts.push(rendered.content);
+		// Collect visible segments (preserving bg/fg metadata)
+		type SegPart = { content: string; bg: string; fg: string };
+		const collectParts = (segIds: readonly string[]): SegPart[] => {
+			const parts: SegPart[] = [];
+			for (const segId of segIds) {
+				const rendered = renderSegment(segId as any, ctx);
+				if (rendered.visible && rendered.content) {
+					parts.push({
+						content: rendered.content,
+						bg: rendered.bg || defaultBg,
+						fg: rendered.fg || defaultFg,
+					});
+				}
 			}
-		}
+			return parts;
+		};
 
-		const rightParts: string[] = [];
-		for (const segId of effectiveSettings.rightSegments) {
-			const rendered = renderSegment(segId, ctx);
-			if (rendered.visible && rendered.content) {
-				rightParts.push(rendered.content);
-			}
-		}
+		const leftParts = collectParts(effectiveSettings.leftSegments);
+		const rightParts = collectParts(effectiveSettings.rightSegments);
 
 		const runningBackgroundJobs = this.session.getAsyncJobSnapshot()?.running.length ?? 0;
 		if (runningBackgroundJobs > 0) {
 			const icon = theme.icon.agents ? `${theme.icon.agents} ` : "";
 			const label = `${formatCount("job", runningBackgroundJobs)} running`;
-			rightParts.push(theme.fg("statusLineSubagents", `${icon}${label}`));
+			rightParts.push({
+				content: theme.fg("statusLineSubagents", `${icon}${label}`),
+				bg: defaultBg,
+				fg: defaultFg,
+			});
 		}
+
 		const topFillWidth = Math.max(0, width);
 		const left = [...leftParts];
 		const right = [...rightParts];
 
-		const leftSepWidth = visibleWidth(separatorDef.left);
-		const rightSepWidth = visibleWidth(separatorDef.right);
-		const leftCapWidth = separatorDef.endCaps ? visibleWidth(separatorDef.endCaps.right) : 0;
-		const rightCapWidth = separatorDef.endCaps ? visibleWidth(separatorDef.endCaps.left) : 0;
+		const sepWidth = visibleWidth(separatorDef.left);
+		const capWidth = separatorDef.endCaps ? visibleWidth(separatorDef.endCaps.right) : 0;
 
-		const groupWidth = (parts: string[], capWidth: number, sepWidth: number): number => {
+		const groupWidth = (parts: SegPart[]): number => {
 			if (parts.length === 0) return 0;
-			const partsWidth = parts.reduce((sum, part) => sum + visibleWidth(part), 0);
-			const sepTotal = Math.max(0, parts.length - 1) * (sepWidth + 2);
-			return partsWidth + sepTotal + 2 + capWidth;
+			const partsWidth = parts.reduce((sum, p) => sum + visibleWidth(p.content), 0);
+			// Each segment gets 1 char padding on each side, separators between segments
+			const sepTotal = Math.max(0, parts.length - 1) * sepWidth;
+			return partsWidth + parts.length * 2 + sepTotal + capWidth;
 		};
 
-		let leftWidth = groupWidth(left, leftCapWidth, leftSepWidth);
-		let rightWidth = groupWidth(right, rightCapWidth, rightSepWidth);
+		let leftWidth = groupWidth(left);
+		let rightWidth = groupWidth(right);
 		const totalWidth = () => leftWidth + rightWidth + (left.length > 0 && right.length > 0 ? 1 : 0);
 
 		if (topFillWidth > 0) {
 			while (totalWidth() > topFillWidth && right.length > 0) {
 				right.pop();
-				rightWidth = groupWidth(right, rightCapWidth, rightSepWidth);
+				rightWidth = groupWidth(right);
 			}
 			while (totalWidth() > topFillWidth && left.length > 0) {
 				left.pop();
-				leftWidth = groupWidth(left, leftCapWidth, leftSepWidth);
+				leftWidth = groupWidth(left);
 			}
 		}
 
-		const renderGroup = (parts: string[], direction: "left" | "right"): string => {
+		// Render a group of segments with per-segment backgrounds and powerline transitions
+		const renderGroup = (parts: SegPart[], direction: "left" | "right"): string => {
 			if (parts.length === 0) return "";
-			const sep = direction === "left" ? separatorDef.left : separatorDef.right;
-			const cap = separatorDef.endCaps
-				? direction === "left"
-					? separatorDef.endCaps.right
-					: separatorDef.endCaps.left
-				: "";
-			const capPrefix = separatorDef.endCaps?.useBgAsFg ? bgAnsi.replace("\x1b[48;", "\x1b[38;") : bgAnsi + sepAnsi;
-			const capText = cap ? `${capPrefix}${cap}\x1b[0m` : "";
 
-			let content = bgAnsi + fgAnsi;
-			content += ` ${parts.join(` ${sepAnsi}${sep}${fgAnsi} `)} `;
-			content += "\x1b[0m";
+			const hasPowerline = separatorDef.endCaps?.useBgAsFg;
+			const powerlineSep = direction === "left" ? separatorDef.left : separatorDef.right;
 
-			if (capText) {
-				return direction === "right" ? capText + content : content + capText;
+			// Check if any segment has a custom bg (different from default)
+			const hasCustomBg = parts.some(p => p.bg !== defaultBg);
+
+			// Fast path: no custom bgs, use original flat rendering
+			if (!hasCustomBg || !hasPowerline) {
+				const sep = direction === "left" ? separatorDef.left : separatorDef.right;
+				const cap = separatorDef.endCaps
+					? direction === "left"
+						? separatorDef.endCaps.right
+						: separatorDef.endCaps.left
+					: "";
+				const capPrefix = hasPowerline ? defaultBg.replace("\x1b[48;", "\x1b[38;") : defaultBg + sepAnsi;
+				const capText = cap ? `${capPrefix}${cap}\x1b[0m` : "";
+
+				let content = defaultBg + defaultFg;
+				content += ` ${parts.map(p => p.content).join(` ${sepAnsi}${sep}${defaultFg} `)} `;
+				content += "\x1b[0m";
+
+				if (capText) {
+					return direction === "right" ? capText + content : content + capText;
+				}
+				return content;
 			}
-			return content;
+
+			// Per-segment powerline rendering
+			let output = "";
+			for (let i = 0; i < parts.length; i++) {
+				const seg = parts[i];
+				const nextBg = i < parts.length - 1 ? parts[i + 1].bg : null;
+
+				// Segment content with its own bg and fg
+				output += `${seg.bg}${seg.fg} ${seg.content} `;
+
+				if (nextBg !== null) {
+					// Powerline transition: fg = this segment's bg color, bg = next segment's bg
+					const transFg = seg.bg.replace("\x1b[48;", "\x1b[38;");
+					output += `\x1b[0m${transFg}${nextBg}${powerlineSep}`;
+				}
+			}
+			// End cap: transition from last segment's bg to terminal default
+			const lastBg = parts[parts.length - 1].bg;
+			const endFg = lastBg.replace("\x1b[48;", "\x1b[38;");
+			output += `\x1b[0m${endFg}${powerlineSep}\x1b[0m`;
+
+			return output;
 		};
 
 		const leftGroup = renderGroup(left, "left");
@@ -468,8 +537,8 @@ export class StatusLineComponent implements Component {
 			return leftGroup + (leftGroup && rightGroup ? " " : "") + rightGroup;
 		}
 
-		leftWidth = groupWidth(left, leftCapWidth, leftSepWidth);
-		rightWidth = groupWidth(right, rightCapWidth, rightSepWidth);
+		leftWidth = groupWidth(left);
+		rightWidth = groupWidth(right);
 		const gapWidth = Math.max(1, topFillWidth - leftWidth - rightWidth);
 		const gapFill = theme.fg("border", theme.boxRound.horizontal.repeat(gapWidth));
 		return leftGroup + gapFill + rightGroup;

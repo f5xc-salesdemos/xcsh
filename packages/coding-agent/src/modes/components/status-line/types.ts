@@ -41,7 +41,16 @@ export interface SegmentContext {
 	sessionStartTime: number;
 	git: {
 		branch: string | null;
-		status: { staged: number; unstaged: number; untracked: number } | null;
+		status: {
+			staged: number;
+			unstaged: number;
+			untracked: number;
+			conflicted: number;
+			ahead: number;
+			behind: number;
+			stashes: number;
+			action: string;
+		} | null;
 		pr: { number: number; url: string } | null;
 	};
 }
@@ -49,6 +58,8 @@ export interface SegmentContext {
 export interface RenderedSegment {
 	content: string; // The segment text (may include ANSI color codes)
 	visible: boolean; // Whether to render (e.g., git hidden when not in repo)
+	bg?: string; // Optional per-segment background color (ANSI 256/true-color value)
+	fg?: string; // Optional per-segment foreground override
 }
 
 export interface StatusLineSegment {

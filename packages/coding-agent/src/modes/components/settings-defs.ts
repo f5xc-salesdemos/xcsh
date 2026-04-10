@@ -419,6 +419,7 @@ const OPTION_PROVIDERS: Partial<Record<SettingPath, OptionProvider>> = {
 		{ value: "full", label: "Full", description: "All segments including time" },
 		{ value: "nerd", label: "Nerd", description: "Maximum info with Nerd Font icons" },
 		{ value: "ascii", label: "ASCII", description: "No special characters" },
+		{ value: "xcsh", label: "XCSH", description: "Powerline with OS icon, path, git, plan mode" },
 		{ value: "custom", label: "Custom", description: "User-defined segments" },
 	],
 	// Status line separator
