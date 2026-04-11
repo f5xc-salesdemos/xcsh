@@ -264,6 +264,7 @@ const ProviderConfigSchema = Type.Object({
 });
 
 const ModelsConfigSchema = Type.Object({
+	configVersion: Type.Optional(Type.Number()),
 	providers: Type.Record(Type.String(), ProviderConfigSchema),
 });
 

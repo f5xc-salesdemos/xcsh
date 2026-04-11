@@ -4,6 +4,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import {
 	autoFixModelsConfig,
+	CURRENT_CONFIG_VERSION,
 	generateConfigYml,
 	generateModelsYml,
 	hasLiteLLMEnv,
@@ -261,6 +262,7 @@ describe("validateModelsConfig()", () => {
 		fs.writeFileSync(
 			modelsPath,
 			[
+				`configVersion: ${CURRENT_CONFIG_VERSION}`,
 				"providers:",
 				"  anthropic:",
 				'    baseUrl: "https://proxy.example.com/anthropic"',
@@ -310,6 +312,7 @@ describe("validateModelsConfig()", () => {
 		fs.writeFileSync(
 			modelsPath,
 			[
+				`configVersion: ${CURRENT_CONFIG_VERSION}`,
 				"providers:",
 				"  anthropic:",
 				'    baseUrl: "https://old-proxy.example.com/anthropic"',
@@ -344,6 +347,7 @@ describe("validateModelsConfig()", () => {
 		fs.writeFileSync(
 			modelsPath,
 			[
+				`configVersion: ${CURRENT_CONFIG_VERSION}`,
 				"providers:",
 				"  anthropic:",
 				'    baseUrl: "https://proxy.example.com/anthropic"',
@@ -788,6 +792,12 @@ describe("startupHealthCheck()", () => {
 		expect(repaired).toBe(false);
 	});
 
+	test("ok + no loadedProviders arg → no action", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		const repaired = startupHealthCheck("ok", modelsPath);
+		expect(repaired).toBe(false);
+	});
+
 	test("full lifecycle: missing → generate → drift → fix → validate", () => {
 		// Step 1: Missing file
 		setEnv("https://proxy-v1.example.com", "sk-abc123");
@@ -827,5 +837,141 @@ describe("startupHealthCheck()", () => {
 		validation = validateModelsConfig(modelsPath);
 		expect(validation.valid).toBe(true);
 		expect(validation.warnings).toHaveLength(0);
+	});
+});
+
+// =========================================================================
+// Config schema versioning
+// =========================================================================
+
+describe("config schema versioning", () => {
+	test("CURRENT_CONFIG_VERSION is a positive integer", () => {
+		expect(typeof CURRENT_CONFIG_VERSION).toBe("number");
+		expect(CURRENT_CONFIG_VERSION).toBeGreaterThanOrEqual(1);
+		expect(Number.isInteger(CURRENT_CONFIG_VERSION)).toBe(true);
+	});
+
+	test("generateModelsYml includes configVersion field", () => {
+		const yml = generateModelsYml("https://proxy.example.com");
+		expect(yml).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
+	});
+
+	test("tryAutoConfigLiteLLM writes configVersion to file", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		tryAutoConfigLiteLLM(modelsPath);
+		const content = fs.readFileSync(modelsPath, "utf-8");
+		expect(content).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
+	});
+
+	test("autoFixModelsConfig writes configVersion to regenerated file", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.writeFileSync(modelsPath, "{{corrupt}}");
+		autoFixModelsConfig(modelsPath);
+		const content = fs.readFileSync(modelsPath, "utf-8");
+		expect(content).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
+	});
+
+	test("validateModelsConfig warns when configVersion is missing (legacy config)", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.writeFileSync(
+			modelsPath,
+			[
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://proxy.example.com/anthropic"',
+				"    apiKey: LITELLM_API_KEY",
+			].join("\n"),
+		);
+		const result = validateModelsConfig(modelsPath);
+		expect(result.valid).toBe(true); // Still valid, just a warning
+		expect(result.warnings.some(w => w.includes("configVersion"))).toBe(true);
+		expect(result.fixable).toBe(true);
+	});
+
+	test("validateModelsConfig no warning when configVersion is current", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.writeFileSync(
+			modelsPath,
+			[
+				`configVersion: ${CURRENT_CONFIG_VERSION}`,
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://proxy.example.com/anthropic"',
+				"    apiKey: LITELLM_API_KEY",
+			].join("\n"),
+		);
+		const result = validateModelsConfig(modelsPath);
+		expect(result.valid).toBe(true);
+		expect(result.warnings).toHaveLength(0);
+	});
+
+	test("startupHealthCheck regenerates config when configVersion is missing", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		// Write a legacy config without configVersion
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+		fs.writeFileSync(
+			modelsPath,
+			[
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://proxy.example.com/anthropic"',
+				"    apiKey: LITELLM_API_KEY",
+			].join("\n"),
+		);
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://proxy.example.com/anthropic" },
+		});
+		expect(repaired).toBe(true);
+		const content = fs.readFileSync(modelsPath, "utf-8");
+		expect(content).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
+		// Backup should have old config without version
+		expect(fs.existsSync(`${modelsPath}.bak`)).toBe(true);
+	});
+
+	test("startupHealthCheck does not regenerate when configVersion is current", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+		const content = generateModelsYml("https://proxy.example.com");
+		fs.writeFileSync(modelsPath, content);
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://proxy.example.com/anthropic" },
+		});
+		expect(repaired).toBe(false);
+	});
+
+	test("full lifecycle: legacy config upgraded on startup", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+
+		// Step 1: Write legacy config (no configVersion)
+		fs.writeFileSync(
+			modelsPath,
+			[
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://proxy.example.com/anthropic"',
+				"    apiKey: LITELLM_API_KEY",
+			].join("\n"),
+		);
+
+		// Step 2: Validate detects missing version
+		let validation = validateModelsConfig(modelsPath);
+		expect(validation.valid).toBe(true);
+		expect(validation.warnings.some(w => w.includes("configVersion"))).toBe(true);
+
+		// Step 3: startupHealthCheck upgrades it
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://proxy.example.com/anthropic" },
+		});
+		expect(repaired).toBe(true);
+
+		// Step 4: Validate is now clean
+		validation = validateModelsConfig(modelsPath);
+		expect(validation.valid).toBe(true);
+		expect(validation.warnings).toHaveLength(0);
+
+		// Step 5: File has configVersion
+		const content = fs.readFileSync(modelsPath, "utf-8");
+		expect(content).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
 	});
 });
