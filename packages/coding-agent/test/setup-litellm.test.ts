@@ -1,0 +1,266 @@
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import {
+	CURRENT_CONFIG_VERSION,
+	autoFixModelsConfig,
+	generateModelsYml,
+	hasLiteLLMEnv,
+	startupHealthCheck,
+	tryAutoConfigLiteLLM,
+	validateModelsConfig,
+} from "../src/config/auto-config";
+
+// Isolated temp directory per test
+let tmpDir: string;
+let modelsPath: string;
+
+const savedEnv: Record<string, string | undefined> = {};
+const ENV_KEYS = ["LITELLM_BASE_URL", "LITELLM_API_KEY"];
+
+function saveEnv() {
+	for (const key of ENV_KEYS) {
+		savedEnv[key] = process.env[key];
+	}
+}
+
+function restoreEnv() {
+	for (const key of ENV_KEYS) {
+		if (savedEnv[key] !== undefined) {
+			process.env[key] = savedEnv[key];
+		} else {
+			delete process.env[key];
+		}
+	}
+}
+
+function setEnv(baseUrl: string, apiKey: string) {
+	process.env.LITELLM_BASE_URL = baseUrl;
+	process.env.LITELLM_API_KEY = apiKey;
+}
+
+function clearEnv() {
+	delete process.env.LITELLM_BASE_URL;
+	delete process.env.LITELLM_API_KEY;
+}
+
+beforeEach(() => {
+	saveEnv();
+	tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "xcsh-setup-litellm-test-"));
+	modelsPath = path.join(tmpDir, "models.yml");
+});
+
+afterEach(() => {
+	restoreEnv();
+	fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+// =========================================================================
+// Multi-step integration scenarios
+// =========================================================================
+
+describe("multi-step integration scenarios", () => {
+	test("fresh setup → corrupt → heal → verify", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+
+		// Step 1: Fresh auto-config
+		expect(tryAutoConfigLiteLLM(modelsPath)).toBe(true);
+		let v = validateModelsConfig(modelsPath);
+		expect(v.valid).toBe(true);
+		expect(v.warnings).toHaveLength(0);
+
+		// Step 2: Corrupt the file
+		fs.writeFileSync(modelsPath, "<<invalid yaml>>");
+		v = validateModelsConfig(modelsPath);
+		expect(v.valid).toBe(false); // missing providers section
+
+		// Step 3: Auto-fix heals
+		const fix = autoFixModelsConfig(modelsPath);
+		expect(fix.fixed).toBe(true);
+		expect(fs.existsSync(`${modelsPath}.bak`)).toBe(true);
+		expect(fs.readFileSync(`${modelsPath}.bak`, "utf-8")).toContain("<<invalid");
+
+		// Step 4: Validate clean after fix
+		v = validateModelsConfig(modelsPath);
+		expect(v.valid).toBe(true);
+		expect(v.warnings).toHaveLength(0);
+	});
+
+	test("fresh setup → env changes → startup heals drift → verify", () => {
+		// Step 1: Setup with initial proxy
+		setEnv("https://proxy-v1.example.com", "sk-abc123");
+		expect(tryAutoConfigLiteLLM(modelsPath)).toBe(true);
+
+		// Step 2: Env changes to new proxy
+		setEnv("https://proxy-v2.example.com", "sk-abc123");
+
+		// Step 3: startupHealthCheck detects drift and auto-fixes
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://proxy-v1.example.com/anthropic" },
+		});
+		expect(repaired).toBe(true);
+
+		// Step 4: Config now has new URL and backup has old
+		const content = fs.readFileSync(modelsPath, "utf-8");
+		expect(content).toContain("proxy-v2.example.com/anthropic");
+		expect(fs.readFileSync(`${modelsPath}.bak`, "utf-8")).toContain("proxy-v1.example.com");
+
+		// Step 5: Validate clean
+		const v = validateModelsConfig(modelsPath);
+		expect(v.valid).toBe(true);
+		expect(v.warnings).toHaveLength(0);
+	});
+
+	test("legacy config → startup upgrades version → subsequent startups skip", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+
+		// Write legacy config (no configVersion)
+		fs.writeFileSync(
+			modelsPath,
+			[
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://proxy.example.com/anthropic"',
+				"    apiKey: LITELLM_API_KEY",
+			].join("\n"),
+		);
+
+		// First startup: upgrades
+		const firstRepair = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://proxy.example.com/anthropic" },
+		});
+		expect(firstRepair).toBe(true);
+
+		// Second startup: no-op (already current)
+		const secondRepair = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://proxy.example.com/anthropic" },
+		});
+		expect(secondRepair).toBe(false);
+
+		// Third startup: still no-op
+		const thirdRepair = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://proxy.example.com/anthropic" },
+		});
+		expect(thirdRepair).toBe(false);
+	});
+
+	test("no env vars → all operations gracefully skip", () => {
+		clearEnv();
+
+		// Generate: skipped
+		expect(tryAutoConfigLiteLLM(modelsPath)).toBe(false);
+		expect(fs.existsSync(modelsPath)).toBe(false);
+
+		// Fix: skipped
+		const fix = autoFixModelsConfig(modelsPath);
+		expect(fix.fixed).toBe(false);
+
+		// Startup health check: skipped for all statuses
+		expect(startupHealthCheck("not-found", modelsPath)).toBe(false);
+		expect(startupHealthCheck("error", modelsPath)).toBe(false);
+		expect(startupHealthCheck("ok", modelsPath, { anthropic: { baseUrl: "https://x.com" } })).toBe(false);
+	});
+});
+
+// =========================================================================
+// CLI round-trip: setup → generate → validate
+// =========================================================================
+
+describe("setup litellm round-trip", () => {
+	test("generate + validate round-trip is clean", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		expect(hasLiteLLMEnv()).toBe(true);
+
+		// Step 1: Generate config
+		const generated = tryAutoConfigLiteLLM(modelsPath);
+		expect(generated).toBe(true);
+
+		// Step 2: Read and verify structure
+		const content = fs.readFileSync(modelsPath, "utf-8");
+		expect(content).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
+		expect(content).toContain("providers:");
+		expect(content).toContain("https://proxy.example.com/anthropic");
+		expect(content).toContain("apiKey: LITELLM_API_KEY");
+
+		// Step 3: Validate passes cleanly (no errors, no warnings)
+		const validation = validateModelsConfig(modelsPath);
+		expect(validation.valid).toBe(true);
+		expect(validation.errors).toHaveLength(0);
+		expect(validation.warnings).toHaveLength(0);
+		expect(validation.fixable).toBe(false);
+	});
+
+	test("check mode detects missing config", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		const validation = validateModelsConfig(modelsPath);
+		expect(validation.valid).toBe(false);
+		expect(validation.errors[0]).toContain("not found");
+		expect(validation.fixable).toBe(true);
+	});
+
+	test("check mode detects drifted config", () => {
+		// Generate with URL A
+		setEnv("https://proxy-a.example.com", "sk-abc123");
+		tryAutoConfigLiteLLM(modelsPath);
+
+		// Switch env to URL B
+		setEnv("https://proxy-b.example.com", "sk-abc123");
+
+		// Validate detects drift
+		const validation = validateModelsConfig(modelsPath);
+		expect(validation.valid).toBe(true);
+		expect(validation.warnings.some(w => w.includes("does not match"))).toBe(true);
+		expect(validation.fixable).toBe(true);
+	});
+
+	test("check mode detects legacy config without configVersion", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.writeFileSync(
+			modelsPath,
+			[
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://proxy.example.com/anthropic"',
+				"    apiKey: LITELLM_API_KEY",
+			].join("\n"),
+		);
+		const validation = validateModelsConfig(modelsPath);
+		expect(validation.valid).toBe(true);
+		expect(validation.warnings.some(w => w.includes("configVersion"))).toBe(true);
+	});
+
+	test("json mode: validation result is JSON-serializable", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		tryAutoConfigLiteLLM(modelsPath);
+		const validation = validateModelsConfig(modelsPath);
+		const json = JSON.stringify(validation);
+		const parsed = JSON.parse(json);
+		expect(parsed.valid).toBe(true);
+		expect(Array.isArray(parsed.errors)).toBe(true);
+		expect(Array.isArray(parsed.warnings)).toBe(true);
+		expect(typeof parsed.fixable).toBe("boolean");
+	});
+
+	test("config.yml is also generated alongside models.yml", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		tryAutoConfigLiteLLM(modelsPath);
+		const configPath = path.join(tmpDir, "config.yml");
+		expect(fs.existsSync(configPath)).toBe(true);
+		const content = fs.readFileSync(configPath, "utf-8");
+		expect(content).toContain("image: openai");
+	});
+
+	test("generated config matches expected format for LiteLLM", () => {
+		const yml = generateModelsYml("https://litellm.internal:4000");
+		// Verify it's valid YAML structure (parseable by simple checks)
+		const lines = yml.split("\n").filter(l => l.trim().length > 0 && !l.startsWith("#"));
+		expect(lines[0]).toBe("configVersion: 1");
+		expect(lines[1]).toBe("providers:");
+		expect(lines[2]).toBe("  anthropic:");
+		expect(lines[3]).toContain("baseUrl:");
+		expect(lines[3]).toContain("litellm.internal:4000/anthropic");
+		expect(lines[4]).toContain("apiKey: LITELLM_API_KEY");
+	});
+});
