@@ -225,12 +225,283 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: bun scripts/release.ts auto
 
-  release:
+  # Build Linux + Windows binaries on Ubuntu
+  build-release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [check, native, test, install_methods]
     runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          lfs: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Download native addons
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pi-natives-*
+          path: packages/natives/native
+          merge-multiple: true
+      - name: Verify native addons
+        run: bun run ci:release:verify-natives
+      - name: Build Linux and Windows binaries
+        run: bun scripts/ci-release-build-binaries.ts --platform linux,win32
+      - name: Stage native addons for release
+        run: cp packages/natives/native/*.node packages/coding-agent/binaries/
+      - name: Upload release binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-binaries-linux-win
+          path: packages/coding-agent/binaries/*
+          if-no-files-found: error
+
+  # Build macOS binaries natively, then sign and notarize
+  build-sign-macos:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [check, native, test, install_methods]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          lfs: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Download macOS native addons
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pi-natives-darwin-*
+          path: packages/natives/native
+          merge-multiple: true
+      - name: Build macOS binaries
+        run: bun scripts/ci-release-build-binaries.ts --platform darwin
+      - name: Stage macOS native addons for release
+        run: cp packages/natives/native/*.node packages/coding-agent/binaries/
+
+      - name: Import Code Signing Certificate
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+          echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+
+          echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > $RUNNER_TEMP/certificate.p12
+
+          openssl pkcs12 -info -in $RUNNER_TEMP/certificate.p12 -noout -passin pass:"$APPLE_CERTIFICATE_PASSWORD" || {
+            echo "ERROR: Invalid p12 file or wrong password"
+            exit 1
+          }
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          security import $RUNNER_TEMP/certificate.p12 \
+            -k $KEYCHAIN_PATH \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          rm $RUNNER_TEMP/certificate.p12
+
+      - name: Sign macOS Binaries
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          SIGNING_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep "Developer ID" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          if [ -z "$SIGNING_IDENTITY" ]; then
+            echo "ERROR: No Developer ID signing identity found"
+            exit 1
+          fi
+          echo "Using signing identity: $SIGNING_IDENTITY"
+
+          for ARCH in x64 arm64; do
+            BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${ARCH}"
+            if [ -f "$BINARY_PATH" ]; then
+              codesign --force --options runtime \
+                --entitlements scripts/entitlements.plist \
+                --sign "$SIGNING_IDENTITY" \
+                --timestamp "$BINARY_PATH"
+
+              codesign --verify --verbose "$BINARY_PATH" || {
+                echo "::error::Code signature verification failed for $ARCH"
+                exit 1
+              }
+
+              AUTHORITY=$(codesign -dvvv "$BINARY_PATH" 2>&1 | grep "Authority=Developer ID Application" || true)
+              if [ -z "$AUTHORITY" ]; then
+                echo "::error::Binary not signed with Developer ID Application certificate for $ARCH"
+                exit 1
+              fi
+              echo "  Signed with: $AUTHORITY"
+
+              FLAGS=$(codesign -dvvv "$BINARY_PATH" 2>&1 | grep "flags=" || true)
+              if echo "$FLAGS" | grep -q "runtime"; then
+                echo "  Hardened runtime enabled"
+              else
+                echo "::error::Hardened runtime not enabled for $ARCH"
+                exit 1
+              fi
+
+              echo "$ARCH signed successfully"
+            else
+              echo "WARNING: Binary not found: $BINARY_PATH (skipping)"
+            fi
+          done
+
+      - name: Notarize macOS Binaries
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          for ARCH in x64 arm64; do
+            BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${ARCH}"
+            ZIP_PATH="$RUNNER_TEMP/xcsh-darwin-${ARCH}.zip"
+
+            if [ -f "$BINARY_PATH" ]; then
+              ditto -c -k --keepParent "$BINARY_PATH" "$ZIP_PATH"
+
+              NOTARY_OUTPUT=$(xcrun notarytool submit "$ZIP_PATH" \
+                --apple-id "$APPLE_ID" \
+                --password "$APPLE_PASSWORD" \
+                --team-id "$APPLE_TEAM_ID" \
+                --wait 2>&1)
+              echo "$NOTARY_OUTPUT"
+
+              if echo "$NOTARY_OUTPUT" | grep -q "status: Accepted"; then
+                echo "  Notarization accepted for $ARCH"
+              else
+                echo "::error::Notarization failed for $ARCH"
+                exit 1
+              fi
+
+              STAPLE_OUTPUT=$(xcrun stapler staple "$BINARY_PATH" 2>&1) || true
+              if echo "$STAPLE_OUTPUT" | grep -q "The staple and validate action worked"; then
+                echo "  Notarization ticket stapled"
+              else
+                echo "  Stapling not supported for bare Mach-O CLI tools (expected)"
+              fi
+
+              echo "All checks passed for $ARCH"
+            else
+              echo "WARNING: Binary not found: $BINARY_PATH (skipping)"
+            fi
+          done
+
+      - name: Upload signed macOS binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-binaries-macos-signed
+          path: packages/coding-agent/binaries/*
+          if-no-files-found: error
+
+  # Collect all artifacts and create the GitHub Release
+  create-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-release, build-sign-macos]
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: Download Linux/Windows binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: release-binaries-linux-win
+          path: packages/coding-agent/binaries
+      - name: Download signed macOS binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: release-binaries-macos-signed
+          path: packages/coding-agent/binaries
+      - name: List release binaries
+        run: ls -la packages/coding-agent/binaries/
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          files: packages/coding-agent/binaries/*
+          generate_release_notes: true
+
+  # Package Homebrew archives from signed binaries and update the tap
+  update-homebrew:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [create-release]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Download signed macOS binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: release-binaries-macos-signed
+          path: packages/coding-agent/binaries
+      - name: Download Linux binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: release-binaries-linux-win
+          path: packages/coding-agent/binaries
+      - name: Package archives for Homebrew
+        run: bun scripts/ci-release-homebrew.ts --package-only
+      - name: Upload Homebrew archives to release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          for archive in packages/coding-agent/binaries/*.zip packages/coding-agent/binaries/*.tar.gz; do
+            if [ -f "$archive" ]; then
+              echo "Uploading $(basename "$archive") to release $TAG..."
+              gh release upload "$TAG" "$archive" --clobber
+            fi
+          done
+      - name: Update Homebrew tap
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: bun scripts/ci-release-homebrew.ts --update-tap
+
+  # Publish to npm
+  publish-npm:
+    if: startsWith(github.ref, 'refs/tags/v') && !inputs.skip_npm
+    needs: [create-release]
+    runs-on: ubuntu-22.04
+    permissions:
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -250,33 +521,7 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
       - run: bun install --frozen-lockfile
-      - name: Download native addons
-        uses: actions/download-artifact@v4
-        with:
-          pattern: pi-natives-*
-          path: packages/natives/native
-          merge-multiple: true
-      - name: Verify native addons
-        run: bun run ci:release:verify-natives
-
-      - name: Build binaries
-        run: bun run ci:release:build-binaries
-      - name: Stage native addons for release
-        run: cp packages/natives/native/*.node packages/coding-agent/binaries/
-      - name: Package archives for Homebrew
-        run: bun scripts/ci-release-homebrew.ts --package-only
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.RELEASE_TOKEN }}
-          files: packages/coding-agent/binaries/*
-          generate_release_notes: true
       - name: Publish to npm
-        if: ${{ !inputs.skip_npm }}
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: bun run ci:release:publish
-      - name: Update Homebrew tap
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        run: bun scripts/ci-release-homebrew.ts --update-tap
