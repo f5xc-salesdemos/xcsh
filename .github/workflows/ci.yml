@@ -263,11 +263,19 @@ jobs:
           path: packages/coding-agent/binaries/*
           if-no-files-found: error
 
-  # Build macOS binaries natively, then sign and notarize
+  # Build macOS binaries natively on matching architecture, then sign and notarize
   build-sign-macos:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [check, native, test, install_methods]
-    runs-on: macos-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: macos-15-intel
+            arch: x64
+          - os: macos-14
+            arch: arm64
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -280,16 +288,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+          key: bun-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('**/bun.lock') }}
       - run: bun install --frozen-lockfile
       - name: Download macOS native addons
         uses: actions/download-artifact@v4
         with:
-          pattern: pi-natives-darwin-*
+          pattern: pi-natives-darwin-${{ matrix.arch }}*
           path: packages/natives/native
           merge-multiple: true
-      - name: Build macOS binaries
-        run: bun scripts/ci-release-build-binaries.ts --platform darwin
+      - name: Build macOS binary
+        run: bun scripts/ci-release-build-binaries.ts --platform darwin --arch ${{ matrix.arch }}
       - name: Stage macOS native addons for release
         run: cp packages/natives/native/*.node packages/coding-agent/binaries/
 
@@ -326,7 +334,7 @@ jobs:
           security find-identity -v -p codesigning $KEYCHAIN_PATH
           rm $RUNNER_TEMP/certificate.p12
 
-      - name: Sign macOS Binaries
+      - name: Sign macOS Binary
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
@@ -339,84 +347,77 @@ jobs:
           fi
           echo "Using signing identity: $SIGNING_IDENTITY"
 
-          for ARCH in x64 arm64; do
-            BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${ARCH}"
-            if [ -f "$BINARY_PATH" ]; then
-              codesign --force --options runtime \
-                --entitlements scripts/entitlements.plist \
-                --sign "$SIGNING_IDENTITY" \
-                --timestamp "$BINARY_PATH"
+          BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${{ matrix.arch }}"
+          if [ -f "$BINARY_PATH" ]; then
+            codesign --force --options runtime \
+              --entitlements scripts/entitlements.plist \
+              --sign "$SIGNING_IDENTITY" \
+              --timestamp "$BINARY_PATH"
 
-              codesign --verify --verbose "$BINARY_PATH" || {
-                echo "::error::Code signature verification failed for $ARCH"
-                exit 1
-              }
+            codesign --verify --verbose "$BINARY_PATH" || {
+              echo "::error::Code signature verification failed for ${{ matrix.arch }}"
+              exit 1
+            }
 
-              AUTHORITY=$(codesign -dvvv "$BINARY_PATH" 2>&1 | grep "Authority=Developer ID Application" || true)
-              if [ -z "$AUTHORITY" ]; then
-                echo "::error::Binary not signed with Developer ID Application certificate for $ARCH"
-                exit 1
-              fi
-              echo "  Signed with: $AUTHORITY"
-
-              FLAGS=$(codesign -dvvv "$BINARY_PATH" 2>&1 | grep "flags=" || true)
-              if echo "$FLAGS" | grep -q "runtime"; then
-                echo "  Hardened runtime enabled"
-              else
-                echo "::error::Hardened runtime not enabled for $ARCH"
-                exit 1
-              fi
-
-              echo "$ARCH signed successfully"
-            else
-              echo "WARNING: Binary not found: $BINARY_PATH (skipping)"
+            AUTHORITY=$(codesign -dvvv "$BINARY_PATH" 2>&1 | grep "Authority=Developer ID Application" || true)
+            if [ -z "$AUTHORITY" ]; then
+              echo "::error::Binary not signed with Developer ID Application certificate"
+              exit 1
             fi
-          done
+            echo "  Signed with: $AUTHORITY"
 
-      - name: Notarize macOS Binaries
+            FLAGS=$(codesign -dvvv "$BINARY_PATH" 2>&1 | grep "flags=" || true)
+            if echo "$FLAGS" | grep -q "runtime"; then
+              echo "  Hardened runtime enabled"
+            else
+              echo "::error::Hardened runtime not enabled"
+              exit 1
+            fi
+
+            echo "${{ matrix.arch }} signed successfully"
+          else
+            echo "::error::Binary not found: $BINARY_PATH"
+            exit 1
+          fi
+
+      - name: Notarize macOS Binary
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          for ARCH in x64 arm64; do
-            BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${ARCH}"
-            ZIP_PATH="$RUNNER_TEMP/xcsh-darwin-${ARCH}.zip"
+          BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${{ matrix.arch }}"
+          ZIP_PATH="$RUNNER_TEMP/xcsh-darwin-${{ matrix.arch }}.zip"
 
-            if [ -f "$BINARY_PATH" ]; then
-              ditto -c -k --keepParent "$BINARY_PATH" "$ZIP_PATH"
+          ditto -c -k --keepParent "$BINARY_PATH" "$ZIP_PATH"
 
-              NOTARY_OUTPUT=$(xcrun notarytool submit "$ZIP_PATH" \
-                --apple-id "$APPLE_ID" \
-                --password "$APPLE_PASSWORD" \
-                --team-id "$APPLE_TEAM_ID" \
-                --wait 2>&1)
-              echo "$NOTARY_OUTPUT"
+          NOTARY_OUTPUT=$(xcrun notarytool submit "$ZIP_PATH" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait 2>&1)
+          echo "$NOTARY_OUTPUT"
 
-              if echo "$NOTARY_OUTPUT" | grep -q "status: Accepted"; then
-                echo "  Notarization accepted for $ARCH"
-              else
-                echo "::error::Notarization failed for $ARCH"
-                exit 1
-              fi
+          if echo "$NOTARY_OUTPUT" | grep -q "status: Accepted"; then
+            echo "  Notarization accepted for ${{ matrix.arch }}"
+          else
+            echo "::error::Notarization failed for ${{ matrix.arch }}"
+            exit 1
+          fi
 
-              STAPLE_OUTPUT=$(xcrun stapler staple "$BINARY_PATH" 2>&1) || true
-              if echo "$STAPLE_OUTPUT" | grep -q "The staple and validate action worked"; then
-                echo "  Notarization ticket stapled"
-              else
-                echo "  Stapling not supported for bare Mach-O CLI tools (expected)"
-              fi
+          STAPLE_OUTPUT=$(xcrun stapler staple "$BINARY_PATH" 2>&1) || true
+          if echo "$STAPLE_OUTPUT" | grep -q "The staple and validate action worked"; then
+            echo "  Notarization ticket stapled"
+          else
+            echo "  Stapling not supported for bare Mach-O CLI tools (expected)"
+          fi
 
-              echo "All checks passed for $ARCH"
-            else
-              echo "WARNING: Binary not found: $BINARY_PATH (skipping)"
-            fi
-          done
+          echo "All checks passed for ${{ matrix.arch }}"
 
-      - name: Upload signed macOS binaries
+      - name: Upload signed macOS binary
         uses: actions/upload-artifact@v4
         with:
-          name: release-binaries-macos-signed
+          name: release-binaries-macos-${{ matrix.arch }}-signed
           path: packages/coding-agent/binaries/*
           if-no-files-found: error
 
@@ -439,8 +440,9 @@ jobs:
       - name: Download signed macOS binaries
         uses: actions/download-artifact@v4
         with:
-          name: release-binaries-macos-signed
+          pattern: release-binaries-macos-*-signed
           path: packages/coding-agent/binaries
+          merge-multiple: true
       - name: List release binaries
         run: ls -la packages/coding-agent/binaries/
       - name: Create GitHub Release
@@ -471,8 +473,9 @@ jobs:
       - name: Download signed macOS binaries
         uses: actions/download-artifact@v4
         with:
-          name: release-binaries-macos-signed
+          pattern: release-binaries-macos-*-signed
           path: packages/coding-agent/binaries
+          merge-multiple: true
       - name: Download Linux binaries
         uses: actions/download-artifact@v4
         with:
