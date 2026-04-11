@@ -11,7 +11,7 @@ import { filterEnv, resolvePythonRuntime } from "./runtime";
 const TEXT_ENCODER = new TextEncoder();
 const TEXT_DECODER = new TextDecoder();
 const TRACE_IPC = $flag("PI_PYTHON_IPC_TRACE");
-const PRELUDE_INTROSPECTION_SNIPPET = "import json\nprint(json.dumps(__omp_prelude_docs__()))";
+const PRELUDE_INTROSPECTION_SNIPPET = "import json\nprint(json.dumps(__xcsh_prelude_docs__()))";
 
 class SharedGatewayCreateError extends Error {
 	constructor(
@@ -285,8 +285,8 @@ export function renderKernelDisplay(content: Record<string, unknown>): {
 	const outputs: KernelDisplayOutput[] = [];
 
 	// Handle status events (custom MIME type from prelude helpers)
-	if (data["application/x-omp-status"] !== undefined) {
-		const statusData = data["application/x-omp-status"];
+	if (data["application/x-xcsh-status"] !== undefined) {
+		const statusData = data["application/x-xcsh-status"];
 		if (statusData && typeof statusData === "object" && "op" in statusData) {
 			outputs.push({ type: "status", event: statusData as PythonStatusEvent });
 		}
@@ -512,7 +512,7 @@ export class PythonKernel {
 			kernelId,
 			config.url,
 			Snowflake.next(),
-			"omp",
+			"xcsh",
 			false,
 			config.token,
 		);
@@ -575,7 +575,7 @@ export class PythonKernel {
 		)) as { id: string };
 		const kernelId = kernelInfo.id;
 
-		const kernel = new PythonKernel(Snowflake.next(), kernelId, gatewayUrl, Snowflake.next(), "omp", true);
+		const kernel = new PythonKernel(Snowflake.next(), kernelId, gatewayUrl, Snowflake.next(), "xcsh", true);
 
 		try {
 			await logger.time("startWithSharedGateway:connectWS", kernel.#connectWebSocket.bind(kernel), startup);
@@ -723,11 +723,11 @@ export class PythonKernel {
 		const envPayload = Object.fromEntries(envEntries);
 		const initScript = [
 			"import os, sys",
-			`__omp_cwd = ${JSON.stringify(cwd)}`,
-			"os.chdir(__omp_cwd)",
-			`__omp_env = ${JSON.stringify(envPayload)}`,
-			"for __omp_key, __omp_val in __omp_env.items():\n    os.environ[__omp_key] = __omp_val",
-			"if __omp_cwd not in sys.path:\n    sys.path.insert(0, __omp_cwd)",
+			`__xcsh_cwd = ${JSON.stringify(cwd)}`,
+			"os.chdir(__xcsh_cwd)",
+			`__xcsh_env = ${JSON.stringify(envPayload)}`,
+			"for __xcsh_key, __xcsh_val in __xcsh_env.items():\n    os.environ[__xcsh_key] = __xcsh_val",
+			"if __xcsh_cwd not in sys.path:\n    sys.path.insert(0, __xcsh_cwd)",
 		].join("\n");
 		const executeOptions = getStartupExecuteOptions(options);
 		const result = await this.execute(initScript, {

@@ -1,0 +1,20 @@
+{
+	"name": "@f5xc-salesdemos/pi-natives-linux-x64-gnu",
+	"version": "15.3.0",
+	"description": "Native addon for @f5xc-salesdemos/pi-natives (Linux x64)",
+	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
+	"author": "Can Boluk",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/f5xc-salesdemos/xcsh.git",
+		"directory": "packages/natives"
+	},
+	"os": ["linux"],
+	"cpu": ["x64"],
+	"main": "pi_natives.linux-x64-baseline.node",
+	"files": [
+		"pi_natives.linux-x64-baseline.node",
+		"pi_natives.linux-x64-modern.node"
+	]
+}

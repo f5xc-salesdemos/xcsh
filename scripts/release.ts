@@ -13,6 +13,7 @@ import { $, Glob } from "bun";
 
 const changelogGlob = new Glob("packages/*/CHANGELOG.md");
 const packageJsonGlob = new Glob("packages/*/package.json");
+const platformPackageJsonGlob = new Glob("packages/natives/npm/*/package.json");
 const cargoTomlGlob = new Glob("crates/*/Cargo.toml");
 
 // =============================================================================
@@ -231,9 +232,31 @@ async function cmdRelease(version: string): Promise<void> {
 		await Bun.write(pkgPath, content.replace(/"version": "[^"]+"/, `"version": "${version}"`));
 	}
 
+	// Update platform-specific native addon packages
+	const platformPkgPaths = await Array.fromAsync(platformPackageJsonGlob.scan("."));
+	for (const pkgPath of platformPkgPaths) {
+		const content = await Bun.file(pkgPath).text();
+		await Bun.write(pkgPath, content.replace(/"version": "[^"]+"/, `"version": "${version}"`));
+	}
+
+	// Update optionalDependencies versions in pi-natives package
+	const nativesPkgPath = "packages/natives/package.json";
+	const nativesPkgContent = await Bun.file(nativesPkgPath).text();
+	await Bun.write(
+		nativesPkgPath,
+		nativesPkgContent.replace(
+			/"@f5xc-salesdemos\/pi-natives-[^"]+": "[^"]+"/g,
+			(match) => match.replace(/: "[^"]+"/, `: "${version}"`),
+		),
+	);
+
 	// Verify
 	console.log("  Verifying versions:");
 	for (const pkgPath of publicPkgPaths) {
+		const pkgJson = await Bun.file(pkgPath).json();
+		console.log(`    ${pkgJson.name}: ${pkgJson.version}`);
+	}
+	for (const pkgPath of platformPkgPaths) {
 		const pkgJson = await Bun.file(pkgPath).json();
 		console.log(`    ${pkgJson.name}: ${pkgJson.version}`);
 	}

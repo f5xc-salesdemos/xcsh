@@ -47,10 +47,22 @@
 	},
 	"napi": {
 		"binaryName": "pi_natives",
-		"triples": {}
+		"triples": {
+			"x86_64-unknown-linux-gnu": { "platformArchABI": "linux-x64-gnu" },
+			"aarch64-unknown-linux-gnu": { "platformArchABI": "linux-arm64-gnu" },
+			"x86_64-apple-darwin": { "platformArchABI": "darwin-x64" },
+			"aarch64-apple-darwin": { "platformArchABI": "darwin-arm64" },
+			"x86_64-pc-windows-msvc": { "platformArchABI": "win32-x64-msvc" }
+		}
+	},
+	"optionalDependencies": {
+		"@f5xc-salesdemos/pi-natives-linux-x64-gnu": "15.3.0",
+		"@f5xc-salesdemos/pi-natives-linux-arm64-gnu": "15.3.0",
+		"@f5xc-salesdemos/pi-natives-darwin-x64": "15.3.0",
+		"@f5xc-salesdemos/pi-natives-darwin-arm64": "15.3.0",
+		"@f5xc-salesdemos/pi-natives-win32-x64-msvc": "15.3.0"
 	},
 	"files": [
-		"src",
 		"native",
 		"README.md"
 	],

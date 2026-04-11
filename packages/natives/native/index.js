@@ -119,10 +119,35 @@ const selectedVariant = resolveCpuVariant(variantOverride);
 const addonFilenames = getAddonFilenames(platformTag, selectedVariant);
 const addonLabel = selectedVariant ? `${platformTag} (${selectedVariant})` : platformTag;
 
-const baseReleaseCandidates = addonFilenames.flatMap(filename => [
-	path.join(nativeDir, filename),
-	path.join(execDir, filename),
-]);
+// Map platform tags to platform package names (optionalDependencies)
+const PLATFORM_PACKAGE_MAP = {
+	"linux-x64": "@f5xc-salesdemos/pi-natives-linux-x64-gnu",
+	"linux-arm64": "@f5xc-salesdemos/pi-natives-linux-arm64-gnu",
+	"darwin-x64": "@f5xc-salesdemos/pi-natives-darwin-x64",
+	"darwin-arm64": "@f5xc-salesdemos/pi-natives-darwin-arm64",
+	"win32-x64": "@f5xc-salesdemos/pi-natives-win32-x64-msvc",
+};
+
+function resolvePlatformPackageCandidates() {
+	const pkgName = PLATFORM_PACKAGE_MAP[platformTag];
+	if (!pkgName) return [];
+	try {
+		const pkgJsonPath = require_.resolve(`${pkgName}/package.json`);
+		const pkgDir = path.dirname(pkgJsonPath);
+		return addonFilenames.map(filename => path.join(pkgDir, filename));
+	} catch {
+		return [];
+	}
+}
+
+const platformPackageCandidates = resolvePlatformPackageCandidates();
+const baseReleaseCandidates = [
+	...platformPackageCandidates,
+	...addonFilenames.flatMap(filename => [
+		path.join(nativeDir, filename),
+		path.join(execDir, filename),
+	]),
+];
 const compiledCandidates = addonFilenames.flatMap(filename => [
 	path.join(versionedDir, filename),
 	path.join(userDataDir, filename),
@@ -230,8 +255,10 @@ function loadNative() {
 			`The compiled binary should extract one of:\n${expectedPaths}\n\n` +
 			`If missing, delete ${versionedDir} and re-run, or download manually:\n${downloadHints}`;
 	} else {
+		const platformPkg = PLATFORM_PACKAGE_MAP[platformTag] || `@f5xc-salesdemos/pi-natives-${platformTag}`;
 		helpMessage =
-			"If installed via npm/bun, try reinstalling: bun install @f5xc-salesdemos/pi-natives\n" +
+			`If installed via npm/bun, ensure the platform package is present:\n` +
+			`  npm install ${platformPkg}\n` +
 			"If developing locally, build with: bun --cwd=packages/natives run build\n" +
 			"Optional x64 variants: TARGET_VARIANT=baseline|modern bun --cwd=packages/natives run build";
 	}

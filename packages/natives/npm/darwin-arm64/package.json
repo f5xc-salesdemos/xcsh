@@ -1,0 +1,19 @@
+{
+	"name": "@f5xc-salesdemos/pi-natives-darwin-arm64",
+	"version": "15.3.0",
+	"description": "Native addon for @f5xc-salesdemos/pi-natives (macOS arm64)",
+	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
+	"author": "Can Boluk",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/f5xc-salesdemos/xcsh.git",
+		"directory": "packages/natives"
+	},
+	"os": ["darwin"],
+	"cpu": ["arm64"],
+	"main": "pi_natives.darwin-arm64.node",
+	"files": [
+		"pi_natives.darwin-arm64.node"
+	]
+}
