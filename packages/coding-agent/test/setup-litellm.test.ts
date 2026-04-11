@@ -256,7 +256,7 @@ describe("setup litellm round-trip", () => {
 		const yml = generateModelsYml("https://litellm.internal:4000");
 		// Verify it's valid YAML structure (parseable by simple checks)
 		const lines = yml.split("\n").filter(l => l.trim().length > 0 && !l.startsWith("#"));
-		expect(lines[0]).toBe("configVersion: 1");
+		expect(lines[0]).toBe(`configVersion: ${CURRENT_CONFIG_VERSION}`);
 		expect(lines[1]).toBe("providers:");
 		expect(lines[2]).toBe("  anthropic:");
 		expect(lines[3]).toContain("baseUrl:");
