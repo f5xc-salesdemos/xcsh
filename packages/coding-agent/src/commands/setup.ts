@@ -5,7 +5,7 @@ import { Args, Command, Flags, renderCommandHelp } from "@f5xc-salesdemos/pi-uti
 import { runSetupCommand, type SetupCommandArgs, type SetupComponent } from "../cli/setup-cli";
 import { initTheme } from "../modes/theme/theme";
 
-const COMPONENTS: SetupComponent[] = ["python", "stt"];
+const COMPONENTS: SetupComponent[] = ["python", "stt", "litellm"];
 
 export default class Setup extends Command {
 	static description = "Install dependencies for optional features";

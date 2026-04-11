@@ -28,6 +28,7 @@ import {
 import { isRecord, logger } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type ConfigError, ConfigFile } from "../config";
+import { autoFixModelsConfig, tryAutoConfigLiteLLM } from "../config/auto-config";
 import { parseModelString } from "../config/model-resolver";
 import { isValidThemeColor, type ThemeColor } from "../modes/theme/theme";
 import type { AuthStorage, OAuthCredential } from "../session/auth-storage";
@@ -1015,9 +1016,26 @@ export class ModelRegistry {
 	}
 
 	#loadCustomModels(): CustomModelsResult {
-		const { value, error, status } = this.#modelsConfigFile.tryLoad();
+		let result = this.#modelsConfigFile.tryLoad();
 
-		if (status === "error") {
+		// Auto-generate config if models.yml is missing and LiteLLM env vars are set
+		if (result.status === "not-found") {
+			if (tryAutoConfigLiteLLM(this.#modelsConfigFile.path())) {
+				this.#modelsConfigFile.invalidate();
+				result = this.#modelsConfigFile.tryLoad();
+			}
+		}
+
+		// Auto-fix config if it has errors and LiteLLM env vars can provide a known-good config
+		if (result.status === "error") {
+			const fixed = autoFixModelsConfig(this.#modelsConfigFile.path());
+			if (fixed.fixed) {
+				this.#modelsConfigFile.invalidate();
+				result = this.#modelsConfigFile.tryLoad();
+			}
+		}
+
+		if (result.status === "error") {
 			return {
 				models: [],
 				overrides: new Map(),
@@ -1025,10 +1043,10 @@ export class ModelRegistry {
 				keylessProviders: new Set(),
 				discoverableProviders: [],
 				configuredProviders: new Set(),
-				error,
+				error: result.error,
 				found: true,
 			};
-		} else if (status === "not-found") {
+		} else if (result.status === "not-found") {
 			return {
 				models: [],
 				overrides: new Map(),
@@ -1040,6 +1058,7 @@ export class ModelRegistry {
 			};
 		}
 
+		const value = result.value;
 		const overrides = new Map<string, ProviderOverride>();
 		const allModelOverrides = new Map<string, Map<string, ModelOverride>>();
 		const keylessProviders = new Set<string>();

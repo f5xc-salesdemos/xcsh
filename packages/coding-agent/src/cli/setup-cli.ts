@@ -9,7 +9,7 @@ import { $ } from "bun";
 import chalk from "chalk";
 import { theme } from "../modes/theme/theme";
 
-export type SetupComponent = "python" | "stt";
+export type SetupComponent = "python" | "stt" | "litellm";
 
 export interface SetupCommandArgs {
 	component: SetupComponent;
@@ -19,7 +19,7 @@ export interface SetupCommandArgs {
 	};
 }
 
-const VALID_COMPONENTS: SetupComponent[] = ["python", "stt"];
+const VALID_COMPONENTS: SetupComponent[] = ["python", "stt", "litellm"];
 
 const PYTHON_PACKAGES = ["jupyter_kernel_gateway", "ipykernel"];
 const MANAGED_PYTHON_ENV = getPythonEnvDir();
@@ -209,6 +209,9 @@ export async function runSetupCommand(cmd: SetupCommandArgs): Promise<void> {
 		case "stt":
 			await handleSttSetup(cmd.flags);
 			break;
+		case "litellm":
+			await handleLiteLLMSetup(cmd.flags);
+			break;
 	}
 }
 
@@ -372,5 +375,105 @@ ${chalk.bold("Examples:")}
   ${APP_NAME} setup stt              Install speech-to-text dependencies
   ${APP_NAME} setup stt --check      Check if STT dependencies are available
   ${APP_NAME} setup python --check   Check if Python execution is available
+  ${APP_NAME} setup litellm          Configure LiteLLM proxy (auto-detects env vars)
+  ${APP_NAME} setup litellm --check  Validate LiteLLM configuration
 `);
+}
+
+// ---------------------------------------------------------------------------
+// LiteLLM Setup
+// ---------------------------------------------------------------------------
+
+async function handleLiteLLMSetup(flags: { json?: boolean; check?: boolean }): Promise<void> {
+	const { hasLiteLLMEnv, validateModelsConfig, autoFixModelsConfig, tryAutoConfigLiteLLM } = await import(
+		"../config/auto-config"
+	);
+	const { getAgentDir } = await import("@f5xc-salesdemos/pi-utils");
+
+	const modelsPath = path.join(getAgentDir(), "models.yml");
+
+	// Check mode: validate existing config
+	if (flags.check) {
+		const result = validateModelsConfig(modelsPath);
+		if (flags.json) {
+			console.log(JSON.stringify(result, null, 2));
+			if (!result.valid) process.exit(1);
+			return;
+		}
+
+		if (result.valid && result.warnings.length === 0) {
+			console.log(chalk.green(`${theme.status.success} LiteLLM configuration is valid`));
+			console.log(chalk.dim(`  Config: ${modelsPath}`));
+		} else if (result.valid && result.warnings.length > 0) {
+			console.log(chalk.yellow(`${theme.status.warning} LiteLLM configuration has warnings:`));
+			for (const w of result.warnings) {
+				console.log(chalk.yellow(`  - ${w}`));
+			}
+			if (result.fixable) {
+				console.log(chalk.dim(`  Run '${APP_NAME} setup litellm' to fix`));
+			}
+		} else {
+			console.log(chalk.red(`${theme.status.error} LiteLLM configuration has errors:`));
+			for (const e of result.errors) {
+				console.log(chalk.red(`  - ${e}`));
+			}
+			if (result.fixable) {
+				console.log(chalk.dim(`  Run '${APP_NAME} setup litellm' to fix`));
+			}
+			process.exit(1);
+		}
+
+		// Also check env vars
+		if (!hasLiteLLMEnv()) {
+			console.log(
+				chalk.yellow(`${theme.status.warning} LITELLM_BASE_URL or LITELLM_API_KEY not set in environment`),
+			);
+		} else {
+			console.log(chalk.green(`${theme.status.success} LiteLLM environment variables detected`));
+		}
+		return;
+	}
+
+	// Setup mode: generate or fix config
+	if (!hasLiteLLMEnv()) {
+		console.error(chalk.red(`${theme.status.error} Required environment variables not set:`));
+		console.error(chalk.red("  LITELLM_BASE_URL — LiteLLM proxy URL (e.g. https://your-proxy.example.com)"));
+		console.error(chalk.red("  LITELLM_API_KEY  — API key for the LiteLLM proxy"));
+		console.error("");
+		console.error(chalk.dim("Set these in your shell profile (.zshrc, .bashrc) or a .env file."));
+		process.exit(1);
+	}
+
+	// Check if config already exists and is valid
+	const validation = validateModelsConfig(modelsPath);
+	if (validation.valid && validation.warnings.length === 0) {
+		console.log(chalk.green(`${theme.status.success} LiteLLM configuration already valid`));
+		console.log(chalk.dim(`  Config: ${modelsPath}`));
+		return;
+	}
+
+	// Generate or fix
+	if (validation.errors.length > 0 || !require("node:fs").existsSync(modelsPath)) {
+		if (tryAutoConfigLiteLLM(modelsPath)) {
+			console.log(chalk.green(`${theme.status.success} LiteLLM configuration generated`));
+			console.log(chalk.dim(`  Config: ${modelsPath}`));
+		} else {
+			console.error(chalk.red(`${theme.status.error} Failed to generate LiteLLM configuration`));
+			process.exit(1);
+		}
+	} else if (validation.fixable) {
+		const fix = autoFixModelsConfig(modelsPath);
+		if (fix.fixed) {
+			console.log(chalk.green(`${theme.status.success} LiteLLM configuration updated`));
+			for (const change of fix.changes) {
+				console.log(chalk.dim(`  - ${change}`));
+			}
+		} else {
+			console.error(chalk.red(`${theme.status.error} Failed to fix LiteLLM configuration`));
+			for (const change of fix.changes) {
+				console.error(chalk.red(`  - ${change}`));
+			}
+			process.exit(1);
+		}
+	}
 }
