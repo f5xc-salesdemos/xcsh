@@ -15,7 +15,12 @@ const repoRoot = path.join(import.meta.dir, "..");
 const binariesDir = path.join(repoRoot, "packages", "coding-agent", "binaries");
 const entrypoint = "./packages/coding-agent/src/cli.ts";
 const isDryRun = process.argv.includes("--dry-run");
-const targets: BinaryTarget[] = [
+
+// Parse --platform flag to filter targets (e.g. --platform darwin or --platform linux,win32)
+const platformIdx = process.argv.indexOf("--platform");
+const platformFilter = platformIdx !== -1 ? process.argv[platformIdx + 1]?.split(",") : null;
+
+const allTargets: BinaryTarget[] = [
 	{
 		platform: "darwin",
 		arch: "arm64",
@@ -47,6 +52,10 @@ const targets: BinaryTarget[] = [
 		outfile: "packages/coding-agent/binaries/xcsh-windows-x64.exe",
 	},
 ];
+
+const targets = platformFilter
+	? allTargets.filter((t) => platformFilter.includes(t.platform))
+	: allTargets;
 
 async function embedNative(target: BinaryTarget): Promise<void> {
 	if (isDryRun) {
