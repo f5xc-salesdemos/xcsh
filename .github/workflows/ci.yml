@@ -349,6 +349,14 @@ jobs:
 
           BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${{ matrix.arch }}"
           if [ -f "$BINARY_PATH" ]; then
+            echo "Binary info:"
+            file "$BINARY_PATH"
+            ls -la "$BINARY_PATH"
+
+            # Strip any existing (possibly malformed) signature from Bun-compiled binary
+            echo "Stripping existing signature..."
+            codesign --remove-signature "$BINARY_PATH" || true
+
             codesign --force --options runtime \
               --entitlements scripts/entitlements.plist \
               --sign "$SIGNING_IDENTITY" \
