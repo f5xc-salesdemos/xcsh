@@ -268,7 +268,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [check, native, test, install_methods]
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - os: macos-15-intel
@@ -349,6 +349,23 @@ jobs:
 
           BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${{ matrix.arch }}"
           if [ -f "$BINARY_PATH" ]; then
+            echo "=== Binary diagnostics ==="
+            file "$BINARY_PATH"
+            ls -la "$BINARY_PATH"
+            echo "Mach-O architectures:"
+            lipo -info "$BINARY_PATH" 2>&1 || true
+            echo "Existing signature state:"
+            codesign -dvvv "$BINARY_PATH" 2>&1 || true
+            echo "==========================="
+
+            # Strip any existing (possibly malformed) signature from Bun-compiled binary
+            # Bun's --compile can produce binaries with signature blocks that codesign --force
+            # cannot replace — removing first ensures a clean slate
+            echo "Stripping existing signature..."
+            codesign --remove-signature "$BINARY_PATH" 2>&1 || true
+            echo "After strip:"
+            codesign -dvvv "$BINARY_PATH" 2>&1 || true
+
             codesign --force --options runtime \
               --entitlements scripts/entitlements.plist \
               --sign "$SIGNING_IDENTITY" \
