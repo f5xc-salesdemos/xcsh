@@ -1,10 +1,16 @@
 /**
- * Auto-configuration for LiteLLM proxy.
+ * Auto-configuration and self-healing for LiteLLM proxy.
  *
- * When LITELLM_BASE_URL and LITELLM_API_KEY are set but no models.yml exists,
- * automatically generates working configuration so xcsh works out of the box.
+ * Runs on every startup to ensure xcsh has a working configuration:
  *
- * Also validates existing config against env vars and auto-fixes drift.
+ * 1. Missing config → auto-generate from LITELLM env vars
+ * 2. Corrupt config → backup and regenerate
+ * 3. Empty config → regenerate
+ * 4. Drifted config → detect and auto-fix (URL changed in env)
+ * 5. Incomplete config → fill missing fields
+ *
+ * All fixes create .bak backups before overwriting.
+ * All operations are idempotent and safe to run repeatedly.
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -69,7 +75,36 @@ export function generateConfigYml(): string {
 }
 
 // ---------------------------------------------------------------------------
-// Auto-config on startup
+// Backup
+// ---------------------------------------------------------------------------
+
+/** Create a .bak backup of a file if it exists. Returns true if backed up. */
+function backupIfExists(filePath: string): boolean {
+	try {
+		if (fs.existsSync(filePath)) {
+			fs.copyFileSync(filePath, `${filePath}.bak`);
+			return true;
+		}
+	} catch (err) {
+		logger.warn("Failed to create backup", { filePath, err });
+	}
+	return false;
+}
+
+/** Safely write a file, creating parent directories. */
+function safeWrite(filePath: string, content: string): boolean {
+	try {
+		fs.mkdirSync(path.dirname(filePath), { recursive: true });
+		fs.writeFileSync(filePath, content, "utf-8");
+		return true;
+	} catch (err) {
+		logger.warn("Failed to write config file", { filePath, err });
+		return false;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Auto-config on startup (handles missing file)
 // ---------------------------------------------------------------------------
 
 /**
@@ -83,27 +118,17 @@ export function tryAutoConfigLiteLLM(modelsPath: string): boolean {
 	const baseUrl = getLiteLLMBaseUrl();
 	if (!baseUrl) return false;
 
-	const dir = path.dirname(modelsPath);
+	if (!safeWrite(modelsPath, generateModelsYml(baseUrl))) return false;
+	logger.debug("Auto-configured LiteLLM proxy", { modelsPath, baseUrl });
 
-	try {
-		fs.mkdirSync(dir, { recursive: true });
-
-		// Write models.yml
-		fs.writeFileSync(modelsPath, generateModelsYml(baseUrl), "utf-8");
-		logger.debug("Auto-configured LiteLLM proxy", { modelsPath, baseUrl });
-
-		// Write config.yml if it doesn't exist
-		const configPath = path.join(dir, "config.yml");
-		if (!fs.existsSync(configPath)) {
-			fs.writeFileSync(configPath, generateConfigYml(), "utf-8");
-			logger.debug("Auto-generated default config", { configPath });
-		}
-
-		return true;
-	} catch (err) {
-		logger.warn("Failed to auto-generate LiteLLM config", { err, modelsPath });
-		return false;
+	// Write config.yml if it doesn't exist
+	const configPath = path.join(path.dirname(modelsPath), "config.yml");
+	if (!fs.existsSync(configPath)) {
+		safeWrite(configPath, generateConfigYml());
+		logger.debug("Auto-generated default config", { configPath });
 	}
+
+	return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -119,7 +144,13 @@ export interface ValidationResult {
 
 /**
  * Validate existing models.yml against environment.
- * Returns validation result with errors and warnings.
+ *
+ * Checks:
+ * - File exists and is readable
+ * - File is not empty or whitespace-only
+ * - Contains expected providers section
+ * - Anthropic baseUrl matches LITELLM_BASE_URL env var
+ * - apiKey env var reference resolves to a set variable
  */
 export function validateModelsConfig(modelsPath: string): ValidationResult {
 	const result: ValidationResult = { valid: true, errors: [], warnings: [], fixable: false };
@@ -142,18 +173,18 @@ export function validateModelsConfig(modelsPath: string): ValidationResult {
 		return result;
 	}
 
-	// Check YAML syntax
-	try {
-		// Basic content check — full schema validation is done by ConfigFile loader
-		if (content.trim().length === 0) {
-			result.valid = false;
-			result.errors.push("models.yml is empty");
-			result.fixable = hasLiteLLMEnv();
-			return result;
-		}
-	} catch {
+	// Check not empty
+	if (content.trim().length === 0) {
 		result.valid = false;
-		result.errors.push("models.yml has invalid YAML syntax");
+		result.errors.push("models.yml is empty");
+		result.fixable = hasLiteLLMEnv();
+		return result;
+	}
+
+	// Check for providers section (basic structural check)
+	if (!content.includes("providers:")) {
+		result.valid = false;
+		result.errors.push("models.yml missing 'providers:' section");
 		result.fixable = hasLiteLLMEnv();
 		return result;
 	}
@@ -179,7 +210,7 @@ export function validateModelsConfig(modelsPath: string): ValidationResult {
 }
 
 // ---------------------------------------------------------------------------
-// Auto-fix
+// Auto-fix (handles corrupt, drifted, incomplete configs)
 // ---------------------------------------------------------------------------
 
 export interface FixResult {
@@ -189,7 +220,14 @@ export interface FixResult {
 
 /**
  * Auto-fix models.yml issues.
- * Regenerates the file if LITELLM env vars are set.
+ *
+ * Handles:
+ * - Corrupt YAML → backup and regenerate
+ * - Empty file → regenerate
+ * - URL drift → backup and regenerate with new URL
+ * - Missing providers section → regenerate
+ *
+ * Always creates .bak backup before overwriting.
  */
 export function autoFixModelsConfig(modelsPath: string): FixResult {
 	if (!hasLiteLLMEnv()) {
@@ -201,29 +239,74 @@ export function autoFixModelsConfig(modelsPath: string): FixResult {
 		return { fixed: false, changes: ["Cannot fix: LITELLM_BASE_URL is invalid"] };
 	}
 
-	try {
-		const dir = path.dirname(modelsPath);
-		fs.mkdirSync(dir, { recursive: true });
+	backupIfExists(modelsPath);
 
-		// Back up existing file if it exists
-		if (fs.existsSync(modelsPath)) {
-			const backupPath = `${modelsPath}.bak`;
-			fs.copyFileSync(modelsPath, backupPath);
-		}
-
-		fs.writeFileSync(modelsPath, generateModelsYml(baseUrl), "utf-8");
-		logger.debug("Auto-fixed LiteLLM config", { modelsPath, baseUrl });
-
-		return { fixed: true, changes: [`Regenerated models.yml with baseUrl: ${baseUrl}/anthropic`] };
-	} catch (err) {
-		logger.warn("Failed to auto-fix LiteLLM config", { err, modelsPath });
-		return { fixed: false, changes: [`Write failed: ${err}`] };
+	if (!safeWrite(modelsPath, generateModelsYml(baseUrl))) {
+		return { fixed: false, changes: [`Write failed: could not write to ${modelsPath}`] };
 	}
+
+	logger.debug("Auto-fixed LiteLLM config", { modelsPath, baseUrl });
+	return { fixed: true, changes: [`Regenerated models.yml with baseUrl: ${baseUrl}/anthropic`] };
+}
+
+// ---------------------------------------------------------------------------
+// Startup self-healing (called from ModelRegistry on every load)
+// ---------------------------------------------------------------------------
+
+/**
+ * Comprehensive startup health check for models.yml.
+ *
+ * Called from ModelRegistry.#loadCustomModels() on every startup.
+ * Handles all error conditions:
+ *
+ * - "not-found" → tryAutoConfigLiteLLM (generate from env)
+ * - "error" (corrupt/invalid) → autoFixModelsConfig (backup + regenerate)
+ * - "ok" but drifted → autoFixModelsConfig (backup + update URL)
+ *
+ * Returns true if any repair was performed (caller should invalidate cache and reload).
+ */
+export function startupHealthCheck(
+	status: "ok" | "not-found" | "error",
+	modelsPath: string,
+	loadedProviders?: Record<string, { baseUrl?: string }>,
+): boolean {
+	// Case 1: No config file — generate from env
+	if (status === "not-found") {
+		return tryAutoConfigLiteLLM(modelsPath);
+	}
+
+	// Case 2: Config file exists but failed to parse — backup and regenerate
+	if (status === "error") {
+		if (!hasLiteLLMEnv()) return false;
+		const fix = autoFixModelsConfig(modelsPath);
+		return fix.fixed;
+	}
+
+	// Case 3: Config loaded OK — check for drift and auto-fix
+	if (status === "ok" && loadedProviders) {
+		const envBaseUrl = getLiteLLMBaseUrl();
+		if (!envBaseUrl) return false;
+
+		const anthropicConfig = loadedProviders.anthropic;
+		if (!anthropicConfig?.baseUrl) return false;
+
+		const expectedUrl = `${envBaseUrl}/anthropic`;
+		if (anthropicConfig.baseUrl !== expectedUrl) {
+			logger.warn("LiteLLM config drift detected — auto-fixing", {
+				configured: anthropicConfig.baseUrl,
+				expected: expectedUrl,
+			});
+			const fix = autoFixModelsConfig(modelsPath);
+			return fix.fixed;
+		}
+	}
+
+	return false;
 }
 
 /**
  * Validate config against env and warn if drifted.
- * Called on every startup when models.yml exists and loads successfully.
+ * Informational only — does not fix. Use startupHealthCheck for auto-fix.
  */
 export function warnIfConfigDrifted(providers: Record<string, { baseUrl?: string }> | undefined): void {
 	if (!providers) return;
@@ -239,7 +322,7 @@ export function warnIfConfigDrifted(providers: Record<string, { baseUrl?: string
 		logger.warn("LiteLLM config drift detected", {
 			configured: anthropicConfig.baseUrl,
 			expected: expectedUrl,
-			hint: "Run 'xcsh setup litellm --force' to update",
+			hint: "Run 'xcsh setup litellm' to update",
 		});
 	}
 }

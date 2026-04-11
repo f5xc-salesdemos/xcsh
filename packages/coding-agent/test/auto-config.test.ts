@@ -7,6 +7,7 @@ import {
 	generateConfigYml,
 	generateModelsYml,
 	hasLiteLLMEnv,
+	startupHealthCheck,
 	tryAutoConfigLiteLLM,
 	validateModelsConfig,
 	warnIfConfigDrifted,
@@ -703,5 +704,128 @@ describe("fault tolerance", () => {
 		// Backup has old URL
 		const backup = fs.readFileSync(`${modelsPath}.bak`, "utf-8");
 		expect(backup).toContain("https://old-proxy.example.com/anthropic");
+	});
+});
+
+// =========================================================================
+// startupHealthCheck() — the runtime self-healing entry point
+// =========================================================================
+
+describe("startupHealthCheck()", () => {
+	test("not-found + env vars → generates config", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		const repaired = startupHealthCheck("not-found", modelsPath);
+		expect(repaired).toBe(true);
+		expect(fs.existsSync(modelsPath)).toBe(true);
+		expect(fs.readFileSync(modelsPath, "utf-8")).toContain("proxy.example.com/anthropic");
+	});
+
+	test("not-found + no env vars → no action", () => {
+		clearEnv();
+		const repaired = startupHealthCheck("not-found", modelsPath);
+		expect(repaired).toBe(false);
+		expect(fs.existsSync(modelsPath)).toBe(false);
+	});
+
+	test("error + env vars → backs up and regenerates", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+		fs.writeFileSync(modelsPath, "{{corrupt yaml");
+		const repaired = startupHealthCheck("error", modelsPath);
+		expect(repaired).toBe(true);
+		expect(fs.readFileSync(modelsPath, "utf-8")).toContain("proxy.example.com/anthropic");
+		expect(fs.readFileSync(`${modelsPath}.bak`, "utf-8")).toContain("{{corrupt");
+	});
+
+	test("error + no env vars → no action", () => {
+		clearEnv();
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+		fs.writeFileSync(modelsPath, "{{corrupt yaml");
+		const repaired = startupHealthCheck("error", modelsPath);
+		expect(repaired).toBe(false);
+	});
+
+	test("ok + matching URL → no action", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://proxy.example.com/anthropic" },
+		});
+		expect(repaired).toBe(false);
+	});
+
+	test("ok + drifted URL → auto-fixes", () => {
+		setEnv("https://new-proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+		fs.writeFileSync(modelsPath, generateModelsYml("https://old-proxy.example.com"));
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://old-proxy.example.com/anthropic" },
+		});
+		expect(repaired).toBe(true);
+		expect(fs.readFileSync(modelsPath, "utf-8")).toContain("new-proxy.example.com/anthropic");
+	});
+
+	test("ok + no env vars → no drift check", () => {
+		clearEnv();
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			anthropic: { baseUrl: "https://some-proxy.example.com/anthropic" },
+		});
+		expect(repaired).toBe(false);
+	});
+
+	test("ok + no anthropic provider → no drift check", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			openai: { baseUrl: "https://other.example.com" },
+		});
+		expect(repaired).toBe(false);
+	});
+
+	test("ok + anthropic without baseUrl → no drift check", () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		const repaired = startupHealthCheck("ok", modelsPath, {
+			anthropic: {},
+		});
+		expect(repaired).toBe(false);
+	});
+
+	test("full lifecycle: missing → generate → drift → fix → validate", () => {
+		// Step 1: Missing file
+		setEnv("https://proxy-v1.example.com", "sk-abc123");
+		expect(startupHealthCheck("not-found", modelsPath)).toBe(true);
+		expect(fs.existsSync(modelsPath)).toBe(true);
+		let content = fs.readFileSync(modelsPath, "utf-8");
+		expect(content).toContain("proxy-v1.example.com/anthropic");
+
+		// Step 2: Validate — should be clean
+		let validation = validateModelsConfig(modelsPath);
+		expect(validation.valid).toBe(true);
+		expect(validation.warnings).toHaveLength(0);
+
+		// Step 3: Env changes (simulating proxy migration)
+		setEnv("https://proxy-v2.example.com", "sk-abc123");
+
+		// Step 4: Validate detects drift
+		validation = validateModelsConfig(modelsPath);
+		expect(validation.warnings.length).toBeGreaterThan(0);
+
+		// Step 5: startupHealthCheck auto-fixes
+		expect(
+			startupHealthCheck("ok", modelsPath, {
+				anthropic: { baseUrl: "https://proxy-v1.example.com/anthropic" },
+			}),
+		).toBe(true);
+
+		// Step 6: Verify fixed
+		content = fs.readFileSync(modelsPath, "utf-8");
+		expect(content).toContain("proxy-v2.example.com/anthropic");
+		expect(content).not.toContain("proxy-v1");
+
+		// Step 7: Backup preserved
+		expect(fs.readFileSync(`${modelsPath}.bak`, "utf-8")).toContain("proxy-v1");
+
+		// Step 8: Final validation clean
+		validation = validateModelsConfig(modelsPath);
+		expect(validation.valid).toBe(true);
+		expect(validation.warnings).toHaveLength(0);
 	});
 });

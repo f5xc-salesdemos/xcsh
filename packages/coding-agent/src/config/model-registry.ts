@@ -28,7 +28,7 @@ import {
 import { isRecord, logger } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type ConfigError, ConfigFile } from "../config";
-import { autoFixModelsConfig, tryAutoConfigLiteLLM } from "../config/auto-config";
+import { startupHealthCheck } from "../config/auto-config";
 import { parseModelString } from "../config/model-resolver";
 import { isValidThemeColor, type ThemeColor } from "../modes/theme/theme";
 import type { AuthStorage, OAuthCredential } from "../session/auth-storage";
@@ -1018,18 +1018,14 @@ export class ModelRegistry {
 	#loadCustomModels(): CustomModelsResult {
 		let result = this.#modelsConfigFile.tryLoad();
 
-		// Auto-generate config if models.yml is missing and LiteLLM env vars are set
-		if (result.status === "not-found") {
-			if (tryAutoConfigLiteLLM(this.#modelsConfigFile.path())) {
-				this.#modelsConfigFile.invalidate();
-				result = this.#modelsConfigFile.tryLoad();
-			}
-		}
-
-		// Auto-fix config if it has errors and LiteLLM env vars can provide a known-good config
-		if (result.status === "error") {
-			const fixed = autoFixModelsConfig(this.#modelsConfigFile.path());
-			if (fixed.fixed) {
+		// Self-healing: detect missing, corrupt, or drifted config and auto-repair from env vars
+		if (result.status !== "ok" || result.value) {
+			const repaired = startupHealthCheck(
+				result.status,
+				this.#modelsConfigFile.path(),
+				result.status === "ok" && result.value ? result.value.providers : undefined,
+			);
+			if (repaired) {
 				this.#modelsConfigFile.invalidate();
 				result = this.#modelsConfigFile.tryLoad();
 			}
