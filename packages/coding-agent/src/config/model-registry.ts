@@ -822,6 +822,29 @@ export class ModelRegistry {
 		this.#backgroundRefresh = refreshPromise;
 	}
 
+	/**
+	 * Await the in-flight background refresh if one is running.
+	 * Returns immediately if no background refresh is in progress.
+	 */
+	async awaitBackgroundRefresh(): Promise<void> {
+		if (this.#backgroundRefresh) {
+			await this.#backgroundRefresh;
+		}
+	}
+
+	/**
+	 * Check if any non-optional discoverable provider has no cached models yet.
+	 * Returns true on first run when the model cache is empty.
+	 */
+	hasUncachedDiscoverableProviders(): boolean {
+		for (const [, state] of this.#providerDiscoveryStates) {
+			if (state.status === "idle" && !state.optional) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	async refreshProvider(providerId: string, strategy: ModelRefreshStrategy = "online"): Promise<void> {
 		this.#reloadStaticModels();
 		for (const selector of this.#suppressedSelectors.keys()) {
