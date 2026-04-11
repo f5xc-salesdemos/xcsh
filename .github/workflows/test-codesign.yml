@@ -15,9 +15,6 @@ jobs:
           - os: macos-15-intel
             arch: x64
             label: "x64-native"
-          - os: macos-15-intel
-            arch: arm64
-            label: "arm64-cross-on-intel"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -37,7 +34,9 @@ jobs:
           version: 0.15.2
       - name: Install dependencies
         run: bun install --frozen-lockfile
-      - name: Build native addon
+      - name: Build native addon from source
+        run: bun run build:native
+      - name: Embed native addon for target
         env:
           TARGET_PLATFORM: darwin
           TARGET_ARCH: ${{ matrix.arch }}
