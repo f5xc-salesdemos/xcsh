@@ -262,7 +262,7 @@ export const SETTINGS_SCHEMA = {
 	symbolPreset: {
 		type: "enum",
 		values: ["unicode", "nerd", "ascii"] as const,
-		default: "unicode",
+		default: "nerd",
 		ui: { tab: "appearance", label: "Symbol Preset", description: "Icon/symbol style", submenu: true },
 	},
 
@@ -292,7 +292,7 @@ export const SETTINGS_SCHEMA = {
 	"statusLine.separator": {
 		type: "enum",
 		values: ["powerline", "powerline-thin", "slash", "pipe", "block", "none", "ascii"] as const,
-		default: "powerline-thin",
+		default: "powerline",
 		ui: {
 			tab: "appearance",
 			label: "Status Line Separator",
@@ -670,7 +670,7 @@ export const SETTINGS_SCHEMA = {
 
 	collapseChangelog: {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: { tab: "interaction", label: "Collapse Changelog", description: "Show condensed changelog after updates" },
 	},
 
@@ -703,7 +703,7 @@ export const SETTINGS_SCHEMA = {
 	// Speech-to-text
 	"stt.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: { tab: "interaction", label: "Speech-to-Text", description: "Enable speech-to-text input via microphone" },
 	},
 
@@ -861,7 +861,7 @@ export const SETTINGS_SCHEMA = {
 	// Memories
 	"memories.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "context",
 			label: "Memories",
@@ -1249,7 +1249,7 @@ export const SETTINGS_SCHEMA = {
 
 	"renderMermaid.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "tools",
 			label: "Render Mermaid",
@@ -1269,7 +1269,7 @@ export const SETTINGS_SCHEMA = {
 
 	"calc.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "tools",
 			label: "Calculator",
@@ -1279,7 +1279,7 @@ export const SETTINGS_SCHEMA = {
 
 	"inspect_image.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "tools",
 			label: "Inspect Image",
@@ -1306,7 +1306,7 @@ export const SETTINGS_SCHEMA = {
 
 	"github.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "tools",
 			label: "GitHub CLI",
@@ -1662,13 +1662,13 @@ export const SETTINGS_SCHEMA = {
 	// Exa
 	"exa.enabled": {
 		type: "boolean",
-		default: true,
+		default: false,
 		ui: { tab: "providers", label: "Exa", description: "Master toggle for all Exa search tools" },
 	},
 
 	"exa.enableSearch": {
 		type: "boolean",
-		default: true,
+		default: false,
 		ui: { tab: "providers", label: "Exa Search", description: "Basic search, deep search, code search, crawl" },
 	},
 
