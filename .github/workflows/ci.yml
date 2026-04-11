@@ -408,17 +408,25 @@ jobs:
 
           ditto -c -k --keepParent "$BINARY_PATH" "$ZIP_PATH"
 
+          echo "Submitting ${{ matrix.arch }} for notarization..."
+          NOTARY_EXIT=0
           NOTARY_OUTPUT=$(xcrun notarytool submit "$ZIP_PATH" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait 2>&1)
+            --wait 2>&1) || NOTARY_EXIT=$?
           echo "$NOTARY_OUTPUT"
+
+          if [ "$NOTARY_EXIT" -ne 0 ]; then
+            echo "::warning::notarytool exited with code $NOTARY_EXIT"
+          fi
 
           if echo "$NOTARY_OUTPUT" | grep -q "status: Accepted"; then
             echo "  Notarization accepted for ${{ matrix.arch }}"
           else
             echo "::error::Notarization failed for ${{ matrix.arch }}"
+            echo "notarytool exit code: $NOTARY_EXIT"
+            echo "Full output: $NOTARY_OUTPUT"
             exit 1
           fi
 
