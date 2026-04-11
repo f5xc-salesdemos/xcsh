@@ -672,7 +672,12 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	}
 
 	const imageProvider = settings.get("providers.image");
-	if (imageProvider === "auto" || imageProvider === "gemini" || imageProvider === "openrouter") {
+	if (
+		imageProvider === "auto" ||
+		imageProvider === "gemini" ||
+		imageProvider === "openrouter" ||
+		imageProvider === "openai"
+	) {
 		setPreferredImageProvider(imageProvider);
 	}
 
@@ -1034,10 +1039,12 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		}
 	}
 
-	// Add Gemini image tools if GEMINI_API_KEY (or GOOGLE_API_KEY) is available
-	const geminiImageTools = await logger.time("getGeminiImageTools", getGeminiImageTools);
-	if (geminiImageTools.length > 0) {
-		customTools.push(...(geminiImageTools as unknown as CustomTool[]));
+	// Add image generation tools if an image API key is available and the tool is enabled
+	if (settings.get("generate_image.enabled")) {
+		const geminiImageTools = await logger.time("getGeminiImageTools", getGeminiImageTools);
+		if (geminiImageTools.length > 0) {
+			customTools.push(...(geminiImageTools as unknown as CustomTool[]));
+		}
 	}
 
 	// Add web search tools
@@ -1435,11 +1442,37 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		});
 	};
 
-	// Final convertToLlm: chain block-images filter with secret obfuscation
+	// Replace unsupported image content with actionable warnings when model lacks vision
+	const convertToLlmWithImageRouting = (messages: Message[]): Message[] => {
+		const currentModel = agent?.state?.model;
+		if (!currentModel || currentModel.input.includes("image")) return messages;
+
+		return messages.map(msg => {
+			if (msg.role !== "user" && msg.role !== "toolResult") return msg;
+			const content = msg.content;
+			if (!Array.isArray(content)) return msg;
+
+			const hasImages = content.some(c => c.type === "image");
+			if (!hasImages) return msg;
+
+			const filtered = content.map(c =>
+				c.type === "image"
+					? {
+							type: "text" as const,
+							text: "[Image content detected but current model does not support vision. Use the inspect_image tool to analyze this image, or ask the user to switch to a vision-capable model.]",
+						}
+					: c,
+			);
+			return { ...msg, content: filtered };
+		});
+	};
+
+	// Final convertToLlm: chain block-images filter → image routing warnings → secret obfuscation
 	const convertToLlmFinal = (messages: AgentMessage[]): Message[] => {
 		const converted = convertToLlmWithBlockImages(messages);
-		if (!obfuscator?.hasSecrets()) return converted;
-		return obfuscateMessages(obfuscator, converted);
+		const routed = convertToLlmWithImageRouting(converted);
+		if (!obfuscator?.hasSecrets()) return routed;
+		return obfuscateMessages(obfuscator, routed);
 	};
 	const transformContext = extensionRunner
 		? async (messages: AgentMessage[], _signal?: AbortSignal) => {

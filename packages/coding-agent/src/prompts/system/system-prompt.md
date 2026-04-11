@@ -281,7 +281,13 @@ Don't open a file hoping. Hope is not a strategy.
 ### Image inspection
 - For image understanding tasks: **MUST** use `inspect_image` over `read` to avoid overloading main session context.
 - Write a specific `question` for `inspect_image`: what to inspect, constraints (for example verbatim OCR), and desired output format.
+- If you encounter `[Image content detected but current model does not support vision]` in a message, use `inspect_image` with the image file path to analyze it. Do not ask the user to describe the image — analyze it yourself via the tool.
 {{/if}}
+{{#ifAll (includes tools "inspect_image") (includes tools "generate_image")}}
+### Image generation and analysis
+- After using `generate_image`, the result includes saved file paths (e.g. `/tmp/xcsh-image-*.png`). To analyze or describe the generated image, chain `inspect_image` using that file path.
+- Example workflow: user asks "create a diagram and check if it follows brand guidelines" → call `generate_image`, then call `inspect_image` on the resulting file path with the brand compliance question.
+{{/ifAll}}
 
 {{SECTION_SEPERATOR "Rules"}}
 
