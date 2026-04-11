@@ -42,7 +42,7 @@ jobs:
             X64)   ZIG_ARCH=x86_64 ;;
             ARM64) ZIG_ARCH=aarch64 ;;
           esac
-          URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_OS}-${ZIG_ARCH}-${ZIG_VERSION}.${EXT}"
+          URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}.${EXT}"
           echo "Downloading $URL"
           if [ "$EXT" = "zip" ]; then
             curl -sSfL "$URL" -o zig.zip
@@ -51,8 +51,8 @@ jobs:
           else
             curl -sSfL "$URL" | tar -xJ
           fi
-          echo "$PWD/zig-${ZIG_OS}-${ZIG_ARCH}-${ZIG_VERSION}" >> "$GITHUB_PATH"
-          zig-${ZIG_OS}-${ZIG_ARCH}-${ZIG_VERSION}/zig version
+          echo "$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}" >> "$GITHUB_PATH"
+          zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Build native addon from source
