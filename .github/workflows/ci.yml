@@ -409,12 +409,14 @@ jobs:
           ditto -c -k --keepParent "$BINARY_PATH" "$ZIP_PATH"
 
           echo "Submitting ${{ matrix.arch }} for notarization..."
+          echo "Xcode version: $(xcode-select -p)"
+          xcrun notarytool --version 2>&1 || true
           NOTARY_EXIT=0
           NOTARY_OUTPUT=$(xcrun notarytool submit "$ZIP_PATH" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait 2>&1) || NOTARY_EXIT=$?
+            --wait --verbose 2>&1) || NOTARY_EXIT=$?
           echo "$NOTARY_OUTPUT"
 
           if [ "$NOTARY_EXIT" -ne 0 ]; then
