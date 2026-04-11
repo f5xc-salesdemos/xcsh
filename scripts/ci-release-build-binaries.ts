@@ -20,6 +20,10 @@ const isDryRun = process.argv.includes("--dry-run");
 const platformIdx = process.argv.indexOf("--platform");
 const platformFilter = platformIdx !== -1 ? process.argv[platformIdx + 1]?.split(",") : null;
 
+// Parse --arch flag to filter targets (e.g. --arch arm64 or --arch x64)
+const archIdx = process.argv.indexOf("--arch");
+const archFilter = archIdx !== -1 ? process.argv[archIdx + 1]?.split(",") : null;
+
 const allTargets: BinaryTarget[] = [
 	{
 		platform: "darwin",
@@ -53,9 +57,9 @@ const allTargets: BinaryTarget[] = [
 	},
 ];
 
-const targets = platformFilter
-	? allTargets.filter((t) => platformFilter.includes(t.platform))
-	: allTargets;
+const targets = allTargets
+	.filter((t) => !platformFilter || platformFilter.includes(t.platform))
+	.filter((t) => !archFilter || archFilter.includes(t.arch));
 
 async function embedNative(target: BinaryTarget): Promise<void> {
 	if (isDryRun) {
