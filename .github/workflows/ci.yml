@@ -22,19 +22,19 @@ jobs:
   check:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3"
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
       - name: Cache Turbo artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .turbo
           key: ${{ runner.os }}-turbo-${{ github.sha }}
@@ -67,7 +67,7 @@ jobs:
           ]') }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: true
       - uses: dtolnay/rust-toolchain@nightly # TODO: unpin once nightly codegen regression is fixed
@@ -108,7 +108,7 @@ jobs:
         run: |
           bun run ci:build:native
       - name: Upload native addon(s)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pi-natives-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.variants && format('-{0}', matrix.variants) || '' }}
           path: packages/natives/native/pi_natives.${{ matrix.platform }}-${{ matrix.arch }}*.node
@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           lfs: true
@@ -135,12 +135,12 @@ jobs:
         with:
           version: 0.15.2
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
       - name: Cache Turbo artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .turbo
           key: ${{ runner.os }}-turbo-${{ github.sha }}
@@ -166,7 +166,7 @@ jobs:
   install_methods:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: true
       - uses: oven-sh/setup-bun@v2
@@ -182,7 +182,7 @@ jobs:
         with:
           version: 0.15.2
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
@@ -203,7 +203,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
           fetch-depth: 0
@@ -211,7 +211,7 @@ jobs:
         with:
           bun-version: "1.3"
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
@@ -231,7 +231,7 @@ jobs:
     needs: [check, native, test, install_methods]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
           lfs: true
@@ -239,13 +239,13 @@ jobs:
         with:
           bun-version: "1.3"
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
       - run: bun install --frozen-lockfile
       - name: Download native addons
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: pi-natives-*
           path: packages/natives/native
@@ -257,7 +257,7 @@ jobs:
       - name: Stage native addons for release
         run: cp packages/natives/native/*.node packages/coding-agent/binaries/
       - name: Upload release binaries
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-binaries-linux-win
           path: packages/coding-agent/binaries/*
@@ -277,7 +277,7 @@ jobs:
             arch: arm64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
           lfs: true
@@ -285,13 +285,13 @@ jobs:
         with:
           bun-version: "1.3"
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('**/bun.lock') }}
       - run: bun install --frozen-lockfile
       - name: Download macOS native addons
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: pi-natives-darwin-${{ matrix.arch }}*
           path: packages/natives/native
@@ -415,7 +415,7 @@ jobs:
           echo "All checks passed for ${{ matrix.arch }}"
 
       - name: Upload signed macOS binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-binaries-macos-${{ matrix.arch }}-signed
           path: packages/coding-agent/binaries/*
@@ -429,16 +429,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
       - name: Download Linux/Windows binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-binaries-linux-win
           path: packages/coding-agent/binaries
       - name: Download signed macOS binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: release-binaries-macos-*-signed
           path: packages/coding-agent/binaries
@@ -458,26 +458,26 @@ jobs:
     needs: [create-release]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3"
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
       - run: bun install --frozen-lockfile
       - name: Download signed macOS binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: release-binaries-macos-*-signed
           path: packages/coding-agent/binaries
           merge-multiple: true
       - name: Download Linux binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-binaries-linux-win
           path: packages/coding-agent/binaries
@@ -507,19 +507,19 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
           lfs: true
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
