@@ -107,7 +107,12 @@ jobs:
           else
             curl -sSfL "$URL" | tar -xJ
           fi
-          echo "$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}" >> "$GITHUB_PATH"
+          ZIG_DIR="$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}"
+          # Convert to Windows path if on Windows (Git Bash uses /d/... style)
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            ZIG_DIR=$(cygpath -w "$ZIG_DIR")
+          fi
+          echo "$ZIG_DIR" >> "$GITHUB_PATH"
           zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
       - run: bun install --frozen-lockfile
       - name: Install cross-compilation toolchain
@@ -174,7 +179,12 @@ jobs:
           else
             curl -sSfL "$URL" | tar -xJ
           fi
-          echo "$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}" >> "$GITHUB_PATH"
+          ZIG_DIR="$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}"
+          # Convert to Windows path if on Windows (Git Bash uses /d/... style)
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            ZIG_DIR=$(cygpath -w "$ZIG_DIR")
+          fi
+          echo "$ZIG_DIR" >> "$GITHUB_PATH"
           zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
       - name: Cache bun dependencies
         uses: actions/cache@v5
@@ -242,7 +252,12 @@ jobs:
           else
             curl -sSfL "$URL" | tar -xJ
           fi
-          echo "$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}" >> "$GITHUB_PATH"
+          ZIG_DIR="$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}"
+          # Convert to Windows path if on Windows (Git Bash uses /d/... style)
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            ZIG_DIR=$(cygpath -w "$ZIG_DIR")
+          fi
+          echo "$ZIG_DIR" >> "$GITHUB_PATH"
           zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
       - name: Cache bun dependencies
         uses: actions/cache@v5
