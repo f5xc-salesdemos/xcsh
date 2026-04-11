@@ -135,11 +135,14 @@ describe("hasLiteLLMEnv()", () => {
 // =========================================================================
 
 describe("generateModelsYml()", () => {
-	test("generates valid YAML with anthropic provider", () => {
+	test("generates valid YAML with anthropic and litellm providers", () => {
 		const yml = generateModelsYml("https://proxy.example.com");
 		expect(yml).toContain("providers:");
 		expect(yml).toContain("anthropic:");
 		expect(yml).toContain('baseUrl: "https://proxy.example.com/anthropic"');
+		expect(yml).toContain("litellm:");
+		expect(yml).toContain('baseUrl: "https://proxy.example.com/v1"');
+		expect(yml).toContain("type: openai-compat");
 		expect(yml).toContain("apiKey: LITELLM_API_KEY");
 	});
 
@@ -152,6 +155,13 @@ describe("generateModelsYml()", () => {
 	test("handles localhost URL", () => {
 		const yml = generateModelsYml("http://localhost:4000");
 		expect(yml).toContain('baseUrl: "http://localhost:4000/anthropic"');
+		expect(yml).toContain('baseUrl: "http://localhost:4000/v1"');
+	});
+
+	test("uses custom apiBasePath when provided", () => {
+		const yml = generateModelsYml("https://proxy.example.com", { apiBasePath: "/api/v1" });
+		expect(yml).toContain('baseUrl: "https://proxy.example.com/api/v1"');
+		expect(yml).toContain("type: openai-compat");
 	});
 
 	test("does not contain literal API key values", () => {
@@ -983,9 +993,8 @@ describe("config schema versioning", () => {
 // =========================================================================
 
 describe("probeLiteLLMConnection()", () => {
-	test("returns model list on successful probe", async () => {
-		const mockFetch = async (url: string, init?: RequestInit) => {
-			expect(url).toBe("https://proxy.example.com/v1/models");
+	test("returns model list on successful probe at /v1/models", async () => {
+		const mockFetch = async (_url: string, init?: RequestInit) => {
 			expect(init?.headers).toHaveProperty("Authorization", "Bearer sk-test123");
 			return new Response(
 				JSON.stringify({
@@ -1003,10 +1012,27 @@ describe("probeLiteLLMConnection()", () => {
 		expect(result.reachable).toBe(true);
 		expect(result.models).toContain("claude-sonnet-4-6");
 		expect(result.models).toContain("gpt-5.4");
+		expect(result.apiBasePath).toBe("/v1");
 		expect(result.error).toBeUndefined();
 	});
 
-	test("returns unreachable on network error", async () => {
+	test("falls back to /api/v1/models when /v1/models returns HTML", async () => {
+		const mockFetch = async (url: string) => {
+			if (url.includes("/api/v1/models")) {
+				return new Response(JSON.stringify({ data: [{ id: "claude-sonnet-4-6" }] }), { status: 200 });
+			}
+			// Open WebUI returns HTML for /v1/models
+			return new Response("<!doctype html><html>...</html>", { status: 200 });
+		};
+		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(result.reachable).toBe(true);
+		expect(result.models).toContain("claude-sonnet-4-6");
+		expect(result.apiBasePath).toBe("/api/v1");
+	});
+
+	test("returns unreachable when all endpoints fail", async () => {
 		const mockFetch = async () => {
 			throw new Error("ECONNREFUSED");
 		};
@@ -1018,7 +1044,7 @@ describe("probeLiteLLMConnection()", () => {
 		expect(result.error).toBeDefined();
 	});
 
-	test("returns unreachable on 401 Unauthorized", async () => {
+	test("returns unreachable on 401 Unauthorized from all endpoints", async () => {
 		const mockFetch = async () => new Response("Unauthorized", { status: 401 });
 		const result = await probeLiteLLMConnection("https://proxy.example.com", "bad-key", {
 			fetch: mockFetch as unknown as typeof globalThis.fetch,
@@ -1028,7 +1054,7 @@ describe("probeLiteLLMConnection()", () => {
 		expect(result.error).toContain("401");
 	});
 
-	test("returns unreachable on 500 Server Error", async () => {
+	test("returns unreachable on 500 Server Error from all endpoints", async () => {
 		const mockFetch = async () => new Response("Internal Server Error", { status: 500 });
 		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
 			fetch: mockFetch as unknown as typeof globalThis.fetch,
@@ -1038,73 +1064,80 @@ describe("probeLiteLLMConnection()", () => {
 		expect(result.error).toContain("500");
 	});
 
-	test("returns empty models when response has no data array", async () => {
-		const mockFetch = async () => new Response(JSON.stringify({}), { status: 200 });
+	test("tries fallback when first endpoint returns empty data array", async () => {
+		const mockFetch = async (url: string) => {
+			if (url.includes("/api/v1/models")) {
+				return new Response(JSON.stringify({ data: [{ id: "gpt-5.4" }] }), { status: 200 });
+			}
+			return new Response(JSON.stringify({ data: [] }), { status: 200 });
+		};
 		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
 			fetch: mockFetch as unknown as typeof globalThis.fetch,
 		});
 		expect(result.reachable).toBe(true);
-		expect(result.models).toHaveLength(0);
+		expect(result.models).toContain("gpt-5.4");
+		expect(result.apiBasePath).toBe("/api/v1");
 	});
 
-	test("handles malformed JSON response gracefully", async () => {
-		const mockFetch = async () => new Response("not json", { status: 200 });
+	test("handles malformed JSON response by trying fallback", async () => {
+		const mockFetch = async (url: string) => {
+			if (url.includes("/api/v1/models")) {
+				return new Response(JSON.stringify({ data: [{ id: "claude-sonnet-4-6" }] }), { status: 200 });
+			}
+			return new Response("not json", { status: 200 });
+		};
 		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
 			fetch: mockFetch as unknown as typeof globalThis.fetch,
 		});
-		expect(result.reachable).toBe(false);
-		expect(result.models).toHaveLength(0);
-		expect(result.error).toBeDefined();
+		expect(result.reachable).toBe(true);
+		expect(result.apiBasePath).toBe("/api/v1");
 	});
 });
 
-describe("generateModelsYml() with discovery options", () => {
-	test("includes litellm discovery section when discoveredModels provided", () => {
-		const yaml = generateModelsYml("https://proxy.example.com", {
-			discoveredModels: ["claude-sonnet-4-6", "gpt-5.4"],
-		});
+describe("generateModelsYml() always includes litellm discovery", () => {
+	test("always includes litellm discovery provider", () => {
+		const yaml = generateModelsYml("https://proxy.example.com");
 		expect(yaml).toContain("litellm:");
 		expect(yaml).toContain("discovery:");
 		expect(yaml).toContain("type: openai-compat");
 		expect(yaml).toContain("api: openai-completions");
 		expect(yaml).toContain("apiKey: LITELLM_API_KEY");
-		// Must also keep the anthropic provider override
 		expect(yaml).toContain("anthropic:");
 		expect(yaml).toContain("https://proxy.example.com/anthropic");
 	});
 
-	test("without options produces identical output to current", () => {
-		const withoutOptions = generateModelsYml("https://proxy.example.com");
-		const withEmptyOptions = generateModelsYml("https://proxy.example.com", {});
-		expect(withoutOptions).toBe(withEmptyOptions);
-		// Should NOT contain litellm discovery
-		expect(withoutOptions).not.toContain("litellm:");
-		expect(withoutOptions).not.toContain("discovery:");
+	test("uses default /v1 base path without options", () => {
+		const yaml = generateModelsYml("https://proxy.example.com");
+		expect(yaml).toContain('baseUrl: "https://proxy.example.com/v1"');
 	});
 
-	test("empty discoveredModels array produces same output as no options", () => {
-		const noOptions = generateModelsYml("https://proxy.example.com");
-		const emptyModels = generateModelsYml("https://proxy.example.com", { discoveredModels: [] });
-		expect(noOptions).toBe(emptyModels);
+	test("uses custom apiBasePath when provided", () => {
+		const yaml = generateModelsYml("https://proxy.example.com", { apiBasePath: "/api/v1" });
+		expect(yaml).toContain('baseUrl: "https://proxy.example.com/api/v1"');
 	});
 
-	test("config version is bumped when discovery is included", () => {
-		const yaml = generateModelsYml("https://proxy.example.com", {
-			discoveredModels: ["claude-sonnet-4-6"],
-		});
+	test("config version is always included", () => {
+		const yaml = generateModelsYml("https://proxy.example.com");
 		expect(yaml).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
 	});
 });
 
 describe("probeAndUpgradeLiteLLMConfig()", () => {
-	test("probes proxy and upgrades v1 config to include discovery", async () => {
+	test("probes proxy and upgrades legacy v1 config to include discovery", async () => {
 		setEnv("https://proxy.example.com", "sk-abc123");
 		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
 
-		// Write v1 config (no discovery)
-		fs.writeFileSync(modelsPath, generateModelsYml("https://proxy.example.com"));
-		const beforeContent = fs.readFileSync(modelsPath, "utf-8");
-		expect(beforeContent).not.toContain("discovery:");
+		// Write a legacy v1 config (no discovery) — simulates pre-fix configs
+		const legacyV1 = [
+			"configVersion: 2",
+			"providers:",
+			"  anthropic:",
+			'    baseUrl: "https://proxy.example.com/anthropic"',
+			"    apiKey: LITELLM_API_KEY",
+			"",
+		].join("\n");
+		fs.writeFileSync(modelsPath, legacyV1);
+		expect(legacyV1).not.toContain("discovery:");
 
 		const mockFetch = async () =>
 			new Response(
@@ -1130,19 +1163,39 @@ describe("probeAndUpgradeLiteLLMConfig()", () => {
 		expect(fs.existsSync(`${modelsPath}.bak`)).toBe(true);
 	});
 
-	test("no-ops when discovery is already configured", async () => {
+	test("fixes wrong base path when probe discovers /api/v1 works", async () => {
 		setEnv("https://proxy.example.com", "sk-abc123");
 		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
 
-		// Write v2 config (with discovery)
-		const v2Content = generateModelsYml("https://proxy.example.com", {
-			discoveredModels: ["claude-sonnet-4-6"],
-		});
-		fs.writeFileSync(modelsPath, v2Content);
+		// Write config with /v1 base path (default guess)
+		fs.writeFileSync(modelsPath, generateModelsYml("https://proxy.example.com"));
 
-		const mockFetch = async () => {
-			throw new Error("should not be called");
+		const mockFetch = async (url: string) => {
+			if (url.includes("/api/v1/models")) {
+				return new Response(JSON.stringify({ data: [{ id: "claude-sonnet-4-6" }] }), { status: 200 });
+			}
+			// Open WebUI intercepts /v1/models — returns HTML
+			return new Response("<!doctype html><html>...</html>", { status: 200 });
 		};
+
+		const upgraded = await probeAndUpgradeLiteLLMConfig(modelsPath, {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(upgraded).toBe(true);
+
+		const afterContent = fs.readFileSync(modelsPath, "utf-8");
+		expect(afterContent).toContain('baseUrl: "https://proxy.example.com/api/v1"');
+	});
+
+	test("no-ops when discovery is already configured with correct base path", async () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+
+		// Write config with correct base path
+		fs.writeFileSync(modelsPath, generateModelsYml("https://proxy.example.com"));
+
+		const mockFetch = async () =>
+			new Response(JSON.stringify({ data: [{ id: "claude-sonnet-4-6" }] }), { status: 200 });
 
 		const upgraded = await probeAndUpgradeLiteLLMConfig(modelsPath, {
 			fetch: mockFetch as unknown as typeof globalThis.fetch,

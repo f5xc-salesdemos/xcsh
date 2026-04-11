@@ -28,6 +28,7 @@ import { AsyncJobManager } from "./async";
 import { createAutoresearchExtension } from "./autoresearch";
 import { loadCapability } from "./capability";
 import { type Rule, ruleCapability } from "./capability/rule";
+import { hasLiteLLMEnv } from "./config/auto-config";
 import { ModelRegistry } from "./config/model-registry";
 import { formatModelString, parseModelPattern, parseModelString, resolveModelRoleValue } from "./config/model-resolver";
 import { loadPromptTemplates as loadPromptTemplatesInternal, type PromptTemplate } from "./config/prompt-templates";
@@ -728,6 +729,14 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	const modelMatchPreferences = {
 		usageOrder: settings.getStorage()?.getModelUsageOrder(),
 	};
+
+	// When LiteLLM is configured and no model cache exists yet (first run),
+	// await the background refresh so model discovery from the proxy completes
+	// before we select a default model. Bounded by the 3s probe timeout.
+	if (!options.modelRegistry && hasLiteLLMEnv() && modelRegistry.hasUncachedDiscoverableProviders()) {
+		await logger.time("awaitLiteLLMDiscovery", () => modelRegistry.awaitBackgroundRefresh());
+	}
+
 	const defaultRoleSpec = logger.time("resolveDefaultModelRole", () =>
 		resolveModelRoleValue(settings.getModelRole("default"), modelRegistry.getAvailable(), {
 			settings,
