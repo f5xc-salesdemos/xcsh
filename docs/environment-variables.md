@@ -45,7 +45,7 @@ These are consumed via `getEnvApiKey()` (`packages/ai/src/stream.ts`) unless not
 | `NVIDIA_API_KEY`                | NVIDIA auth | Using `nvidia` provider                                       |                                                                                                     |
 | `NANO_GPT_API_KEY`              | NanoGPT auth | Using `nanogpt` provider                                      |                                                                                                     |
 | `VENICE_API_KEY`                | Venice auth | Using `venice` provider                                       |                                                                                                     |
-| `LITELLM_API_KEY`               | LiteLLM auth | Using `litellm` provider                                      | OpenAI-compatible LiteLLM proxy key                                                                 |
+| `LITELLM_API_KEY`               | LiteLLM auth | Using `litellm` provider                                      | OpenAI-compatible LiteLLM proxy key. When set with `LITELLM_BASE_URL`, enables auto-config of `models.yml` |
 | `LM_STUDIO_API_KEY`             | LM Studio auth (optional) | Using `lm-studio` provider with authenticated hosts           | Local LM Studio usually runs without auth; any non-empty token works when a key is required         |
 | `OLLAMA_API_KEY`                | Ollama auth (optional) | Using `ollama` provider with authenticated hosts              | Local Ollama usually runs without auth; any non-empty token works when a key is required            |
 | `LLAMA_CPP_API_KEY`             | Ollama auth (optional) | Using `llama-server` with `--api-key` parameter              | Local llama.cpp usually runs without auth; any non-empty token works when a key is configured       |
@@ -257,6 +257,7 @@ Extra conditional behavior:
 | `PI_DEBUG_STARTUP`         | Enables startup stage debug prints to stderr in multiple startup paths                       |
 | `PI_PACKAGE_DIR`           | Overrides package asset base dir resolution (docs/examples/changelog path lookup)            |
 | `PI_DISABLE_LSPMUX`        | If `1`, disables lspmux detection/integration and forces direct LSP server spawning          |
+| `LITELLM_BASE_URL`         | LiteLLM proxy base URL. When set with `LITELLM_API_KEY`, triggers auto-generation of `models.yml` on first run and self-healing on every startup |
 | `LM_STUDIO_BASE_URL`       | Default implicit LM Studio discovery base URL override (`http://127.0.0.1:1234/v1` if unset) |
 | `OLLAMA_BASE_URL`          | Default implicit Ollama discovery base URL override (`http://127.0.0.1:11434` if unset)      |
 | `LLAMA_CPP_BASE_URL`       | Default implicit Llama.cpp discovery base URL override (`http://127.0.0.1:8080` if unset)    |
