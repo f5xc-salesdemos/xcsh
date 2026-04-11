@@ -337,9 +337,20 @@ const OPTION_PROVIDERS: Partial<Record<SettingPath, OptionProvider>> = {
 		{ value: "parallel", label: "Parallel", description: "Requires PARALLEL_API_KEY" },
 	],
 	"providers.image": [
-		{ value: "auto", label: "Auto", description: "Priority: OpenRouter > Gemini" },
+		{ value: "auto", label: "Auto", description: "Auto-detect from available API keys" },
+		{ value: "openai", label: "OpenAI", description: "gpt-image-1 via LITELLM_API_KEY or OPENAI_API_KEY" },
 		{ value: "gemini", label: "Gemini", description: "Requires GEMINI_API_KEY" },
 		{ value: "openrouter", label: "OpenRouter", description: "Requires OPENROUTER_API_KEY" },
+	],
+	"providers.imageSize": [
+		{ value: "1024x1024", label: "1024x1024", description: "Square" },
+		{ value: "1536x1024", label: "1536x1024", description: "Landscape (default)" },
+		{ value: "1024x1536", label: "1024x1536", description: "Portrait" },
+	],
+	"providers.imageQuality": [
+		{ value: "low", label: "Low", description: "Fastest generation, lower detail" },
+		{ value: "medium", label: "Medium", description: "Balanced speed and quality" },
+		{ value: "high", label: "High", description: "Best quality, slower generation (default)" },
 	],
 	"providers.kimiApiFormat": [
 		{ value: "openai", label: "OpenAI", description: "api.kimi.com" },

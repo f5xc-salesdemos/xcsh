@@ -1287,6 +1287,16 @@ export const SETTINGS_SCHEMA = {
 		},
 	},
 
+	"generate_image.enabled": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "tools",
+			label: "Generate Image",
+			description: "Enable the generate_image tool for AI-powered image and diagram generation",
+		},
+	},
+
 	"checkpoint.enabled": {
 		type: "boolean",
 		default: false,
@@ -1615,12 +1625,36 @@ export const SETTINGS_SCHEMA = {
 	},
 	"providers.image": {
 		type: "enum",
-		values: ["auto", "gemini", "openrouter"] as const,
+		values: ["auto", "gemini", "openrouter", "openai"] as const,
 		default: "auto",
 		ui: {
 			tab: "providers",
 			label: "Image Provider",
-			description: "Provider for image generation tool",
+			description: "Provider for image generation tool (auto detects from available API keys)",
+			submenu: true,
+		},
+	},
+
+	"providers.imageSize": {
+		type: "enum",
+		values: ["1024x1024", "1536x1024", "1024x1536"] as const,
+		default: "1536x1024",
+		ui: {
+			tab: "providers",
+			label: "Image Size",
+			description: "Default image dimensions for generation (landscape, square, or portrait)",
+			submenu: true,
+		},
+	},
+
+	"providers.imageQuality": {
+		type: "enum",
+		values: ["low", "medium", "high"] as const,
+		default: "high",
+		ui: {
+			tab: "providers",
+			label: "Image Quality",
+			description: "Rendering quality for generated images (higher = slower but more detailed)",
 			submenu: true,
 		},
 	},
