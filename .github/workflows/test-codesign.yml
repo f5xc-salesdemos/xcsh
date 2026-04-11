@@ -29,9 +29,30 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-workspace-crates: true
-      - uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
+      - name: Install Zig 0.15.2
+        shell: bash
+        run: |
+          ZIG_VERSION=0.15.2
+          case "$RUNNER_OS" in
+            Linux)  ZIG_OS=linux;  EXT=tar.xz ;;
+            macOS)  ZIG_OS=macos;  EXT=tar.xz ;;
+            Windows) ZIG_OS=windows; EXT=zip ;;
+          esac
+          case "$RUNNER_ARCH" in
+            X64)   ZIG_ARCH=x86_64 ;;
+            ARM64) ZIG_ARCH=aarch64 ;;
+          esac
+          URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}.${EXT}"
+          echo "Downloading $URL"
+          if [ "$EXT" = "zip" ]; then
+            curl -sSfL "$URL" -o zig.zip
+            unzip -q zig.zip
+            rm zig.zip
+          else
+            curl -sSfL "$URL" | tar -xJ
+          fi
+          echo "$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}" >> "$GITHUB_PATH"
+          zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Build native addon from source
