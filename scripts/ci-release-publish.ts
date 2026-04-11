@@ -13,6 +13,15 @@ interface PackageJson {
 
 const repoRoot = path.join(import.meta.dir, "..");
 const isDryRun = process.argv.includes("--dry-run");
+// Platform-specific native addon packages (published first so optionalDependencies resolve)
+const platformPackageDirs: PublishPackage[] = [
+	{ dir: "packages/natives/npm/linux-x64-gnu" },
+	{ dir: "packages/natives/npm/linux-arm64-gnu" },
+	{ dir: "packages/natives/npm/darwin-x64" },
+	{ dir: "packages/natives/npm/darwin-arm64" },
+	{ dir: "packages/natives/npm/win32-x64-msvc" },
+];
+
 const packageDirs: PublishPackage[] = [
 	{ dir: "packages/utils" },
 	{ dir: "packages/ai" },
@@ -65,6 +74,14 @@ async function publishPackage(pkg: PublishPackage): Promise<void> {
 }
 
 async function main(): Promise<void> {
+	// Publish platform-specific native addon packages first
+	// so that optionalDependencies in @f5xc-salesdemos/pi-natives resolve
+	console.log("=== Publishing platform-specific native addon packages ===");
+	for (const pkg of platformPackageDirs) {
+		await publishPackage(pkg);
+	}
+
+	console.log("\n=== Publishing main packages ===");
 	for (const pkg of packageDirs) {
 		await publishPackage(pkg);
 	}

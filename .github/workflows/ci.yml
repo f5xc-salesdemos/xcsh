@@ -551,7 +551,47 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
       - run: bun install --frozen-lockfile
+      - name: Download native addon artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pi-natives-*
+          path: packages/natives/native
+          merge-multiple: true
+      - name: Stage native addons into platform packages
+        run: |
+          set -euo pipefail
+          NATIVE_DIR="packages/natives/native"
+          NPM_DIR="packages/natives/npm"
+          cp "$NATIVE_DIR/pi_natives.linux-x64-baseline.node" "$NPM_DIR/linux-x64-gnu/"
+          cp "$NATIVE_DIR/pi_natives.linux-x64-modern.node" "$NPM_DIR/linux-x64-gnu/"
+          cp "$NATIVE_DIR/pi_natives.linux-arm64.node" "$NPM_DIR/linux-arm64-gnu/"
+          cp "$NATIVE_DIR/pi_natives.darwin-x64-baseline.node" "$NPM_DIR/darwin-x64/"
+          cp "$NATIVE_DIR/pi_natives.darwin-x64-modern.node" "$NPM_DIR/darwin-x64/"
+          cp "$NATIVE_DIR/pi_natives.darwin-arm64.node" "$NPM_DIR/darwin-arm64/"
+          cp "$NATIVE_DIR/pi_natives.win32-x64-baseline.node" "$NPM_DIR/win32-x64-msvc/"
+          cp "$NATIVE_DIR/pi_natives.win32-x64-modern.node" "$NPM_DIR/win32-x64-msvc/"
+          echo "Native addons staged into platform packages:"
+          find "$NPM_DIR" -name "*.node" -exec ls -lh {} \;
       - name: Publish to npm
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: bun run ci:release:publish
+
+  # Verify npm install works end-to-end after publishing
+  verify-npm-install:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [publish-npm]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Install xcsh via npm and verify native addon loads
+        run: |
+          set -euo pipefail
+          npm install -g @f5xc-salesdemos/xcsh
+          echo "Checking xcsh version..."
+          xcsh --version
+          echo "Checking xcsh help..."
+          xcsh --help >/dev/null
+          echo "npm install verification passed"

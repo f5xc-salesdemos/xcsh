@@ -378,7 +378,7 @@ describe("PythonKernel (external gateway)", () => {
 				return;
 			}
 
-			if (code.includes("__omp_prelude_docs__")) {
+			if (code.includes("__xcsh_prelude_docs__")) {
 				const stream: JupyterMessage = {
 					channel: "iopub",
 					header: {

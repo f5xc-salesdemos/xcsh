@@ -104,5 +104,26 @@ mkdir -p "$TARBALL_APP_DIR"
 	smoke_cli ./node_modules/.bin/xcsh
 )
 
+section "Platform package structure verification"
+(
+	NPM_DIR="$ROOT_DIR/packages/natives/npm"
+	for platform_dir in "$NPM_DIR"/*/; do
+		pkg_name=$(basename "$platform_dir")
+		pkg_json="$platform_dir/package.json"
+		if [ ! -f "$pkg_json" ]; then
+			echo "Missing package.json in $pkg_name"
+			exit 1
+		fi
+		# Verify package.json has required fields: os, cpu, main
+		for field in os cpu main; do
+			if ! grep -q "\"$field\"" "$pkg_json"; then
+				echo "Missing '$field' in $pkg_name/package.json"
+				exit 1
+			fi
+		done
+		echo "  $pkg_name: package.json valid"
+	done
+)
+
 echo ""
 echo "All install method smoke tests passed"
