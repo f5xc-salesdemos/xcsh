@@ -82,7 +82,8 @@
 		"statusLineOutput": 209,
 		"statusLineCost": 209,
 		"statusLineSubagents": "phosphorBright",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "phosphorBright"
 	},
 	"export": {
 		"pageBg": "crtBlack",

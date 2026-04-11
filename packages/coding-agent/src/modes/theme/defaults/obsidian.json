@@ -81,7 +81,8 @@
 		"statusLineOutput": "cyan",
 		"statusLineCost": "gold",
 		"statusLineSubagents": "violet",
-		"pythonMode": "gold"
+		"pythonMode": "gold",
+		"syntaxControl": "violet"
 	},
 	"export": {
 		"pageBg": "black",

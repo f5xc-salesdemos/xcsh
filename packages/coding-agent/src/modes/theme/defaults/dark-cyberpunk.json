@@ -92,7 +92,8 @@
 		"statusLineOutput": "#EA00D9",
 		"statusLineCost": "#FF6F61",
 		"statusLineSubagents": "accent",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "neonMagenta"
 	},
 	"export": {
 		"pageBg": "#091833",

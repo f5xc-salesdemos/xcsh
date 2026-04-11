@@ -79,6 +79,7 @@
 				"syntaxType",
 				"syntaxOperator",
 				"syntaxPunctuation",
+				"syntaxControl",
 				"thinkingOff",
 				"thinkingMinimal",
 				"thinkingLow",
@@ -278,6 +279,10 @@
 				"syntaxPunctuation": {
 					"$ref": "#/$defs/colorValue",
 					"description": "Syntax highlighting: punctuation"
+				},
+				"syntaxControl": {
+					"$ref": "#/$defs/colorValue",
+					"description": "Syntax highlighting: control flow keywords (if, else, for, while, return, import)"
 				},
 				"thinkingOff": {
 					"$ref": "#/$defs/colorValue",

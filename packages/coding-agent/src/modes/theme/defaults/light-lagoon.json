@@ -81,7 +81,8 @@
 		"statusLineOutput": "turquoise",
 		"statusLineCost": "coral",
 		"statusLineSubagents": "turquoise",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "turquoise"
 	},
 	"export": {
 		"pageBg": "#EEF6F8",

@@ -95,7 +95,8 @@
 		"statusLineOutput": "purple",
 		"statusLineCost": "purple",
 		"statusLineSubagents": "yellowLight",
-		"pythonMode": "yellow"
+		"pythonMode": "yellow",
+		"syntaxControl": "#F47067"
 	},
 	"export": {
 		"pageBg": "#010409",

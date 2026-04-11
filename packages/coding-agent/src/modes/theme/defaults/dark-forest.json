@@ -86,7 +86,8 @@
 		"statusLineOutput": "walnut",
 		"statusLineCost": "earth",
 		"statusLineSubagents": "moss",
-		"pythonMode": "amber"
+		"pythonMode": "amber",
+		"syntaxControl": "pine"
 	},
 	"export": {
 		"pageBg": "#0A120E",

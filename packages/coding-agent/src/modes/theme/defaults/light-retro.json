@@ -88,7 +88,8 @@
 		"statusLineOutput": 133,
 		"statusLineCost": 133,
 		"statusLineSubagents": "amberDark",
-		"pythonMode": "amber"
+		"pythonMode": "amber",
+		"syntaxControl": "#cc6600"
 	},
 	"export": {
 		"pageBg": "paper",

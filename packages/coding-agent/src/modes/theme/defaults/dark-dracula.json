@@ -88,7 +88,8 @@
 		"statusLineOutput": "pink",
 		"statusLineCost": "pink",
 		"statusLineSubagents": "purple",
-		"pythonMode": "yellow"
+		"pythonMode": "yellow",
+		"syntaxControl": "#FF79C6"
 	},
 	"export": {
 		"pageBg": "#1e1f29",

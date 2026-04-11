@@ -81,7 +81,8 @@
 		"statusLineOutput": "frostBlue",
 		"statusLineCost": "emberAmber",
 		"statusLineSubagents": "auroraGreen",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "frostBlue"
 	},
 	"export": {
 		"pageBg": "#080C0A",

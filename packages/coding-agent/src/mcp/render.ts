@@ -8,6 +8,7 @@ import type { Component } from "@f5xc-salesdemos/pi-tui";
 import { Text } from "@f5xc-salesdemos/pi-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
+import { highlightCode } from "../modes/theme/theme";
 import {
 	formatArgsInline,
 	JSON_TREE_MAX_DEPTH_COLLAPSED,
@@ -114,8 +115,29 @@ export function renderMCPResult(
 	const maxOutputLines = expanded ? 12 : 4;
 	const displayLines = outputLines.slice(0, maxOutputLines);
 
-	for (const line of displayLines) {
-		lines.push(theme.fg("toolOutput", truncateToWidth(line, 80)));
+	// Try to syntax-highlight structured output (e.g. JSON)
+	const firstNonEmpty = trimmedOutput.trim();
+	const isJson =
+		firstNonEmpty.length <= 32_768 &&
+		(firstNonEmpty[0] === "{" || firstNonEmpty[0] === "[") &&
+		(() => {
+			try {
+				JSON.parse(firstNonEmpty);
+				return true;
+			} catch {
+				return false;
+			}
+		})();
+
+	if (isJson) {
+		const highlighted = highlightCode(displayLines.join("\n"), "json");
+		for (const line of highlighted) {
+			lines.push(truncateToWidth(line, 80));
+		}
+	} else {
+		for (const line of displayLines) {
+			lines.push(theme.fg("toolOutput", truncateToWidth(line, 80)));
+		}
 	}
 
 	if (outputLines.length > maxOutputLines) {

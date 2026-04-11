@@ -79,7 +79,8 @@
 		"statusLineOutput": "moonlight",
 		"statusLineCost": "glow",
 		"statusLineSubagents": "moonlight",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "ice"
 	},
 	"export": {
 		"pageBg": "#0a0c11",

@@ -81,7 +81,8 @@
 		"statusLineOutput": "auroraGreen",
 		"statusLineCost": "warningGold",
 		"statusLineSubagents": "auroraGreen",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "auroraGreen"
 	},
 	"export": {
 		"pageBg": "#080B0E",

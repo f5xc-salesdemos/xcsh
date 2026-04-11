@@ -94,7 +94,8 @@
 		"statusLineOutput": 139,
 		"statusLineCost": 139,
 		"statusLineSubagents": "iceBlue",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "frost3"
 	},
 	"export": {
 		"pageBg": "#1a1f2b",

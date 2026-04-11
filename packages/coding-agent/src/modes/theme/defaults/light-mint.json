@@ -85,7 +85,8 @@
 		"statusLineOutput": 205,
 		"statusLineCost": 205,
 		"statusLineSubagents": "accent",
-		"pythonMode": "yellow"
+		"pythonMode": "yellow",
+		"syntaxControl": "#4682b4"
 	},
 	"export": {
 		"pageBg": "#f0fdfa",

@@ -84,7 +84,8 @@
 		"statusLineOutput": "f5DarkRed",
 		"statusLineCost": "warningAmber",
 		"statusLineSubagents": "f5Red",
-		"pythonMode": "warningAmber"
+		"pythonMode": "warningAmber",
+		"syntaxControl": "f5Red"
 	},
 	"export": {
 		"pageBg": "warmWhite",

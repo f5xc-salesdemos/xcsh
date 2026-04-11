@@ -86,7 +86,8 @@
 		"statusLineOutput": 213,
 		"statusLineCost": 213,
 		"statusLineSubagents": "amethyst",
-		"pythonMode": "gold"
+		"pythonMode": "gold",
+		"syntaxControl": "amethyst"
 	},
 	"export": {
 		"pageBg": "caveDark",

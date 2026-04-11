@@ -95,7 +95,8 @@
 		"statusLineGitDirtyFg": 0,
 		"statusLineGitUntrackedFg": 0,
 		"statusLineGitConflictFg": 7,
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#569CD6"
 	},
 	"export": {
 		"pageBg": "charcoal",

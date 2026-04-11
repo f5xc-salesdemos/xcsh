@@ -64,6 +64,7 @@
 		"syntaxType": "#4EC9B0",
 		"syntaxOperator": "#D4D4D4",
 		"syntaxPunctuation": "#D4D4D4",
+		"syntaxControl": "#C586C0",
 		"thinkingOff": "darkGray",
 		"thinkingMinimal": "dimGray",
 		"thinkingLow": "#178fb9",

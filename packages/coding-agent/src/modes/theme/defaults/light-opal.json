@@ -81,7 +81,8 @@
 		"statusLineOutput": "ink",
 		"statusLineCost": "blush",
 		"statusLineSubagents": "violet",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "violet"
 	},
 	"export": {
 		"pageBg": "#fbfaf9",

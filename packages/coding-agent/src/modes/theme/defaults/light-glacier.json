@@ -81,7 +81,8 @@
 		"statusLineOutput": "crevasseBlue",
 		"statusLineCost": "warningAmber",
 		"statusLineSubagents": "crevasseBlue",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "crevasseBlue"
 	},
 	"export": {
 		"pageBg": "#F2F7FA",

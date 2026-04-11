@@ -13,6 +13,27 @@ import { truncateToVisualLines } from "./visual-truncate";
 const PREVIEW_LINES = 20;
 const MAX_DISPLAY_LINE_CHARS = 4000;
 
+/** Max bytes to attempt JSON detection on */
+const JSON_DETECT_LIMIT = 32_768;
+
+/**
+ * Detect if output looks like JSON and return syntax-highlighted lines.
+ */
+function highlightIfStructured(lines: string[]): string[] | undefined {
+	if (lines.length === 0) return undefined;
+	const firstNonEmpty = lines.find(l => l.trim().length > 0)?.trim();
+	if (!firstNonEmpty) return undefined;
+	if (firstNonEmpty[0] !== "{" && firstNonEmpty[0] !== "[") return undefined;
+	const fullText = lines.join("\n");
+	if (fullText.length > JSON_DETECT_LIMIT) return undefined;
+	try {
+		JSON.parse(fullText);
+		return highlightCode(fullText, "json");
+	} catch {
+		return undefined;
+	}
+}
+
 export class PythonExecutionComponent extends Container {
 	#outputLines: string[] = [];
 	#status: "running" | "complete" | "cancelled" | "error" = "running";
@@ -117,12 +138,19 @@ export class PythonExecutionComponent extends Container {
 		this.#contentContainer.addChild(this.#formatHeader(colorKey));
 
 		if (availableLines.length > 0) {
+			// Try to syntax-highlight structured output (e.g. JSON)
+			const highlightedLines = highlightIfStructured(availableLines);
+
 			if (this.#expanded) {
-				const displayText = availableLines.map(line => theme.fg("muted", line)).join("\n");
+				const displayText = highlightedLines
+					? highlightedLines.join("\n")
+					: availableLines.map(line => theme.fg("muted", line)).join("\n");
 				this.#contentContainer.addChild(new Text(`\n${displayText}`, 1, 0));
 			} else {
-				const styledOutput = previewLogicalLines.map(line => theme.fg("muted", line)).join("\n");
-				const previewText = `\n${styledOutput}`;
+				const previewHighlighted = highlightedLines
+					? highlightedLines.slice(-previewLogicalLines.length).join("\n")
+					: previewLogicalLines.map(line => theme.fg("muted", line)).join("\n");
+				const previewText = `\n${previewHighlighted}`;
 				this.#contentContainer.addChild({
 					render: (width: number) => {
 						const { visualLines } = truncateToVisualLines(previewText, PREVIEW_LINES, width, 1);
