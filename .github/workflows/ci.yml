@@ -268,7 +268,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [check, native, test, install_methods]
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - os: macos-15-intel
