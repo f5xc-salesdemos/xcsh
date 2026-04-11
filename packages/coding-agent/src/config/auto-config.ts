@@ -122,6 +122,26 @@ function safeWrite(filePath: string, content: string): boolean {
 	}
 }
 
+/** Remove the model cache database so discovery re-runs fresh. */
+function clearModelCache(modelsPath: string): void {
+	const cacheDbPath = path.join(path.dirname(modelsPath), "models.db");
+	try {
+		if (fs.existsSync(cacheDbPath)) {
+			fs.unlinkSync(cacheDbPath);
+			logger.debug("Cleared stale model cache", { cacheDbPath });
+		}
+		// Also remove WAL/SHM files if present
+		for (const suffix of ["-wal", "-shm"]) {
+			const walPath = `${cacheDbPath}${suffix}`;
+			if (fs.existsSync(walPath)) {
+				fs.unlinkSync(walPath);
+			}
+		}
+	} catch {
+		// Best-effort — don't block config repair
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Proxy connection probing
 // ---------------------------------------------------------------------------
@@ -363,6 +383,9 @@ export function autoFixModelsConfig(modelsPath: string): FixResult {
 		return { fixed: false, changes: [`Write failed: could not write to ${modelsPath}`] };
 	}
 
+	// Clear stale model cache so discovery re-runs with the new config
+	clearModelCache(modelsPath);
+
 	logger.debug("Auto-fixed LiteLLM config", { modelsPath, baseUrl });
 	return { fixed: true, changes: [`Regenerated models.yml with baseUrl: ${baseUrl}/anthropic`] };
 }
@@ -419,16 +442,25 @@ export function startupHealthCheck(
 			return fix.fixed;
 		}
 
-		// Case 4: Config OK and URL matches, but configVersion is missing or outdated
+		// Case 4: Config OK and URL matches — check for structural issues
 		try {
 			const content = fs.readFileSync(modelsPath, "utf-8");
+
+			// 4a: configVersion is missing or outdated
 			if (!content.includes(`configVersion: ${CURRENT_CONFIG_VERSION}`)) {
 				logger.debug("Upgrading models.yml to configVersion", { version: CURRENT_CONFIG_VERSION });
 				const fix = autoFixModelsConfig(modelsPath);
 				return fix.fixed;
 			}
+
+			// 4b: litellm discovery provider is missing (legacy v1-style config)
+			if (!content.includes("type: openai-compat")) {
+				logger.debug("Adding litellm discovery provider to models.yml");
+				const fix = autoFixModelsConfig(modelsPath);
+				return fix.fixed;
+			}
 		} catch {
-			// File read failed — skip version check, don't block startup
+			// File read failed — skip structural checks, don't block startup
 		}
 	}
 
