@@ -8,6 +8,8 @@ import {
 	generateConfigYml,
 	generateModelsYml,
 	hasLiteLLMEnv,
+	probeAndUpgradeLiteLLMConfig,
+	probeLiteLLMConnection,
 	startupHealthCheck,
 	tryAutoConfigLiteLLM,
 	validateModelsConfig,
@@ -973,5 +975,207 @@ describe("config schema versioning", () => {
 		// Step 5: File has configVersion
 		const content = fs.readFileSync(modelsPath, "utf-8");
 		expect(content).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
+	});
+});
+
+// =========================================================================
+// LiteLLM proxy connection validation (Issue #52 / Issue #55 regression)
+// =========================================================================
+
+describe("probeLiteLLMConnection()", () => {
+	test("returns model list on successful probe", async () => {
+		const mockFetch = async (url: string, init?: RequestInit) => {
+			expect(url).toBe("https://proxy.example.com/v1/models");
+			expect(init?.headers).toHaveProperty("Authorization", "Bearer sk-test123");
+			return new Response(
+				JSON.stringify({
+					data: [
+						{ id: "claude-sonnet-4-6", object: "model" },
+						{ id: "gpt-5.4", object: "model" },
+					],
+				}),
+				{ status: 200 },
+			);
+		};
+		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(result.reachable).toBe(true);
+		expect(result.models).toContain("claude-sonnet-4-6");
+		expect(result.models).toContain("gpt-5.4");
+		expect(result.error).toBeUndefined();
+	});
+
+	test("returns unreachable on network error", async () => {
+		const mockFetch = async () => {
+			throw new Error("ECONNREFUSED");
+		};
+		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(result.reachable).toBe(false);
+		expect(result.models).toHaveLength(0);
+		expect(result.error).toBeDefined();
+	});
+
+	test("returns unreachable on 401 Unauthorized", async () => {
+		const mockFetch = async () => new Response("Unauthorized", { status: 401 });
+		const result = await probeLiteLLMConnection("https://proxy.example.com", "bad-key", {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(result.reachable).toBe(false);
+		expect(result.models).toHaveLength(0);
+		expect(result.error).toContain("401");
+	});
+
+	test("returns unreachable on 500 Server Error", async () => {
+		const mockFetch = async () => new Response("Internal Server Error", { status: 500 });
+		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(result.reachable).toBe(false);
+		expect(result.models).toHaveLength(0);
+		expect(result.error).toContain("500");
+	});
+
+	test("returns empty models when response has no data array", async () => {
+		const mockFetch = async () => new Response(JSON.stringify({}), { status: 200 });
+		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(result.reachable).toBe(true);
+		expect(result.models).toHaveLength(0);
+	});
+
+	test("handles malformed JSON response gracefully", async () => {
+		const mockFetch = async () => new Response("not json", { status: 200 });
+		const result = await probeLiteLLMConnection("https://proxy.example.com", "sk-test123", {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(result.reachable).toBe(false);
+		expect(result.models).toHaveLength(0);
+		expect(result.error).toBeDefined();
+	});
+});
+
+describe("generateModelsYml() with discovery options", () => {
+	test("includes litellm discovery section when discoveredModels provided", () => {
+		const yaml = generateModelsYml("https://proxy.example.com", {
+			discoveredModels: ["claude-sonnet-4-6", "gpt-5.4"],
+		});
+		expect(yaml).toContain("litellm:");
+		expect(yaml).toContain("discovery:");
+		expect(yaml).toContain("type: openai-compat");
+		expect(yaml).toContain("api: openai-completions");
+		expect(yaml).toContain("apiKey: LITELLM_API_KEY");
+		// Must also keep the anthropic provider override
+		expect(yaml).toContain("anthropic:");
+		expect(yaml).toContain("https://proxy.example.com/anthropic");
+	});
+
+	test("without options produces identical output to current", () => {
+		const withoutOptions = generateModelsYml("https://proxy.example.com");
+		const withEmptyOptions = generateModelsYml("https://proxy.example.com", {});
+		expect(withoutOptions).toBe(withEmptyOptions);
+		// Should NOT contain litellm discovery
+		expect(withoutOptions).not.toContain("litellm:");
+		expect(withoutOptions).not.toContain("discovery:");
+	});
+
+	test("empty discoveredModels array produces same output as no options", () => {
+		const noOptions = generateModelsYml("https://proxy.example.com");
+		const emptyModels = generateModelsYml("https://proxy.example.com", { discoveredModels: [] });
+		expect(noOptions).toBe(emptyModels);
+	});
+
+	test("config version is bumped when discovery is included", () => {
+		const yaml = generateModelsYml("https://proxy.example.com", {
+			discoveredModels: ["claude-sonnet-4-6"],
+		});
+		expect(yaml).toContain(`configVersion: ${CURRENT_CONFIG_VERSION}`);
+	});
+});
+
+describe("probeAndUpgradeLiteLLMConfig()", () => {
+	test("probes proxy and upgrades v1 config to include discovery", async () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+
+		// Write v1 config (no discovery)
+		fs.writeFileSync(modelsPath, generateModelsYml("https://proxy.example.com"));
+		const beforeContent = fs.readFileSync(modelsPath, "utf-8");
+		expect(beforeContent).not.toContain("discovery:");
+
+		const mockFetch = async () =>
+			new Response(
+				JSON.stringify({
+					data: [
+						{ id: "claude-sonnet-4-6", object: "model" },
+						{ id: "gpt-5.4", object: "model" },
+					],
+				}),
+				{ status: 200 },
+			);
+
+		const upgraded = await probeAndUpgradeLiteLLMConfig(modelsPath, {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(upgraded).toBe(true);
+
+		const afterContent = fs.readFileSync(modelsPath, "utf-8");
+		expect(afterContent).toContain("discovery:");
+		expect(afterContent).toContain("type: openai-compat");
+		expect(afterContent).toContain("litellm:");
+		// Backup should exist
+		expect(fs.existsSync(`${modelsPath}.bak`)).toBe(true);
+	});
+
+	test("no-ops when discovery is already configured", async () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+
+		// Write v2 config (with discovery)
+		const v2Content = generateModelsYml("https://proxy.example.com", {
+			discoveredModels: ["claude-sonnet-4-6"],
+		});
+		fs.writeFileSync(modelsPath, v2Content);
+
+		const mockFetch = async () => {
+			throw new Error("should not be called");
+		};
+
+		const upgraded = await probeAndUpgradeLiteLLMConfig(modelsPath, {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(upgraded).toBe(false);
+	});
+
+	test("gracefully degrades when proxy is unreachable", async () => {
+		setEnv("https://proxy.example.com", "sk-abc123");
+		fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+		fs.writeFileSync(modelsPath, generateModelsYml("https://proxy.example.com"));
+		const beforeContent = fs.readFileSync(modelsPath, "utf-8");
+
+		const mockFetch = async () => {
+			throw new Error("ECONNREFUSED");
+		};
+
+		const upgraded = await probeAndUpgradeLiteLLMConfig(modelsPath, {
+			fetch: mockFetch as unknown as typeof globalThis.fetch,
+		});
+		expect(upgraded).toBe(false);
+
+		// Config should be unchanged
+		const afterContent = fs.readFileSync(modelsPath, "utf-8");
+		expect(afterContent).toBe(beforeContent);
+	});
+
+	test("returns false when LITELLM env vars are not set", async () => {
+		restoreEnv();
+		delete process.env.LITELLM_BASE_URL;
+		delete process.env.LITELLM_API_KEY;
+
+		const upgraded = await probeAndUpgradeLiteLLMConfig(modelsPath);
+		expect(upgraded).toBe(false);
 	});
 });
