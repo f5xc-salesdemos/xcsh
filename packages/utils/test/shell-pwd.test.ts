@@ -1,5 +1,5 @@
-import { describe, expect, it, beforeEach } from "bun:test";
-import { getProjectDir, setProjectDir, getShellPwd, setShellPwd } from "../src/dirs";
+import { beforeEach, describe, expect, it } from "bun:test";
+import { getProjectDir, getShellPwd, setProjectDir, setShellPwd } from "../src/dirs";
 
 describe("getShellPwd / setShellPwd", () => {
 	const originalCwd = getProjectDir();
