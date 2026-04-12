@@ -670,7 +670,20 @@ jobs:
       - name: Install xcsh via npm and verify native addon loads
         run: |
           set -euo pipefail
-          npm install -g @f5xc-salesdemos/xcsh
+          max_attempts=5
+          delay=15
+          for attempt in $(seq 1 $max_attempts); do
+            if npm install -g @f5xc-salesdemos/xcsh 2>&1; then
+              break
+            fi
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "npm install failed after $max_attempts attempts"
+              exit 1
+            fi
+            echo "Attempt $attempt/$max_attempts failed — waiting ${delay}s for npm registry propagation..."
+            sleep $delay
+            delay=$((delay * 2))
+          done
           echo "Checking xcsh version..."
           xcsh --version
           echo "Checking xcsh help..."

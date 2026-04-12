@@ -1306,8 +1306,20 @@ export class ModelRegistry {
 	): Promise<Model<Api>[]> {
 		// Skip providers already handled by configured discovery (e.g. user-configured ollama with discovery.type)
 		const configuredDiscoveryProviders = new Set(this.#discoverableProviders.map(p => p.provider));
+
+		// When a LiteLLM proxy is configured, providers with overridden baseUrls are
+		// proxied through it. Their built-in discovery would query the proxy's model
+		// listing endpoint, which may return model IDs the proxy can't serve for chat.
+		// Skip them — the litellm discovery provider handles model listing instead.
+		const proxiedProviders = hasLiteLLMEnv()
+			? new Set([...this.#providerOverrides.keys()].filter(id => this.#providerOverrides.get(id)?.baseUrl))
+			: new Set<string>();
+
 		const managerOptions = (await this.#collectBuiltInModelManagerOptions()).filter(opts => {
 			if (configuredDiscoveryProviders.has(opts.providerId)) {
+				return false;
+			}
+			if (proxiedProviders.has(opts.providerId)) {
 				return false;
 			}
 			return providerFilter ? providerFilter.has(opts.providerId) : true;
