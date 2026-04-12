@@ -311,14 +311,10 @@ async function updateViaNpm(expectedVersion: string): Promise<void> {
  * Prints instructions instead of running brew upgrade automatically.
  */
 function updateViaBrew(targetPath: string, expectedVersion: string): void {
-	console.log(
-		chalk.yellow(`\n${APP_NAME} at ${targetPath} was installed via Homebrew.`),
-	);
-	console.log(chalk.yellow("To update to " + expectedVersion + ", run:"));
+	console.log(chalk.yellow(`\n${APP_NAME} at ${targetPath} was installed via Homebrew.`));
+	console.log(chalk.yellow(`To update to ${expectedVersion}, run:`));
 	console.log(chalk.cyan(`  brew upgrade ${APP_NAME}`));
-	console.log(
-		chalk.dim("\nThis ensures the update goes through your organization's Homebrew tap."),
-	);
+	console.log(chalk.dim("\nThis ensures the update goes through your organization's Homebrew tap."));
 }
 
 /**
