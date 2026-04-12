@@ -2,7 +2,8 @@
  * Update CLI command handler.
  *
  * Handles `xcsh update` to check for and install updates.
- * Uses bun if available, otherwise downloads binary from GitHub releases.
+ * Auto-detects the installation method (npm, brew, bun, or standalone binary)
+ * and updates through the appropriate channel.
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -60,14 +61,74 @@ function isPathInDirectory(filePath: string, directoryPath: string): boolean {
 	return relativePath === "" || (!relativePath.startsWith("..") && !path.isAbsolute(relativePath));
 }
 
-type UpdateTarget = { method: "bun" } | { method: "binary"; path: string };
+export type InstallMethod = "npm" | "brew" | "bun" | "binary";
 
-function resolveUpdateMethod(ompPath: string, bunBinDir: string | undefined): "bun" | "binary" {
-	if (!bunBinDir) return "binary";
-	return isPathInDirectory(ompPath, bunBinDir) ? "bun" : "binary";
+type UpdateTarget =
+	| { method: "npm"; path: string }
+	| { method: "brew"; path: string }
+	| { method: "bun" }
+	| { method: "binary"; path: string };
+
+/**
+ * Detect how xcsh was installed by examining the binary path.
+ *
+ * Detection order:
+ * 1. bun  — binary is inside bun's global bin directory
+ * 2. npm  — binary is a symlink whose resolution chain contains "node_modules"
+ * 3. brew — binary path or realpath contains "Cellar" or "homebrew"
+ * 4. binary — fallback for standalone installs
+ */
+function detectInstallMethod(binPath: string, bunBinDir: string | undefined): InstallMethod {
+	// 1. Bun: binary lives inside bun's global bin dir
+	if (bunBinDir && isPathInDirectory(binPath, bunBinDir)) {
+		return "bun";
+	}
+
+	// 2. npm: binary is a symlink whose target chain contains node_modules
+	try {
+		const stats = fs.lstatSync(binPath);
+		if (stats.isSymbolicLink()) {
+			const linkTarget = fs.readlinkSync(binPath);
+			const resolvedTarget = path.resolve(path.dirname(binPath), linkTarget);
+			if (linkTarget.includes("node_modules") || resolvedTarget.includes("node_modules")) {
+				return "npm";
+			}
+			try {
+				const realPath = fs.realpathSync(binPath);
+				if (realPath.includes("node_modules")) {
+					return "npm";
+				}
+			} catch {
+				// realpath may fail if target doesn't exist
+			}
+		}
+	} catch {
+		// lstat/readlink may fail; fall through
+	}
+
+	// 3. brew: path or realpath contains Cellar or homebrew
+	const lowerBinPath = binPath.toLowerCase();
+	if (lowerBinPath.includes("/cellar/") || lowerBinPath.includes("/homebrew/")) {
+		return "brew";
+	}
+	try {
+		const realPath = fs.realpathSync(binPath).toLowerCase();
+		if (realPath.includes("/cellar/") || realPath.includes("/homebrew/")) {
+			return "brew";
+		}
+	} catch {
+		// realpath may fail; fall through
+	}
+
+	// 4. Standalone binary (fallback)
+	return "binary";
 }
 
-export function _resolveUpdateMethodForTest(ompPath: string, bunBinDir: string | undefined): "bun" | "binary" {
+function resolveUpdateMethod(ompPath: string, bunBinDir: string | undefined): InstallMethod {
+	return detectInstallMethod(ompPath, bunBinDir);
+}
+
+export function _resolveUpdateMethodForTest(ompPath: string, bunBinDir: string | undefined): InstallMethod {
 	return resolveUpdateMethod(ompPath, bunBinDir);
 }
 async function resolveUpdateTarget(): Promise<UpdateTarget> {
@@ -175,8 +236,9 @@ function resolveOmpPath(): string | undefined {
  */
 async function verifyInstalledVersion(
 	expectedVersion: string,
+	explicitPath?: string,
 ): Promise<{ ok: boolean; actual?: string; path?: string }> {
-	const ompPath = resolveOmpPath();
+	const ompPath = explicitPath ?? resolveOmpPath();
 	if (!ompPath) return { ok: false };
 	try {
 		const result = await $`${ompPath} --version`.quiet().nothrow();
@@ -194,8 +256,8 @@ async function verifyInstalledVersion(
 /**
  * Print post-update verification result.
  */
-async function printVerification(expectedVersion: string): Promise<void> {
-	const result = await verifyInstalledVersion(expectedVersion);
+async function printVerification(expectedVersion: string, explicitPath?: string): Promise<void> {
+	const result = await verifyInstalledVersion(expectedVersion, explicitPath);
 	if (result.ok) {
 		console.log(chalk.green(`\n${theme.status.success} Updated to ${expectedVersion}`));
 		return;
@@ -232,6 +294,30 @@ async function updateViaBun(expectedVersion: string): Promise<void> {
 }
 
 /**
+ * Update via npm package manager.
+ */
+async function updateViaNpm(expectedVersion: string): Promise<void> {
+	console.log(chalk.dim("Updating via npm..."));
+	const result = await $`npm install -g ${PACKAGE}@${expectedVersion}`.nothrow();
+	if (result.exitCode !== 0) {
+		throw new Error(`npm install failed with exit code ${result.exitCode}`);
+	}
+}
+
+/**
+ * Handle brew-installed xcsh.
+ *
+ * For corporate environments, brew-managed software must not be bypassed.
+ * Prints instructions instead of running brew upgrade automatically.
+ */
+function updateViaBrew(targetPath: string, expectedVersion: string): void {
+	console.log(chalk.yellow(`\n${APP_NAME} at ${targetPath} was installed via Homebrew.`));
+	console.log(chalk.yellow(`To update to ${expectedVersion}, run:`));
+	console.log(chalk.cyan(`  brew upgrade ${APP_NAME}`));
+	console.log(chalk.dim("\nThis ensures the update goes through your organization's Homebrew tap."));
+}
+
+/**
  * Download a release binary to a target path, replacing an existing file.
  */
 async function updateViaBinaryAt(targetPath: string, expectedVersion: string): Promise<void> {
@@ -261,7 +347,7 @@ async function updateViaBinaryAt(targetPath: string, expectedVersion: string): P
 		await fs.promises.rename(tempPath, targetPath);
 		await fs.promises.unlink(backupPath);
 
-		await printVerification(expectedVersion);
+		await printVerification(expectedVersion, targetPath);
 		console.log(chalk.dim(`Restart ${APP_NAME} to use the new version`));
 	} catch (err) {
 		if (fs.existsSync(backupPath) && !fs.existsSync(targetPath)) {
@@ -310,10 +396,22 @@ export async function runUpdateCommand(opts: { force: boolean; check: boolean })
 	// Choose update method based on the prioritized xcsh binary in PATH
 	try {
 		const target = await resolveUpdateTarget();
-		if (target.method === "bun") {
-			await updateViaBun(release.version);
-		} else {
-			await updateViaBinaryAt(target.path, release.version);
+		console.log(chalk.dim(`Install method: ${target.method}`));
+
+		switch (target.method) {
+			case "bun":
+				await updateViaBun(release.version);
+				break;
+			case "npm":
+				await updateViaNpm(release.version);
+				await printVerification(release.version);
+				break;
+			case "brew":
+				updateViaBrew(target.path, release.version);
+				return;
+			case "binary":
+				await updateViaBinaryAt(target.path, release.version);
+				break;
 		}
 	} catch (err) {
 		console.error(chalk.red(`Update failed: ${err}`));
@@ -333,6 +431,12 @@ ${chalk.bold("Usage:")}
 ${chalk.bold("Options:")}
   -c, --check   Check for updates without installing
   -f, --force   Force reinstall even if up to date
+
+${chalk.bold("Install methods (auto-detected):")}
+  npm           Installed via npm install -g
+  brew          Installed via Homebrew (prints upgrade instructions)
+  bun           Installed via bun install -g
+  binary        Standalone binary (direct download)
 
 ${chalk.bold("Examples:")}
   ${APP_NAME} update           Update to latest version

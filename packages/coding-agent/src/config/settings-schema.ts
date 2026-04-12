@@ -791,7 +791,7 @@ export const SETTINGS_SCHEMA = {
 
 	"compaction.handoffSaveToDisk": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "context",
 			label: "Save Handoff Docs",
