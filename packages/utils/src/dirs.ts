@@ -89,6 +89,19 @@ export function setProjectDir(dir: string): void {
 	process.chdir(projectDir);
 }
 
+/** Shell-tracked working directory (follows persistent-shell cd). */
+let shellPwd = projectDir;
+
+/** Get the shell's current working directory (may differ from Agent CWD). */
+export function getShellPwd(): string {
+	return shellPwd;
+}
+
+/** Update the shell's tracked working directory. Does NOT change Agent CWD. */
+export function setShellPwd(dir: string): void {
+	shellPwd = standardizeMacOSPath(path.resolve(dir));
+}
+
 /** Get the config directory name relative to home (e.g. ".xcsh" or PI_CONFIG_DIR override). */
 export function getConfigDirName(): string {
 	return process.env.PI_CONFIG_DIR || CONFIG_DIR_NAME;

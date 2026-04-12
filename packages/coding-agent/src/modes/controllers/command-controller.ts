@@ -10,7 +10,7 @@ import {
 	type UsageReport,
 } from "@f5xc-salesdemos/pi-ai";
 import { Loader, Markdown, padding, Spacer, Text, visibleWidth } from "@f5xc-salesdemos/pi-tui";
-import { formatDuration, Snowflake, setProjectDir } from "@f5xc-salesdemos/pi-utils";
+import { formatDuration, Snowflake, setProjectDir, setShellPwd } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import { reset as resetCapabilities } from "../../capability";
 import { clearClaudePluginRootsCache } from "../../discovery/helpers";
@@ -713,7 +713,7 @@ export class CommandController {
 
 			// Update CWD if the shell changed directory (e.g. via cd)
 			if (result.newCwd && result.newCwd !== this.ctx.sessionManager.getCwd()) {
-				setProjectDir(result.newCwd);
+				setShellPwd(result.newCwd);
 				this.ctx.statusLine.invalidate();
 				this.ctx.ui.requestRender();
 			}
