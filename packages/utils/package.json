@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "@f5xc-salesdemos/pi-utils",
-	"version": "15.7.0",
+	"version": "15.8.0",
 	"description": "Shared utilities for pi packages",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",
