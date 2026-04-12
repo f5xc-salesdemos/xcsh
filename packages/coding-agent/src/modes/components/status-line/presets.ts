@@ -4,7 +4,7 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 	default: {
 		leftSegments: ["pi", "model", "plan_mode", "path", "git", "pr", "context_pct", "token_total", "cost"],
 		rightSegments: [],
-		separator: "powerline-thin",
+		separator: "powerline",
 		segmentOptions: {
 			model: { showThinkingLevel: true },
 			path: { abbreviate: true, maxLength: 40, stripWorkPrefix: true },
@@ -25,7 +25,7 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 	compact: {
 		leftSegments: ["model", "plan_mode", "git", "pr"],
 		rightSegments: ["cost", "context_pct"],
-		separator: "powerline-thin",
+		separator: "powerline",
 		segmentOptions: {
 			model: { showThinkingLevel: false },
 			git: { showBranch: true, showStaged: true, showUnstaged: true, showUntracked: false },
@@ -95,7 +95,7 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 		// User-defined - these are just defaults that get overridden
 		leftSegments: ["model", "plan_mode", "path", "git", "pr"],
 		rightSegments: ["token_total", "cost", "context_pct"],
-		separator: "powerline-thin",
+		separator: "powerline",
 		segmentOptions: {},
 	},
 };
