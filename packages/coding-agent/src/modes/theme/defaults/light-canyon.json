@@ -81,7 +81,8 @@
 		"statusLineOutput": "ironRed",
 		"statusLineCost": "sunsetOrange",
 		"statusLineSubagents": "ironRed",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "ironRed"
 	},
 	"export": {
 		"pageBg": "#F8F1EA",

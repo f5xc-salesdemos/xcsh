@@ -62,6 +62,7 @@
 		"syntaxType": "#267F99",
 		"syntaxOperator": "#000000",
 		"syntaxPunctuation": "#000000",
+		"syntaxControl": "#AF00DB",
 		"thinkingOff": "lightGray",
 		"thinkingMinimal": "#767676",
 		"thinkingLow": "blue",

@@ -90,7 +90,8 @@
 		"statusLineOutput": "hue3",
 		"statusLineCost": "hue5",
 		"statusLineSubagents": "hue62",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "hue3"
 	},
 	"export": {
 		"pageBg": "#1e2227",

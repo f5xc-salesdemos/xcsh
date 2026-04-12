@@ -93,7 +93,8 @@
 		"statusLineOutput": "neonMagenta",
 		"statusLineCost": "vaporPink",
 		"statusLineSubagents": "hotPink",
-		"pythonMode": "gold"
+		"pythonMode": "gold",
+		"syntaxControl": "#FF7EDB"
 	},
 	"export": {
 		"pageBg": "#0c0c0c",

@@ -80,7 +80,8 @@
 		"statusLineOutput": "light",
 		"statusLineCost": "warm",
 		"statusLineSubagents": "warm",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "violet"
 	},
 	"export": {
 		"pageBg": "#0f1115",

@@ -80,7 +80,8 @@
 		"statusLineOutput": "starlight",
 		"statusLineCost": "nebula",
 		"statusLineSubagents": "nebula",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "nebula"
 	},
 	"export": {
 		"pageBg": "#07070d",

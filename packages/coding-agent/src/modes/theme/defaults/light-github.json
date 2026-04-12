@@ -105,7 +105,8 @@
 		"statusLineOutput": "outputColor",
 		"statusLineCost": "costColor",
 		"statusLineSubagents": "subagentsColor",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#CF222E"
 	},
 	"export": {
 		"pageBg": "#f6f8fa",

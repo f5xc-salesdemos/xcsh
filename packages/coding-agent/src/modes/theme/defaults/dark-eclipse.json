@@ -81,7 +81,8 @@
 		"statusLineOutput": "silver",
 		"statusLineCost": "corona",
 		"statusLineSubagents": "corona",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "violet"
 	},
 	"export": {
 		"pageBg": "#08070d",

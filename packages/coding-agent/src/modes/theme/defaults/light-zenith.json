@@ -79,7 +79,8 @@
 		"statusLineOutput": "ink",
 		"statusLineCost": "blue",
 		"statusLineSubagents": "blue",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "blue"
 	},
 	"export": {
 		"pageBg": "#ffffff",

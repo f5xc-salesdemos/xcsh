@@ -83,7 +83,8 @@
 		"statusLineOutput": 173,
 		"statusLineCost": 173,
 		"statusLineSubagents": "ember",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#7ba8d4"
 	},
 	"export": {
 		"pageBg": "#121419",

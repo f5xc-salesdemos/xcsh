@@ -81,7 +81,8 @@
 		"statusLineOutput": "wildflowerPurple",
 		"statusLineCost": "warningGold",
 		"statusLineSubagents": "wildflowerPurple",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "wildflowerPurple"
 	},
 	"export": {
 		"pageBg": "#F3F7F1",

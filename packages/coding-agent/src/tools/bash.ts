@@ -13,6 +13,7 @@ import { type BashResult, executeBash } from "../exec/bash-executor";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import type { Theme } from "../modes/theme/theme";
+import { highlightCode } from "../modes/theme/theme";
 import bashDescription from "../prompts/tools/bash.md" with { type: "text" };
 import { DEFAULT_MAX_BYTES, TailBuffer } from "../session/streaming-output";
 import { renderStatusLine } from "../tui";
@@ -556,12 +557,42 @@ export const bashToolRenderer = {
 					TERMINAL.imageProtocol === ImageProtocol.Sixel ? getSixelLineMask(rawOutputLines) : undefined;
 				const hasSixelOutput = sixelLineMask?.some(Boolean) ?? false;
 				if (hasOutput) {
+					// Detect JSON output for syntax highlighting
+					const jsonHighlighted = (() => {
+						if (hasSixelOutput) return undefined;
+						const trimmed = displayOutput.trim();
+						if (trimmed.length > 32_768) return undefined;
+						if (trimmed[0] !== "{" && trimmed[0] !== "[") return undefined;
+						try {
+							JSON.parse(trimmed);
+							return highlightCode(displayOutput, "json");
+						} catch {
+							return undefined;
+						}
+					})();
+
 					if (hasSixelOutput) {
 						outputLines.push(
 							...rawOutputLines.map((line, index) =>
 								sixelLineMask?.[index] ? line : uiTheme.fg("toolOutput", replaceTabs(line)),
 							),
 						);
+					} else if (jsonHighlighted) {
+						if (expanded) {
+							outputLines.push(...jsonHighlighted);
+						} else {
+							const textContent = jsonHighlighted.join("\n");
+							const result = truncateToVisualLines(textContent, previewLines, width);
+							if (result.skippedCount > 0) {
+								outputLines.push(
+									uiTheme.fg(
+										"dim",
+										`… (${result.skippedCount} earlier lines, showing ${result.visualLines.length} of ${result.skippedCount + result.visualLines.length}) (ctrl+o to expand)`,
+									),
+								);
+							}
+							outputLines.push(...result.visualLines);
+						}
 					} else if (expanded) {
 						outputLines.push(...rawOutputLines.map(line => uiTheme.fg("toolOutput", replaceTabs(line))));
 					} else {

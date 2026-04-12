@@ -857,6 +857,7 @@ const ThemeJsonSchema = Type.Object({
 		syntaxType: ColorValueSchema,
 		syntaxOperator: ColorValueSchema,
 		syntaxPunctuation: ColorValueSchema,
+		syntaxControl: ColorValueSchema,
 		// Thinking Level Borders (6 colors)
 		thinkingOff: ColorValueSchema,
 		thinkingMinimal: ColorValueSchema,
@@ -955,6 +956,7 @@ export type ThemeColor =
 	| "syntaxType"
 	| "syntaxOperator"
 	| "syntaxPunctuation"
+	| "syntaxControl"
 	| "thinkingOff"
 	| "thinkingMinimal"
 	| "thinkingLow"
@@ -1033,6 +1035,7 @@ const THEME_COLOR_RECORD = {
 	syntaxType: true,
 	syntaxOperator: true,
 	syntaxPunctuation: true,
+	syntaxControl: true,
 	thinkingOff: true,
 	thinkingMinimal: true,
 	thinkingLow: true,
@@ -2359,6 +2362,7 @@ function getHighlightColors(t: Theme): NativeHighlightColors {
 			type: t.getFgAnsi("syntaxType"),
 			operator: t.getFgAnsi("syntaxOperator"),
 			punctuation: t.getFgAnsi("syntaxPunctuation"),
+			control: t.getFgAnsi("syntaxControl"),
 			inserted: t.getFgAnsi("toolDiffAdded"),
 			deleted: t.getFgAnsi("toolDiffRemoved"),
 		};

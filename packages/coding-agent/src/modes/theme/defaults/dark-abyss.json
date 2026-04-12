@@ -81,7 +81,8 @@
 		"statusLineOutput": "crystalBlue",
 		"statusLineCost": "warningAmber",
 		"statusLineSubagents": "glowCyan",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "abyssCyan"
 	},
 	"export": {
 		"pageBg": "#05070B",

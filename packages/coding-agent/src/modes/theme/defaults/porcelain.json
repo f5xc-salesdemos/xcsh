@@ -81,7 +81,8 @@
 		"statusLineOutput": "wedgwoodBlue",
 		"statusLineCost": "goldTrim",
 		"statusLineSubagents": "deepWedgwood",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "deepWedgwood"
 	},
 	"export": {
 		"pageBg": "porcelainWhite",

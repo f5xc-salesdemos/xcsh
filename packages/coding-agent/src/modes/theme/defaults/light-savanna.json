@@ -81,7 +81,8 @@
 		"statusLineOutput": "sunsetOrange",
 		"statusLineCost": "warningOrange",
 		"statusLineSubagents": "sunsetOrange",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "sunsetOrange"
 	},
 	"export": {
 		"pageBg": "#F8F1E6",
