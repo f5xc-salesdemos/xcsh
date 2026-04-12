@@ -28,10 +28,7 @@ describe("update-cli install target detection", () => {
 	// --- Brew detection (path-based) ---
 
 	it("uses brew update when path contains Cellar", () => {
-		const method = _resolveUpdateMethodForTest(
-			"/opt/homebrew/Cellar/xcsh/15.5.0/bin/xcsh",
-			undefined,
-		);
+		const method = _resolveUpdateMethodForTest("/opt/homebrew/Cellar/xcsh/15.5.0/bin/xcsh", undefined);
 
 		expect(method).toBe("brew");
 	});
@@ -43,10 +40,7 @@ describe("update-cli install target detection", () => {
 	});
 
 	it("prefers bun over brew when binary is in bun global bin under homebrew", () => {
-		const method = _resolveUpdateMethodForTest(
-			"/opt/homebrew/.bun/bin/xcsh",
-			"/opt/homebrew/.bun/bin",
-		);
+		const method = _resolveUpdateMethodForTest("/opt/homebrew/.bun/bin/xcsh", "/opt/homebrew/.bun/bin");
 
 		expect(method).toBe("bun");
 	});
@@ -73,10 +67,7 @@ describe("update-cli install target detection", () => {
 
 			// Create a symlink pointing into node_modules
 			const symlink = path.join(tmpDir, "xcsh");
-			fs.symlinkSync(
-				path.join("node_modules", "@f5xc-salesdemos", "xcsh", "dist", "xcsh"),
-				symlink,
-			);
+			fs.symlinkSync(path.join("node_modules", "@f5xc-salesdemos", "xcsh", "dist", "xcsh"), symlink);
 
 			const method = _resolveUpdateMethodForTest(symlink, undefined);
 
