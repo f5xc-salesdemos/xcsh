@@ -312,10 +312,24 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 			},
 		};
 		command = await expandInternalUrls(command, { ...internalUrlOptions, ensureLocalParentDirs: true });
-		const resolvedEnv = env
+		// Merge bash.environment (profile credentials) with per-call env overrides.
+		// Coerce non-string values to strings to match what bash-executor does.
+		const rawBashEnv = (this.session.settings.get("bash.environment") ?? {}) as Record<string, unknown>;
+		const bashEnvironment: Record<string, string> = {};
+		for (const [k, v] of Object.entries(rawBashEnv)) {
+			if (typeof v === "string") bashEnvironment[k] = v;
+			else if (v != null) bashEnvironment[k] = String(v);
+		}
+		const hasBashEnv = Object.keys(bashEnvironment).length > 0;
+		const mergedEnv = env
+			? { ...bashEnvironment, ...env }
+			: hasBashEnv
+				? bashEnvironment
+				: undefined;
+		const resolvedEnv = mergedEnv
 			? Object.fromEntries(
 					await Promise.all(
-						Object.entries(env).map(async ([key, value]) => [
+						Object.entries(mergedEnv).map(async ([key, value]) => [
 							key,
 							await expandInternalUrls(value, {
 								...internalUrlOptions,
