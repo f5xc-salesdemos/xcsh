@@ -25,7 +25,7 @@ import {
 	unregisterCustomApis,
 	unregisterOAuthProviders,
 } from "@f5xc-salesdemos/pi-ai";
-import { isRecord, logger } from "@f5xc-salesdemos/pi-utils";
+import { $env, isRecord, logger } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type ConfigError, ConfigFile } from "../config";
 import { hasLiteLLMEnv, probeAndUpgradeLiteLLMConfig, startupHealthCheck } from "../config/auto-config";
@@ -1307,12 +1307,20 @@ export class ModelRegistry {
 		// Skip providers already handled by configured discovery (e.g. user-configured ollama with discovery.type)
 		const configuredDiscoveryProviders = new Set(this.#discoverableProviders.map(p => p.provider));
 
-		// When a LiteLLM proxy is configured, providers with overridden baseUrls are
-		// proxied through it. Their built-in discovery would query the proxy's model
-		// listing endpoint, which may return model IDs the proxy can't serve for chat.
-		// Skip them — the litellm discovery provider handles model listing instead.
-		const proxiedProviders = hasLiteLLMEnv()
-			? new Set([...this.#providerOverrides.keys()].filter(id => this.#providerOverrides.get(id)?.baseUrl))
+		// When a LiteLLM proxy is configured, providers whose baseUrl points to the
+		// LiteLLM proxy are proxied through it. Their built-in discovery would query
+		// the proxy's model listing endpoint, which may return model IDs the proxy
+		// can't serve for chat. Skip them — the litellm discovery provider handles
+		// model listing instead. Providers with other custom baseUrls (not LiteLLM)
+		// still need built-in discovery to discover new models at their endpoint.
+		const liteLLMBaseUrl = hasLiteLLMEnv() ? $env.LITELLM_BASE_URL?.trim().replace(/\/+$/, "") : undefined;
+		const proxiedProviders = liteLLMBaseUrl
+			? new Set(
+					[...this.#providerOverrides.keys()].filter(id => {
+						const override = this.#providerOverrides.get(id);
+						return override?.baseUrl?.startsWith(liteLLMBaseUrl);
+					}),
+				)
 			: new Set<string>();
 
 		const managerOptions = (await this.#collectBuiltInModelManagerOptions()).filter(opts => {
