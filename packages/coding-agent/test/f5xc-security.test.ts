@@ -6,19 +6,14 @@ import { Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
 import { ProfileError, ProfileService } from "@f5xc-salesdemos/xcsh/services/f5xc-profile";
 import { handleProfileCommand } from "@f5xc-salesdemos/xcsh/services/f5xc-profile-command";
-import {
-	TEST_LONG_TOKEN,
-	TEST_PROFILE,
-	TEST_PROFILE_WITH_ENV,
-} from "./f5xc-test-fixtures";
+import { TEST_LONG_TOKEN, TEST_PROFILE, TEST_PROFILE_WITH_ENV } from "./f5xc-test-fixtures";
 
-function writeProfile(profilesDir: string, profile: { name: string; apiUrl: string; apiToken: string; defaultNamespace: string }): void {
+function writeProfile(
+	profilesDir: string,
+	profile: { name: string; apiUrl: string; apiToken: string; defaultNamespace: string },
+): void {
 	fs.mkdirSync(profilesDir, { recursive: true });
-	fs.writeFileSync(
-		path.join(profilesDir, `${profile.name}.json`),
-		JSON.stringify(profile, null, 2),
-		{ mode: 0o600 },
-	);
+	fs.writeFileSync(path.join(profilesDir, `${profile.name}.json`), JSON.stringify(profile, null, 2), { mode: 0o600 });
 }
 
 function writeActiveProfile(configDir: string, name: string): void {
@@ -29,9 +24,15 @@ function createMockCtx() {
 	const messages: { type: string; text: string }[] = [];
 	return {
 		messages,
-		showStatus(msg: string) { messages.push({ type: "status", text: msg }); },
-		showError(msg: string) { messages.push({ type: "error", text: msg }); },
-		showWarning(msg: string) { messages.push({ type: "warning", text: msg }); },
+		showStatus(msg: string) {
+			messages.push({ type: "status", text: msg });
+		},
+		showError(msg: string) {
+			messages.push({ type: "error", text: msg });
+		},
+		showWarning(msg: string) {
+			messages.push({ type: "warning", text: msg });
+		},
 		editor: { setText(_text: string) {} },
 		statusLine: { invalidate() {} },
 		updateEditorTopBorder() {},
@@ -104,10 +105,7 @@ describe("F5XC security: token never in output", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "show", text: "/profile show" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "show", text: "/profile show" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("status");
 		expect(ctx.messages[0].text).not.toContain(TEST_LONG_TOKEN);
@@ -123,10 +121,7 @@ describe("F5XC security: token never in output", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "status", text: "/profile status" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "status", text: "/profile status" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("status");
 		expect(ctx.messages[0].text).not.toContain(TEST_PROFILE.apiToken);
@@ -140,10 +135,7 @@ describe("F5XC security: token never in output", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "list", text: "/profile list" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "list", text: "/profile list" }, ctx);
 
 		expect(ctx.messages[0].text).not.toContain(TEST_PROFILE.apiToken);
 	});
@@ -154,13 +146,27 @@ describe("F5XC security: token never in output", () => {
 		// Trigger various error paths
 		const errors: string[] = [];
 
-		try { await service.activate("../../escape"); } catch (e) { if (e instanceof ProfileError) errors.push(e.message); }
-		try { await service.activate("nonexistent"); } catch (e) { if (e instanceof ProfileError) errors.push(e.message); }
-		try { await service.deleteProfile("ghost"); } catch (e) { if (e instanceof ProfileError) errors.push(e.message); }
+		try {
+			await service.activate("../../escape");
+		} catch (e) {
+			if (e instanceof ProfileError) errors.push(e.message);
+		}
+		try {
+			await service.activate("nonexistent");
+		} catch (e) {
+			if (e instanceof ProfileError) errors.push(e.message);
+		}
+		try {
+			await service.deleteProfile("ghost");
+		} catch (e) {
+			if (e instanceof ProfileError) errors.push(e.message);
+		}
 		try {
 			writeProfile(f5xcProfilesDir, TEST_PROFILE);
 			await service.createProfile({ ...TEST_PROFILE });
-		} catch (e) { if (e instanceof ProfileError) errors.push(e.message); }
+		} catch (e) {
+			if (e instanceof ProfileError) errors.push(e.message);
+		}
 
 		expect(errors.length).toBeGreaterThan(0);
 		for (const msg of errors) {
@@ -215,10 +221,7 @@ describe("F5XC security: sensitive env var masking", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "show", text: "/profile show" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "show", text: "/profile show" }, ctx);
 
 		const output = ctx.messages[0].text;
 		// Full password must NOT appear
@@ -238,10 +241,7 @@ describe("F5XC security: sensitive env var masking", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "show", text: "/profile show" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "show", text: "/profile show" }, ctx);
 
 		const output = ctx.messages[0].text;
 		// Table output has ANSI codes — strip them for content checks
@@ -298,21 +298,14 @@ describe("F5XC security: TUI sanitization", () => {
 			defaultNamespace: "ns\ttab\nnewline",
 		};
 		fs.mkdirSync(f5xcProfilesDir, { recursive: true });
-		fs.writeFileSync(
-			path.join(f5xcProfilesDir, "evil.json"),
-			JSON.stringify(malicious),
-			{ mode: 0o600 },
-		);
+		fs.writeFileSync(path.join(f5xcProfilesDir, "evil.json"), JSON.stringify(malicious), { mode: 0o600 });
 		writeActiveProfile(f5xcConfigDir, "evil");
 
 		const service = ProfileService.init(f5xcConfigDir);
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "show", text: "/profile show" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "show", text: "/profile show" }, ctx);
 
 		const output = ctx.messages[0].text;
 		// Control characters should be stripped — no tabs or carriage returns
@@ -333,21 +326,14 @@ describe("F5XC security: TUI sanitization", () => {
 			defaultNamespace: "ns",
 		};
 		fs.mkdirSync(f5xcProfilesDir, { recursive: true });
-		fs.writeFileSync(
-			path.join(f5xcProfilesDir, "evil.json"),
-			JSON.stringify(malicious),
-			{ mode: 0o600 },
-		);
+		fs.writeFileSync(path.join(f5xcProfilesDir, "evil.json"), JSON.stringify(malicious), { mode: 0o600 });
 		writeActiveProfile(f5xcConfigDir, "evil");
 
 		const service = ProfileService.init(f5xcConfigDir);
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "list", text: "/profile list" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "list", text: "/profile list" }, ctx);
 
 		const output = ctx.messages[0].text;
 		// \r\n stripped — "INJECTED" text remains inline but can't spoof a new line
@@ -361,7 +347,7 @@ describe("F5XC security: TUI sanitization", () => {
 describe("F5XC security: path traversal prevention", () => {
 	let testDir: string;
 	let f5xcConfigDir: string;
-	let f5xcProfilesDir: string;
+	let _f5xcProfilesDir: string;
 	let projectDir: string;
 	let agentDir: string;
 
@@ -374,7 +360,7 @@ describe("F5XC security: path traversal prevention", () => {
 
 		testDir = path.join(os.tmpdir(), "test-f5xc-security-pt", Snowflake.next());
 		f5xcConfigDir = path.join(testDir, "f5xc-config");
-		f5xcProfilesDir = path.join(f5xcConfigDir, "profiles");
+		_f5xcProfilesDir = path.join(f5xcConfigDir, "profiles");
 		projectDir = path.join(testDir, "project");
 		agentDir = path.join(testDir, "agent");
 

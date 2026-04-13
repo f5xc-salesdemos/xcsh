@@ -52,9 +52,7 @@ export async function handleProfileCommand(
 		case "namespace":
 			return handleNamespace(ctx, service, arg);
 		default:
-			ctx.showError(
-				`Unknown subcommand: ${sub}. Use /profile list|activate|show|status|create|delete|namespace`,
-			);
+			ctx.showError(`Unknown subcommand: ${sub}. Use /profile list|activate|show|status|create|delete|namespace`);
 	}
 }
 
@@ -70,7 +68,7 @@ async function handleList(ctx: CommandContext, service: ProfileService): Promise
 		return;
 	}
 	const status = service.getStatus();
-	const lines = profiles.map((p) => {
+	const lines = profiles.map(p => {
 		const marker = p.name === status.activeProfileName ? "*" : " ";
 		return `  ${marker} ${sanitize(p.name).padEnd(20)} ${sanitize(p.apiUrl)}`;
 	});
@@ -99,7 +97,7 @@ const SENSITIVE_KEY_PATTERNS = ["TOKEN", "PASSWORD", "SECRET"];
 
 function isSensitiveKey(key: string): boolean {
 	const upper = key.toUpperCase();
-	return SENSITIVE_KEY_PATTERNS.some((p) => upper.includes(p));
+	return SENSITIVE_KEY_PATTERNS.some(p => upper.includes(p));
 }
 
 async function handleShow(ctx: CommandContext, service: ProfileService, name?: string): Promise<void> {
@@ -109,7 +107,7 @@ async function handleShow(ctx: CommandContext, service: ProfileService, name?: s
 		return;
 	}
 	const profiles = await service.listProfiles();
-	const profile = profiles.find((p) => p.name === targetName);
+	const profile = profiles.find(p => p.name === targetName);
 	if (!profile) {
 		ctx.showError(`Profile '${targetName}' not found.`);
 		return;
@@ -117,7 +115,11 @@ async function handleShow(ctx: CommandContext, service: ProfileService, name?: s
 
 	// Derive tenant from URL
 	let tenant = "";
-	try { tenant = new URL(profile.apiUrl).hostname.split(".")[0]; } catch { /* skip */ }
+	try {
+		tenant = new URL(profile.apiUrl).hostname.split(".")[0];
+	} catch {
+		/* skip */
+	}
 
 	// Validate the shown profile's token (not necessarily the active one)
 	const auth = await service.validateToken({ timeoutMs: 3000, apiUrl: profile.apiUrl, apiToken: profile.apiToken });
@@ -219,7 +221,9 @@ async function handleDelete(ctx: CommandContext, service: ProfileService, args: 
 		return;
 	}
 	if (!confirmed) {
-		ctx.showStatus(`This will permanently delete profile '${name}' from ~/.config/f5xc/profiles/.\nRun /profile delete ${name} --confirm to proceed.`);
+		ctx.showStatus(
+			`This will permanently delete profile '${name}' from ~/.config/f5xc/profiles/.\nRun /profile delete ${name} --confirm to proceed.`,
+		);
 		return;
 	}
 	try {
@@ -232,7 +236,9 @@ async function handleDelete(ctx: CommandContext, service: ProfileService, args: 
 
 async function handleNamespace(ctx: CommandContext, service: ProfileService, namespace: string): Promise<void> {
 	if (!namespace) {
-		ctx.showError("Usage: /profile namespace <name>\nSwitches the active namespace without changing the profile. Default is 'default'.");
+		ctx.showError(
+			"Usage: /profile namespace <name>\nSwitches the active namespace without changing the profile. Default is 'default'.",
+		);
 		return;
 	}
 	try {

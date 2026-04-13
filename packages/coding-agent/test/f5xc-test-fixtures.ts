@@ -51,7 +51,8 @@ export const TEST_PROFILE_WITH_ENV = {
 } as const;
 
 /** 128-char realistic token for masking boundary tests */
-export const TEST_LONG_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.AAAAAAAAAA_BBBBBBBBBB_CCCCCCCCCC_DDDDDDDDDD_EEEEEEEEEE_FFFFFFFFFF_GGGGGGGGGGHHHHIIII";
+export const TEST_LONG_TOKEN =
+	"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.AAAAAAAAAA_BBBBBBBBBB_CCCCCCCCCC_DDDDDDDDDD_EEEEEEEEEE_FFFFFFFFFF_GGGGGGGGGGHHHHIIII";
 
 /** Profile with metadata fields for /profile show metadata display test */
 export const TEST_PROFILE_WITH_METADATA = {

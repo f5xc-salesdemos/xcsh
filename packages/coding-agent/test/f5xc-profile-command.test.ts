@@ -6,19 +6,14 @@ import { Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
 import { ProfileService } from "@f5xc-salesdemos/xcsh/services/f5xc-profile";
 import { handleProfileCommand } from "@f5xc-salesdemos/xcsh/services/f5xc-profile-command";
-import {
-	TEST_PROFILE,
-	TEST_PROFILE_STAGING as TEST_PROFILE_2,
-	TEST_STAGING_URL,
-} from "./f5xc-test-fixtures";
+import { TEST_PROFILE, TEST_PROFILE_STAGING as TEST_PROFILE_2 } from "./f5xc-test-fixtures";
 
-function writeProfile(profilesDir: string, profile: { name: string; apiUrl: string; apiToken: string; defaultNamespace: string }): void {
+function writeProfile(
+	profilesDir: string,
+	profile: { name: string; apiUrl: string; apiToken: string; defaultNamespace: string },
+): void {
 	fs.mkdirSync(profilesDir, { recursive: true });
-	fs.writeFileSync(
-		path.join(profilesDir, `${profile.name}.json`),
-		JSON.stringify(profile, null, 2),
-		{ mode: 0o600 },
-	);
+	fs.writeFileSync(path.join(profilesDir, `${profile.name}.json`), JSON.stringify(profile, null, 2), { mode: 0o600 });
 }
 
 function writeActiveProfile(configDir: string, name: string): void {
@@ -30,9 +25,15 @@ function createMockCtx() {
 	const messages: { type: string; text: string }[] = [];
 	return {
 		messages,
-		showStatus(msg: string) { messages.push({ type: "status", text: msg }); },
-		showError(msg: string) { messages.push({ type: "error", text: msg }); },
-		showWarning(msg: string) { messages.push({ type: "warning", text: msg }); },
+		showStatus(msg: string) {
+			messages.push({ type: "status", text: msg });
+		},
+		showError(msg: string) {
+			messages.push({ type: "error", text: msg });
+		},
+		showWarning(msg: string) {
+			messages.push({ type: "warning", text: msg });
+		},
 		editor: { setText(_text: string) {} },
 		statusLine: { invalidate() {} },
 		updateEditorTopBorder() {},
@@ -88,10 +89,7 @@ describe("/profile slash command handler", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "list", text: "/profile list" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "list", text: "/profile list" }, ctx);
 
 		expect(ctx.messages.length).toBe(1);
 		expect(ctx.messages[0].type).toBe("status");
@@ -103,10 +101,7 @@ describe("/profile slash command handler", () => {
 		ProfileService.init(f5xcConfigDir);
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "list", text: "/profile list" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "list", text: "/profile list" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("status");
 		expect(ctx.messages[0].text).toContain("No F5 XC profiles found");
@@ -121,10 +116,7 @@ describe("/profile slash command handler", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "activate staging", text: "/profile activate staging" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "activate staging", text: "/profile activate staging" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("status");
 		// Activate now shows the same red table as /profile show
@@ -140,10 +132,7 @@ describe("/profile slash command handler", () => {
 		ProfileService.init(f5xcConfigDir);
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "activate", text: "/profile activate" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "activate", text: "/profile activate" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("error");
 		expect(ctx.messages[0].text).toContain("Usage");
@@ -158,10 +147,7 @@ describe("/profile slash command handler", () => {
 		expect(loaded).not.toBeNull(); // Ensure profile actually loaded
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "show", text: "/profile show" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "show", text: "/profile show" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("status");
 		expect(ctx.messages[0].text).toContain(`...${TEST_PROFILE.apiToken.slice(-4)}`);
@@ -177,10 +163,7 @@ describe("/profile slash command handler", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "status", text: "/profile status" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "status", text: "/profile status" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("status");
 		expect(ctx.messages[0].text).toContain("production");
@@ -194,7 +177,11 @@ describe("/profile slash command handler", () => {
 
 		const ctx = createMockCtx();
 		await handleProfileCommand(
-			{ name: "profile", args: "create myprof https://t.console.ves.volterra.io tok-secret staging-ns", text: "/profile create ..." },
+			{
+				name: "profile",
+				args: "create myprof https://t.console.ves.volterra.io tok-secret staging-ns",
+				text: "/profile create ...",
+			},
 			ctx,
 		);
 
@@ -209,7 +196,11 @@ describe("/profile slash command handler", () => {
 
 		const ctx = createMockCtx();
 		await handleProfileCommand(
-			{ name: "profile", args: "create myprof https://t.console.ves.volterra.io tok-secret", text: "/profile create ..." },
+			{
+				name: "profile",
+				args: "create myprof https://t.console.ves.volterra.io tok-secret",
+				text: "/profile create ...",
+			},
 			ctx,
 		);
 
@@ -222,10 +213,7 @@ describe("/profile slash command handler", () => {
 		ProfileService.init(f5xcConfigDir);
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "create myprof", text: "/profile create myprof" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "create myprof", text: "/profile create myprof" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("error");
 		expect(ctx.messages[0].text).toContain("Usage");
@@ -236,7 +224,11 @@ describe("/profile slash command handler", () => {
 
 		const ctx = createMockCtx();
 		await handleProfileCommand(
-			{ name: "profile", args: "create ../../bad https://t.console.ves.volterra.io tok", text: "/profile create ..." },
+			{
+				name: "profile",
+				args: "create ../../bad https://t.console.ves.volterra.io tok",
+				text: "/profile create ...",
+			},
 			ctx,
 		);
 
@@ -276,7 +268,11 @@ describe("/profile slash command handler", () => {
 
 		const ctx = createMockCtx();
 		await handleProfileCommand(
-			{ name: "profile", args: `create ${TEST_PROFILE.name} https://t.console.ves.volterra.io tok`, text: "/profile create ..." },
+			{
+				name: "profile",
+				args: `create ${TEST_PROFILE.name} https://t.console.ves.volterra.io tok`,
+				text: "/profile create ...",
+			},
 			ctx,
 		);
 
@@ -290,7 +286,11 @@ describe("/profile slash command handler", () => {
 
 		const ctx = createMockCtx();
 		await handleProfileCommand(
-			{ name: "profile", args: `create myprof https://t.console.ves.volterra.io ${secretToken}`, text: "/profile create ..." },
+			{
+				name: "profile",
+				args: `create myprof https://t.console.ves.volterra.io ${secretToken}`,
+				text: "/profile create ...",
+			},
 			ctx,
 		);
 
@@ -328,10 +328,7 @@ describe("/profile slash command handler", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "delete staging", text: "/profile delete staging" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "delete staging", text: "/profile delete staging" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("status");
 		expect(ctx.messages[0].text).toContain("--confirm");
@@ -343,10 +340,7 @@ describe("/profile slash command handler", () => {
 		ProfileService.init(f5xcConfigDir);
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "delete", text: "/profile delete" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "delete", text: "/profile delete" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("error");
 		expect(ctx.messages[0].text).toContain("Usage");
@@ -361,7 +355,11 @@ describe("/profile slash command handler", () => {
 
 		const ctx = createMockCtx();
 		await handleProfileCommand(
-			{ name: "profile", args: `delete ${TEST_PROFILE.name} --confirm`, text: "/profile delete production --confirm" },
+			{
+				name: "profile",
+				args: `delete ${TEST_PROFILE.name} --confirm`,
+				text: "/profile delete production --confirm",
+			},
 			ctx,
 		);
 
@@ -390,10 +388,7 @@ describe("/profile slash command handler", () => {
 		await service.loadActive();
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "", text: "/profile" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "", text: "/profile" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("status");
 		expect(ctx.messages[0].text).toContain("* production");
@@ -425,10 +420,7 @@ describe("/profile slash command handler", () => {
 		ProfileService.init(f5xcConfigDir);
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "namespace", text: "/profile namespace" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "namespace", text: "/profile namespace" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("error");
 		expect(ctx.messages[0].text).toContain("Usage");
@@ -438,10 +430,7 @@ describe("/profile slash command handler", () => {
 		ProfileService.init(f5xcConfigDir);
 
 		const ctx = createMockCtx();
-		await handleProfileCommand(
-			{ name: "profile", args: "banana", text: "/profile banana" },
-			ctx,
-		);
+		await handleProfileCommand({ name: "profile", args: "banana", text: "/profile banana" }, ctx);
 
 		expect(ctx.messages[0].type).toBe("error");
 		expect(ctx.messages[0].text).toContain("Unknown subcommand");

@@ -8,13 +8,12 @@ import { ProfileService } from "@f5xc-salesdemos/xcsh/services/f5xc-profile";
 import { renderF5XCProfileSegment } from "@f5xc-salesdemos/xcsh/services/f5xc-profile-segment";
 import { TEST_PROFILE } from "./f5xc-test-fixtures";
 
-function writeProfile(profilesDir: string, profile: { name: string; apiUrl: string; apiToken: string; defaultNamespace: string }): void {
+function writeProfile(
+	profilesDir: string,
+	profile: { name: string; apiUrl: string; apiToken: string; defaultNamespace: string },
+): void {
 	fs.mkdirSync(profilesDir, { recursive: true });
-	fs.writeFileSync(
-		path.join(profilesDir, `${profile.name}.json`),
-		JSON.stringify(profile, null, 2),
-		{ mode: 0o600 },
-	);
+	fs.writeFileSync(path.join(profilesDir, `${profile.name}.json`), JSON.stringify(profile, null, 2), { mode: 0o600 });
 }
 
 function writeActiveProfile(configDir: string, name: string): void {

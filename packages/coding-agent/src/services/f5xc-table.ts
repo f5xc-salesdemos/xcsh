@@ -13,8 +13,8 @@ const BOX = {
 	tr: "\u256E", // ╮
 	bl: "\u2570", // ╰
 	br: "\u256F", // ╯
-	h: "\u2500",  // ─
-	v: "\u2502",  // │
+	h: "\u2500", // ─
+	v: "\u2502", // │
 	lt: "\u251C", // ├
 	rt: "\u2524", // ┤
 };
@@ -56,7 +56,7 @@ export function renderF5XCTable(title: string, rows: TableRow[], options?: Table
 	// Top border: ╭─ title ──────╮
 	const titleText = ` ${title} `;
 	const titlePad = innerWidth - stripAnsi(titleText).length - 1;
-	lines.push(r(BOX.tl + BOX.h) + `${BOLD}${titleText}${RESET}` + r(BOX.h.repeat(Math.max(0, titlePad)) + BOX.tr));
+	lines.push(`${r(BOX.tl + BOX.h)}${BOLD}${titleText}${RESET}${r(BOX.h.repeat(Math.max(0, titlePad)) + BOX.tr)}`);
 
 	// Rows
 	for (let i = 0; i < rows.length; i++) {
@@ -64,15 +64,13 @@ export function renderF5XCTable(title: string, rows: TableRow[], options?: Table
 		if (options?.dividerBefore === i) {
 			const divLabel = " Environment ";
 			const divPad = innerWidth - stripAnsi(divLabel).length - 1;
-			lines.push(r(BOX.lt + BOX.h) + `${BOLD}${divLabel}${RESET}` + r(BOX.h.repeat(Math.max(0, divPad)) + BOX.rt));
+			lines.push(`${r(BOX.lt + BOX.h)}${BOLD}${divLabel}${RESET}${r(BOX.h.repeat(Math.max(0, divPad)) + BOX.rt)}`);
 		}
 
 		const { key, value } = rows[i];
 		const keyPad = maxKey - stripAnsi(key).length;
 		const valPad = innerWidth - maxKey - stripAnsi(value).length - 3;
-		lines.push(
-			r(BOX.v) + ` ${key}${" ".repeat(keyPad)}  ${value}${" ".repeat(Math.max(0, valPad))} ` + r(BOX.v),
-		);
+		lines.push(`${r(BOX.v)} ${key}${" ".repeat(keyPad)}  ${value}${" ".repeat(Math.max(0, valPad))} ${r(BOX.v)}`);
 	}
 
 	// Bottom border: ╰──────────────╯

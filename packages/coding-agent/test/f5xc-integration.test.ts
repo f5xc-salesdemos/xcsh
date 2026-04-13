@@ -7,12 +7,12 @@ import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/se
 import { executeBash } from "@f5xc-salesdemos/xcsh/exec/bash-executor";
 import { ProfileService } from "@f5xc-salesdemos/xcsh/services/f5xc-profile";
 import {
-	TEST_F5XC_URL as TEST_URL,
-	TEST_F5XC_TOKEN as TEST_TOKEN,
 	TEST_F5XC_NAMESPACE as TEST_NAMESPACE,
-	TEST_STAGING_URL,
-	TEST_STAGING_TOKEN,
 	TEST_STAGING_NAMESPACE,
+	TEST_STAGING_TOKEN,
+	TEST_STAGING_URL,
+	TEST_F5XC_TOKEN as TEST_TOKEN,
+	TEST_F5XC_URL as TEST_URL,
 } from "./f5xc-test-fixtures";
 
 describe("F5XC authentication end-to-end integration", () => {
@@ -214,10 +214,7 @@ describe("F5XC authentication end-to-end integration", () => {
 		expect(result?.name).toBe("production");
 
 		// Should have created active_profile file
-		const activeProfileContent = fs.readFileSync(
-			path.join(f5xcConfigDir, "active_profile"),
-			"utf-8",
-		);
+		const activeProfileContent = fs.readFileSync(path.join(f5xcConfigDir, "active_profile"), "utf-8");
 		expect(activeProfileContent).toBe("production");
 
 		// Credentials should be in bash environment

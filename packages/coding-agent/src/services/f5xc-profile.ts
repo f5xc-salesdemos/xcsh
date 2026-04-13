@@ -128,7 +128,7 @@ export class ProfileService {
 		if (process.env.F5XC_API_URL) {
 			throw new ProfileError(
 				"Cannot activate a profile while F5XC_API_URL is set in the environment. " +
-				"Unset F5XC_API_URL first, or restart xcsh without it.",
+					"Unset F5XC_API_URL first, or restart xcsh without it.",
 			);
 		}
 
@@ -187,7 +187,11 @@ export class ProfileService {
 		fs.unlinkSync(profilePath);
 	}
 
-	async validateToken(options?: { timeoutMs?: number; apiUrl?: string; apiToken?: string }): Promise<{ status: AuthStatus; latencyMs?: number }> {
+	async validateToken(options?: {
+		timeoutMs?: number;
+		apiUrl?: string;
+		apiToken?: string;
+	}): Promise<{ status: AuthStatus; latencyMs?: number }> {
 		// Use explicit credentials if provided (for non-active profiles or env-backed sessions),
 		// otherwise fall back to effective credentials (env override > active profile)
 		const effectiveUrl = options?.apiUrl ?? process.env.F5XC_API_URL ?? this.#activeProfile?.apiUrl;
@@ -234,7 +238,11 @@ export class ProfileService {
 		const url = process.env.F5XC_API_URL ?? this.#activeProfile?.apiUrl ?? null;
 		let tenant: string | null = null;
 		if (url) {
-			try { tenant = new URL(url).hostname.split(".")[0]; } catch { /* invalid URL */ }
+			try {
+				tenant = new URL(url).hostname.split(".")[0];
+			} catch {
+				/* invalid URL */
+			}
 		}
 		return {
 			activeProfileName: this.#activeProfile?.name ?? null,
@@ -297,8 +305,12 @@ export class ProfileService {
 			const parsed = JSON.parse(content);
 
 			// Validate required fields exist and are strings
-			if (!parsed.apiUrl || typeof parsed.apiUrl !== "string" ||
-				!parsed.apiToken || typeof parsed.apiToken !== "string") {
+			if (
+				!parsed.apiUrl ||
+				typeof parsed.apiUrl !== "string" ||
+				!parsed.apiToken ||
+				typeof parsed.apiToken !== "string"
+			) {
 				logger.warn("F5XC profile missing or invalid required fields", { name });
 				return null;
 			}
@@ -318,7 +330,7 @@ export class ProfileService {
 			}
 
 			return {
-				name,  // Canonical identity is the filename, not parsed.name
+				name, // Canonical identity is the filename, not parsed.name
 				apiUrl: parsed.apiUrl,
 				apiToken: parsed.apiToken,
 				defaultNamespace: parsed.defaultNamespace ?? "default",
@@ -359,7 +371,9 @@ export class ProfileService {
 		if (!process.env.F5XC_TENANT) {
 			try {
 				merged.F5XC_TENANT = new URL(profile.apiUrl).hostname.split(".")[0];
-			} catch { /* invalid URL — skip */ }
+			} catch {
+				/* invalid URL — skip */
+			}
 		}
 
 		// Inject all additional env vars from profile.env map

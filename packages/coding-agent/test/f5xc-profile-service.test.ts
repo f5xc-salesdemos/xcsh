@@ -4,11 +4,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
-import {
-	type F5XCProfile,
-	ProfileError,
-	ProfileService,
-} from "@f5xc-salesdemos/xcsh/services/f5xc-profile";
+import { type F5XCProfile, ProfileError, ProfileService } from "@f5xc-salesdemos/xcsh/services/f5xc-profile";
 import {
 	TEST_PROFILE as _TEST_PROFILE,
 	TEST_PROFILE_STAGING as _TEST_PROFILE_STAGING,
@@ -21,11 +17,7 @@ const TEST_PROFILE_ENV: F5XCProfile = { ..._TEST_PROFILE_WITH_ENV };
 
 function writeProfile(profilesDir: string, profile: F5XCProfile): void {
 	fs.mkdirSync(profilesDir, { recursive: true });
-	fs.writeFileSync(
-		path.join(profilesDir, `${profile.name}.json`),
-		JSON.stringify(profile, null, 2),
-		{ mode: 0o600 },
-	);
+	fs.writeFileSync(path.join(profilesDir, `${profile.name}.json`), JSON.stringify(profile, null, 2), { mode: 0o600 });
 }
 
 function writeActiveProfile(configDir: string, name: string): void {
@@ -200,7 +192,12 @@ describe("ProfileService", () => {
 			fs.mkdirSync(f5xcProfilesDir, { recursive: true });
 			fs.writeFileSync(
 				path.join(f5xcProfilesDir, "my-file.json"),
-				JSON.stringify({ name: "different-name", apiUrl: "https://test.console.ves.volterra.io", apiToken: "tok", defaultNamespace: "default" }),
+				JSON.stringify({
+					name: "different-name",
+					apiUrl: "https://test.console.ves.volterra.io",
+					apiToken: "tok",
+					defaultNamespace: "default",
+				}),
 			);
 			writeActiveProfile(f5xcConfigDir, "my-file");
 
@@ -213,10 +210,7 @@ describe("ProfileService", () => {
 
 		it("does not write active_profile when auto-activated profile is invalid", async () => {
 			fs.mkdirSync(f5xcProfilesDir, { recursive: true });
-			fs.writeFileSync(
-				path.join(f5xcProfilesDir, "bad.json"),
-				"not valid json{{{",
-			);
+			fs.writeFileSync(path.join(f5xcProfilesDir, "bad.json"), "not valid json{{{");
 			// No active_profile file, one broken profile
 
 			const service = ProfileService.init(f5xcConfigDir);
@@ -273,10 +267,7 @@ describe("ProfileService", () => {
 
 		it("returns null gracefully when profile missing required fields", async () => {
 			fs.mkdirSync(f5xcProfilesDir, { recursive: true });
-			fs.writeFileSync(
-				path.join(f5xcProfilesDir, "incomplete.json"),
-				JSON.stringify({ name: "incomplete" }),
-			);
+			fs.writeFileSync(path.join(f5xcProfilesDir, "incomplete.json"), JSON.stringify({ name: "incomplete" }));
 			writeActiveProfile(f5xcConfigDir, "incomplete");
 
 			const service = ProfileService.init(f5xcConfigDir);
@@ -497,7 +488,12 @@ describe("ProfileService", () => {
 		it("rejects profile name with path traversal", async () => {
 			const service = ProfileService.init(f5xcConfigDir);
 			await expect(
-				service.createProfile({ name: "../../etc/passwd", apiUrl: "https://x.io", apiToken: "t", defaultNamespace: "d" }),
+				service.createProfile({
+					name: "../../etc/passwd",
+					apiUrl: "https://x.io",
+					apiToken: "t",
+					defaultNamespace: "d",
+				}),
 			).rejects.toThrow(/Invalid profile name/);
 		});
 
@@ -511,7 +507,12 @@ describe("ProfileService", () => {
 		it("rejects profile name longer than 64 chars", async () => {
 			const service = ProfileService.init(f5xcConfigDir);
 			await expect(
-				service.createProfile({ name: "a".repeat(65), apiUrl: "https://x.io", apiToken: "t", defaultNamespace: "d" }),
+				service.createProfile({
+					name: "a".repeat(65),
+					apiUrl: "https://x.io",
+					apiToken: "t",
+					defaultNamespace: "d",
+				}),
 			).rejects.toThrow(/Invalid profile name/);
 		});
 

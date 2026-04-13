@@ -1,12 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
 import * as os from "node:os";
 import * as path from "node:path";
-import {
-	getF5XCActiveProfilePath,
-	getF5XCConfigDir,
-	getF5XCProfilePath,
-	getF5XCProfilesDir,
-} from "../src/dirs";
+import { getF5XCActiveProfilePath, getF5XCConfigDir, getF5XCProfilePath, getF5XCProfilesDir } from "../src/dirs";
 
 describe("F5XC XDG path helpers", () => {
 	const originalXdgConfig = process.env.XDG_CONFIG_HOME;

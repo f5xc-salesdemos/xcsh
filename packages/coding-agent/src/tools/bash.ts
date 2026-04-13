@@ -321,11 +321,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 			else if (v != null) bashEnvironment[k] = String(v);
 		}
 		const hasBashEnv = Object.keys(bashEnvironment).length > 0;
-		const mergedEnv = env
-			? { ...bashEnvironment, ...env }
-			: hasBashEnv
-				? bashEnvironment
-				: undefined;
+		const mergedEnv = env ? { ...bashEnvironment, ...env } : hasBashEnv ? bashEnvironment : undefined;
 		const resolvedEnv = mergedEnv
 			? Object.fromEntries(
 					await Promise.all(
