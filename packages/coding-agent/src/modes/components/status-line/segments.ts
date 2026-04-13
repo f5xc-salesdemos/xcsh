@@ -99,7 +99,12 @@ const planModeSegment: StatusLineSegment = {
 		const label = status.paused ? "Plan ⏸" : "Plan";
 		const content = withIcon(theme.icon.plan, label);
 		const color = status.paused ? "warning" : "chromeAccent";
-		return { content: theme.fg(color, content), visible: true };
+		return {
+			content: theme.fg(color, content),
+			visible: true,
+			bg: theme.fgColorAsBg("statusLinePlanModeBg"),
+			fg: theme.getFgAnsi("statusLinePlanModeFg"),
+		};
 	},
 };
 
@@ -289,7 +294,12 @@ const contextPctSegment: StatusLineSegment = {
 		const color = getContextUsageThemeColor(getContextUsageLevel(pct, window));
 		const content = withIcon(theme.icon.context, theme.fg(color, text));
 
-		return { content, visible: true };
+		return {
+			content,
+			visible: true,
+			bg: theme.fgColorAsBg("statusLineContextPctBg"),
+			fg: theme.getFgAnsi("statusLineContextPctFg"),
+		};
 	},
 };
 
@@ -413,7 +423,13 @@ export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
 		render() {
 			try {
 				const { renderF5XCProfileSegment } = require("../../../services/f5xc-profile-segment");
-				return renderF5XCProfileSegment();
+				const result = renderF5XCProfileSegment();
+				if (!result.visible) return result;
+				return {
+					...result,
+					bg: theme.fgColorAsBg("statusLineProfileF5xcBg"),
+					fg: theme.getFgAnsi("statusLineProfileF5xcFg"),
+				};
 			} catch {
 				return { content: "", visible: false };
 			}

@@ -522,6 +522,14 @@ export class StatusLineComponent implements Component {
 
 			// Per-segment colored rendering
 			let output = "";
+
+			// Leading cap for right groups (left-pointing arrow before first segment)
+			if (direction === "right" && hasPowerline && separatorDef.endCaps) {
+				const firstBg = parts[0].bg;
+				const capFg = firstBg.replace("\x1b[48;", "\x1b[38;");
+				output += `\x1b[0m${capFg}${separatorDef.endCaps.left}`;
+			}
+
 			for (let i = 0; i < parts.length; i++) {
 				const seg = parts[i];
 				const nextBg = i < parts.length - 1 ? parts[i + 1].bg : null;
@@ -541,10 +549,11 @@ export class StatusLineComponent implements Component {
 				}
 			}
 			// End cap / trailing edge
-			if (hasPowerline) {
+			if (hasPowerline && direction === "left") {
+				// Right-pointing arrow after last left segment
 				const lastBg = parts[parts.length - 1].bg;
 				const endFg = lastBg.replace("\x1b[48;", "\x1b[38;");
-				output += `\x1b[0m${endFg}${sep}\x1b[0m`;
+				output += `\x1b[0m${endFg}${separatorDef.left}\x1b[0m`;
 			} else {
 				output += "\x1b[0m";
 			}
