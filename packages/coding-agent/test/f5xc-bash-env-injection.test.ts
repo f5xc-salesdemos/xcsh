@@ -14,18 +14,18 @@ describe("bash.environment injection into subprocess", () => {
 
 	beforeEach(async () => {
 		tempDir = makeTempDir();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 		_resetSettingsForTest();
 		await Settings.init({ inMemory: true, cwd: tempDir });
 	});
 
 	afterEach(() => {
 		_resetSettingsForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 		if (fs.existsSync(tempDir)) {
 			fs.rmSync(tempDir, { recursive: true });
 		}

@@ -31,9 +31,9 @@ describe("profile.f5xc status line segment", () => {
 	beforeEach(async () => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 
 		testDir = path.join(os.tmpdir(), "test-f5xc-segment", Snowflake.next());
 		f5xcConfigDir = path.join(testDir, "f5xc-config");
@@ -51,9 +51,9 @@ describe("profile.f5xc status line segment", () => {
 	afterEach(() => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 		if (fs.existsSync(testDir)) {
 			fs.rmSync(testDir, { recursive: true });
 		}
@@ -75,7 +75,7 @@ describe("profile.f5xc status line segment", () => {
 
 		const result = renderF5XCProfileSegment();
 		expect(result.visible).toBe(true);
-		expect(result.content).toBe("f5xc:production");
+		expect(result.content).toBe("production:default");
 	});
 
 	it("returns visible: false when ProfileService is not initialized (crash isolation)", () => {
@@ -107,10 +107,10 @@ describe("profile.f5xc status line segment", () => {
 		const service = ProfileService.init(f5xcConfigDir);
 		await service.loadActive();
 
-		expect(renderF5XCProfileSegment().content).toBe("f5xc:production");
+		expect(renderF5XCProfileSegment().content).toBe("production:default");
 
 		await service.activate("staging");
 
-		expect(renderF5XCProfileSegment().content).toBe("f5xc:staging");
+		expect(renderF5XCProfileSegment().content).toBe("staging:default");
 	});
 });

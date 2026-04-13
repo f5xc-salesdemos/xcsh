@@ -22,12 +22,17 @@ describe("F5XC authentication end-to-end integration", () => {
 	let projectDir: string;
 	let agentDir: string;
 
+	const savedEnv: Record<string, string | undefined> = {};
+
 	beforeEach(async () => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) {
+				savedEnv[key] = process.env[key];
+				delete process.env[key];
+			}
+		}
 
 		testDir = path.join(os.tmpdir(), "test-f5xc-e2e", Snowflake.next());
 		f5xcConfigDir = path.join(testDir, "f5xc-config");
@@ -45,9 +50,12 @@ describe("F5XC authentication end-to-end integration", () => {
 	afterEach(() => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
+		for (const [key, value] of Object.entries(savedEnv)) {
+			if (value !== undefined) process.env[key] = value;
+		}
 		if (fs.existsSync(testDir)) {
 			fs.rmSync(testDir, { recursive: true });
 		}
@@ -345,6 +353,59 @@ describe("F5XC authentication end-to-end integration", () => {
 			timeout: 5000,
 		});
 		expect(result.output.trim()).toBe(specialUrl);
+	});
+
+	it("env map vars are available in bash subprocess", async () => {
+		fs.mkdirSync(f5xcProfilesDir, { recursive: true });
+		fs.writeFileSync(
+			path.join(f5xcProfilesDir, "production.json"),
+			JSON.stringify({
+				name: "production",
+				apiUrl: TEST_URL,
+				apiToken: TEST_TOKEN,
+				defaultNamespace: TEST_NAMESPACE,
+				env: {
+					F5XC_LB_NAME: "test-lb",
+					F5XC_DOMAINNAME: "test.example.com",
+					F5XC_EMAIL: "test@example.com",
+				},
+			}),
+			{ mode: 0o600 },
+		);
+		fs.writeFileSync(path.join(f5xcConfigDir, "active_profile"), "production");
+
+		const service = ProfileService.init(f5xcConfigDir);
+		await service.loadActive();
+
+		const lbResult = await executeBash("echo $F5XC_LB_NAME", { cwd: projectDir, timeout: 5000 });
+		expect(lbResult.output.trim()).toBe("test-lb");
+
+		const domainResult = await executeBash("echo $F5XC_DOMAINNAME", { cwd: projectDir, timeout: 5000 });
+		expect(domainResult.output.trim()).toBe("test.example.com");
+
+		const emailResult = await executeBash("echo $F5XC_EMAIL", { cwd: projectDir, timeout: 5000 });
+		expect(emailResult.output.trim()).toBe("test@example.com");
+	});
+
+	it("F5XC_TENANT is auto-derived and available in bash subprocess", async () => {
+		fs.mkdirSync(f5xcProfilesDir, { recursive: true });
+		fs.writeFileSync(
+			path.join(f5xcProfilesDir, "production.json"),
+			JSON.stringify({
+				name: "production",
+				apiUrl: TEST_URL,
+				apiToken: TEST_TOKEN,
+				defaultNamespace: TEST_NAMESPACE,
+			}),
+			{ mode: 0o600 },
+		);
+		fs.writeFileSync(path.join(f5xcConfigDir, "active_profile"), "production");
+
+		const service = ProfileService.init(f5xcConfigDir);
+		await service.loadActive();
+
+		const tenantResult = await executeBash("echo $F5XC_TENANT", { cwd: projectDir, timeout: 5000 });
+		expect(tenantResult.output.trim()).toBe("test-tenant");
 	});
 
 	it("token masking never exposes full token", async () => {

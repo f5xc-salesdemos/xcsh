@@ -34,6 +34,22 @@ export const TEST_PROFILE_STAGING = {
 	defaultNamespace: TEST_STAGING_NAMESPACE,
 } as const;
 
+/** Profile with additional env map for extended variable tests */
+export const TEST_PROFILE_WITH_ENV = {
+	name: "production",
+	apiUrl: TEST_F5XC_URL,
+	apiToken: TEST_F5XC_TOKEN,
+	defaultNamespace: TEST_F5XC_NAMESPACE,
+	env: {
+		F5XC_EMAIL: "test@example.com",
+		F5XC_USERNAME: "testuser@example.com",
+		F5XC_CONSOLE_PASSWORD: "test-console-pass",
+		F5XC_LB_NAME: "test-lb",
+		F5XC_DOMAINNAME: "test.example.com",
+		F5XC_ROOT_DOMAIN: "example.com",
+	},
+} as const;
+
 /** 128-char realistic token for masking boundary tests */
 export const TEST_LONG_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.AAAAAAAAAA_BBBBBBBBBB_CCCCCCCCCC_DDDDDDDDDD_EEEEEEEEEE_FFFFFFFFFF_GGGGGGGGGGHHHHIIII";
 

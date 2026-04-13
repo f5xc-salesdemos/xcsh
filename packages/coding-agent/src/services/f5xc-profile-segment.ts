@@ -14,7 +14,7 @@ export function renderF5XCProfileSegment(): RenderedSegment {
 			return { content: "", visible: false };
 		}
 
-		return { content: `f5xc:${status.activeProfileName}`, visible: true };
+		return { content: `${status.activeProfileName}:${status.activeProfileNamespace ?? "default"}`, visible: true };
 	} catch {
 		// ProfileService not initialized — silently hide segment
 		return { content: "", visible: false };

@@ -90,6 +90,14 @@ async function handleActivate(ctx: CommandContext, service: ProfileService, name
 	}
 }
 
+/** Keys containing these substrings are treated as secrets and masked in output */
+const SENSITIVE_KEY_PATTERNS = ["TOKEN", "PASSWORD", "SECRET"];
+
+function isSensitiveKey(key: string): boolean {
+	const upper = key.toUpperCase();
+	return SENSITIVE_KEY_PATTERNS.some((p) => upper.includes(p));
+}
+
 async function handleShow(ctx: CommandContext, service: ProfileService, name?: string): Promise<void> {
 	const targetName = name || service.getStatus().activeProfileName;
 	if (!targetName) {
@@ -102,14 +110,30 @@ async function handleShow(ctx: CommandContext, service: ProfileService, name?: s
 		ctx.showError(`Profile '${targetName}' not found.`);
 		return;
 	}
+
+	// Derive tenant from URL
+	let tenant = "";
+	try { tenant = new URL(profile.apiUrl).hostname.split(".")[0]; } catch { /* skip */ }
+
 	const lines = [
-		`Profile:    ${sanitize(profile.name)}`,
-		`  API URL:    ${sanitize(profile.apiUrl)}`,
-		`  API Token:  ${service.maskToken(profile.apiToken)}`,
-		`  Namespace:  ${sanitize(profile.defaultNamespace)}`,
+		`Profile:      ${sanitize(profile.name)}`,
+		`  Tenant:       ${sanitize(tenant)}`,
+		`  API URL:      ${sanitize(profile.apiUrl)}`,
+		`  API Token:    ${service.maskToken(profile.apiToken)}`,
+		`  Namespace:    ${sanitize(profile.defaultNamespace)}`,
 	];
-	if (profile.metadata?.createdAt) lines.push(`  Created:    ${profile.metadata.createdAt.slice(0, 10)}`);
-	if (profile.metadata?.expiresAt) lines.push(`  Expires:    ${profile.metadata.expiresAt.slice(0, 10)}`);
+	if (profile.metadata?.createdAt) lines.push(`  Created:      ${profile.metadata.createdAt.slice(0, 10)}`);
+	if (profile.metadata?.expiresAt) lines.push(`  Expires:      ${profile.metadata.expiresAt.slice(0, 10)}`);
+
+	// Display additional env vars from profile.env
+	if (profile.env && Object.keys(profile.env).length > 0) {
+		lines.push("  Environment:");
+		for (const [key, value] of Object.entries(profile.env)) {
+			const display = isSensitiveKey(key) ? service.maskToken(value) : sanitize(value);
+			lines.push(`    ${sanitize(key)}: ${display}`);
+		}
+	}
+
 	ctx.showStatus(lines.join("\n"));
 }
 
@@ -122,8 +146,10 @@ async function handleStatus(ctx: CommandContext, service: ProfileService): Promi
 	const lines = [
 		"F5 XC Authentication Status",
 		`  Profile:     ${status.activeProfileName ?? "(none)"}`,
+		`  Tenant:      ${status.activeProfileTenant ?? "(unknown)"}`,
 		`  Source:      ${status.credentialSource}`,
 		`  API URL:     ${status.activeProfileUrl ?? "(not set)"}`,
+		`  Namespace:   ${status.activeProfileNamespace ?? "(not set)"}`,
 		`  Configured:  yes`,
 	];
 	ctx.showStatus(lines.join("\n"));

@@ -8,6 +8,7 @@ export interface F5XCProfile {
 	apiUrl: string;
 	apiToken: string;
 	defaultNamespace: string;
+	env?: Record<string, string>;
 	metadata?: {
 		createdAt?: string;
 		expiresAt?: string;
@@ -19,6 +20,8 @@ export interface F5XCProfile {
 export interface ProfileStatus {
 	activeProfileName: string | null;
 	activeProfileUrl: string | null;
+	activeProfileTenant: string | null;
+	activeProfileNamespace: string | null;
 	credentialSource: "profile" | "environment" | "mixed" | "none";
 	isConfigured: boolean;
 	watcherActive: boolean;
@@ -181,9 +184,16 @@ export class ProfileService {
 	}
 
 	getStatus(): ProfileStatus {
+		const url = process.env.F5XC_API_URL ?? this.#activeProfile?.apiUrl ?? null;
+		let tenant: string | null = null;
+		if (url) {
+			try { tenant = new URL(url).hostname.split(".")[0]; } catch { /* invalid URL */ }
+		}
 		return {
 			activeProfileName: this.#activeProfile?.name ?? null,
-			activeProfileUrl: process.env.F5XC_API_URL ?? this.#activeProfile?.apiUrl ?? null,
+			activeProfileUrl: url,
+			activeProfileTenant: tenant,
+			activeProfileNamespace: this.#activeProfile?.defaultNamespace ?? null,
 			credentialSource: this.#credentialSource,
 			isConfigured: this.#credentialSource !== "none",
 			watcherActive: false,
@@ -249,11 +259,22 @@ export class ProfileService {
 				return null;
 			}
 
+			// Read optional env map — accept only string values
+			let env: Record<string, string> | undefined;
+			if (parsed.env && typeof parsed.env === "object" && !Array.isArray(parsed.env)) {
+				env = {};
+				for (const [k, v] of Object.entries(parsed.env)) {
+					if (typeof v === "string") env[k] = v;
+				}
+				if (Object.keys(env).length === 0) env = undefined;
+			}
+
 			return {
 				name,  // Canonical identity is the filename, not parsed.name
 				apiUrl: parsed.apiUrl,
 				apiToken: parsed.apiToken,
 				defaultNamespace: parsed.defaultNamespace ?? "default",
+				env,
 				metadata: parsed.metadata,
 			};
 		} catch (err) {
@@ -280,6 +301,21 @@ export class ProfileService {
 		if (!process.env.F5XC_API_URL) merged.F5XC_API_URL = profile.apiUrl;
 		if (!process.env.F5XC_API_TOKEN) merged.F5XC_API_TOKEN = profile.apiToken;
 		if (!process.env.F5XC_NAMESPACE) merged.F5XC_NAMESPACE = profile.defaultNamespace;
+
+		// Auto-derive F5XC_TENANT from first hostname label of apiUrl
+		if (!process.env.F5XC_TENANT) {
+			try {
+				merged.F5XC_TENANT = new URL(profile.apiUrl).hostname.split(".")[0];
+			} catch { /* invalid URL — skip */ }
+		}
+
+		// Inject all additional env vars from profile.env map
+		if (profile.env) {
+			for (const [key, value] of Object.entries(profile.env)) {
+				if (!process.env[key]) merged[key] = value;
+			}
+		}
+
 		Settings.instance.override("bash.environment", merged);
 	}
 }

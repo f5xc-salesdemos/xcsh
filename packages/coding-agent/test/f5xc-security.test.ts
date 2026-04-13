@@ -9,6 +9,7 @@ import { handleProfileCommand } from "@f5xc-salesdemos/xcsh/services/f5xc-profil
 import {
 	TEST_LONG_TOKEN,
 	TEST_PROFILE,
+	TEST_PROFILE_WITH_ENV,
 } from "./f5xc-test-fixtures";
 
 function writeProfile(profilesDir: string, profile: { name: string; apiUrl: string; apiToken: string; defaultNamespace: string }): void {
@@ -48,9 +49,9 @@ describe("F5XC security: token never in output", () => {
 	beforeEach(async () => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 
 		testDir = path.join(os.tmpdir(), "test-f5xc-security", Snowflake.next());
 		f5xcConfigDir = path.join(testDir, "f5xc-config");
@@ -68,9 +69,9 @@ describe("F5XC security: token never in output", () => {
 	afterEach(() => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 		if (fs.existsSync(testDir)) {
 			fs.rmSync(testDir, { recursive: true });
 		}
@@ -168,6 +169,86 @@ describe("F5XC security: token never in output", () => {
 	});
 });
 
+describe("F5XC security: sensitive env var masking", () => {
+	let testDir: string;
+	let f5xcConfigDir: string;
+	let f5xcProfilesDir: string;
+	let projectDir: string;
+	let agentDir: string;
+
+	beforeEach(async () => {
+		_resetSettingsForTest();
+		ProfileService._resetForTest();
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
+
+		testDir = path.join(os.tmpdir(), "test-f5xc-mask", Snowflake.next());
+		f5xcConfigDir = path.join(testDir, "f5xc-config");
+		f5xcProfilesDir = path.join(f5xcConfigDir, "profiles");
+		projectDir = path.join(testDir, "project");
+		agentDir = path.join(testDir, "agent");
+
+		fs.mkdirSync(projectDir, { recursive: true });
+		fs.mkdirSync(path.join(projectDir, ".xcsh"), { recursive: true });
+		fs.mkdirSync(agentDir, { recursive: true });
+
+		await Settings.init({ cwd: projectDir, agentDir, inMemory: true });
+	});
+
+	afterEach(() => {
+		_resetSettingsForTest();
+		ProfileService._resetForTest();
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
+		if (fs.existsSync(testDir)) {
+			fs.rmSync(testDir, { recursive: true });
+		}
+	});
+
+	it("F5XC_CONSOLE_PASSWORD is masked in /profile show output", async () => {
+		writeProfile(f5xcProfilesDir, TEST_PROFILE_WITH_ENV);
+		writeActiveProfile(f5xcConfigDir, TEST_PROFILE_WITH_ENV.name);
+
+		const service = ProfileService.init(f5xcConfigDir);
+		await service.loadActive();
+
+		const ctx = createMockCtx();
+		await handleProfileCommand(
+			{ name: "profile", args: "show", text: "/profile show" },
+			ctx,
+		);
+
+		const output = ctx.messages[0].text;
+		// Full password must NOT appear
+		expect(output).not.toContain("test-console-pass");
+		// Masked suffix should be present
+		expect(output).toContain("...pass");
+		// Non-sensitive env vars should appear in full
+		expect(output).toContain("test@example.com");
+		expect(output).toContain("test-lb");
+	});
+
+	it("/profile show displays tenant derived from URL", async () => {
+		writeProfile(f5xcProfilesDir, TEST_PROFILE_WITH_ENV);
+		writeActiveProfile(f5xcConfigDir, TEST_PROFILE_WITH_ENV.name);
+
+		const service = ProfileService.init(f5xcConfigDir);
+		await service.loadActive();
+
+		const ctx = createMockCtx();
+		await handleProfileCommand(
+			{ name: "profile", args: "show", text: "/profile show" },
+			ctx,
+		);
+
+		const output = ctx.messages[0].text;
+		expect(output).toContain("Tenant:");
+		expect(output).toContain("test-tenant");
+	});
+});
+
 describe("F5XC security: TUI sanitization", () => {
 	let testDir: string;
 	let f5xcConfigDir: string;
@@ -178,9 +259,9 @@ describe("F5XC security: TUI sanitization", () => {
 	beforeEach(async () => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 
 		testDir = path.join(os.tmpdir(), "test-f5xc-tui", Snowflake.next());
 		f5xcConfigDir = path.join(testDir, "f5xc-config");
@@ -198,9 +279,9 @@ describe("F5XC security: TUI sanitization", () => {
 	afterEach(() => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 		if (fs.existsSync(testDir)) {
 			fs.rmSync(testDir, { recursive: true });
 		}
@@ -285,9 +366,9 @@ describe("F5XC security: path traversal prevention", () => {
 	beforeEach(async () => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 
 		testDir = path.join(os.tmpdir(), "test-f5xc-security-pt", Snowflake.next());
 		f5xcConfigDir = path.join(testDir, "f5xc-config");
@@ -305,9 +386,9 @@ describe("F5XC security: path traversal prevention", () => {
 	afterEach(() => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 		if (fs.existsSync(testDir)) {
 			fs.rmSync(testDir, { recursive: true });
 		}

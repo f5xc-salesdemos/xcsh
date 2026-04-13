@@ -12,10 +12,12 @@ import {
 import {
 	TEST_PROFILE as _TEST_PROFILE,
 	TEST_PROFILE_STAGING as _TEST_PROFILE_STAGING,
+	TEST_PROFILE_WITH_ENV as _TEST_PROFILE_WITH_ENV,
 } from "./f5xc-test-fixtures";
 
 const TEST_PROFILE: F5XCProfile = { ..._TEST_PROFILE };
 const TEST_PROFILE_2: F5XCProfile = { ..._TEST_PROFILE_STAGING };
+const TEST_PROFILE_ENV: F5XCProfile = { ..._TEST_PROFILE_WITH_ENV };
 
 function writeProfile(profilesDir: string, profile: F5XCProfile): void {
 	fs.mkdirSync(profilesDir, { recursive: true });
@@ -37,12 +39,18 @@ describe("ProfileService", () => {
 	let projectDir: string;
 	let agentDir: string;
 
+	const savedEnv: Record<string, string | undefined> = {};
+
 	beforeEach(async () => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		// Save and delete ALL F5XC_* env vars to prevent container env leakage
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) {
+				savedEnv[key] = process.env[key];
+				delete process.env[key];
+			}
+		}
 
 		testDir = path.join(os.tmpdir(), "test-f5xc-profile", Snowflake.next());
 		f5xcConfigDir = path.join(testDir, "f5xc-config");
@@ -60,9 +68,13 @@ describe("ProfileService", () => {
 	afterEach(() => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		// Restore ALL F5XC_* env vars
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
+		for (const [key, value] of Object.entries(savedEnv)) {
+			if (value !== undefined) process.env[key] = value;
+		}
 		if (fs.existsSync(testDir)) {
 			fs.rmSync(testDir, { recursive: true });
 		}
@@ -556,6 +568,94 @@ describe("ProfileService", () => {
 			// active_profile still points to production
 			const active = fs.readFileSync(path.join(f5xcConfigDir, "active_profile"), "utf-8");
 			expect(active).toBe(TEST_PROFILE.name);
+		});
+	});
+
+	describe("env map and tenant derivation", () => {
+		it("loadActive injects env map vars into bash.environment", async () => {
+			writeProfile(f5xcProfilesDir, TEST_PROFILE_ENV);
+			writeActiveProfile(f5xcConfigDir, TEST_PROFILE_ENV.name);
+
+			const service = ProfileService.init(f5xcConfigDir);
+			await service.loadActive();
+
+			const bashEnv = Settings.instance.get("bash.environment") as Record<string, string>;
+			expect(bashEnv.F5XC_EMAIL).toBe("test@example.com");
+			expect(bashEnv.F5XC_USERNAME).toBe("testuser@example.com");
+			expect(bashEnv.F5XC_CONSOLE_PASSWORD).toBe("test-console-pass");
+			expect(bashEnv.F5XC_LB_NAME).toBe("test-lb");
+			expect(bashEnv.F5XC_DOMAINNAME).toBe("test.example.com");
+			expect(bashEnv.F5XC_ROOT_DOMAIN).toBe("example.com");
+		});
+
+		it("F5XC_TENANT is auto-derived from apiUrl hostname", async () => {
+			writeProfile(f5xcProfilesDir, TEST_PROFILE);
+			writeActiveProfile(f5xcConfigDir, TEST_PROFILE.name);
+
+			const service = ProfileService.init(f5xcConfigDir);
+			await service.loadActive();
+
+			const bashEnv = Settings.instance.get("bash.environment") as Record<string, string>;
+			// TEST_F5XC_URL is https://test-tenant.console.ves.volterra.io
+			expect(bashEnv.F5XC_TENANT).toBe("test-tenant");
+		});
+
+		it("env map vars respect per-field process.env precedence", async () => {
+			process.env.F5XC_EMAIL = "env-email@override.com";
+			writeProfile(f5xcProfilesDir, TEST_PROFILE_ENV);
+			writeActiveProfile(f5xcConfigDir, TEST_PROFILE_ENV.name);
+
+			const service = ProfileService.init(f5xcConfigDir);
+			await service.loadActive();
+
+			const bashEnv = Settings.instance.get("bash.environment") as Record<string, string>;
+			// F5XC_EMAIL is in process.env — should NOT be overridden
+			expect(bashEnv.F5XC_EMAIL).toBeUndefined();
+			// Other env vars should be injected normally
+			expect(bashEnv.F5XC_LB_NAME).toBe("test-lb");
+
+			delete process.env.F5XC_EMAIL;
+		});
+
+		it("createProfile stores env map in JSON", async () => {
+			const service = ProfileService.init(f5xcConfigDir);
+			await service.createProfile({
+				name: "with-env",
+				apiUrl: "https://t.console.ves.volterra.io",
+				apiToken: "tok",
+				defaultNamespace: "default",
+				env: { F5XC_LB_NAME: "my-lb", F5XC_EMAIL: "a@b.com" },
+			});
+
+			const data = JSON.parse(fs.readFileSync(path.join(f5xcProfilesDir, "with-env.json"), "utf-8"));
+			expect(data.env.F5XC_LB_NAME).toBe("my-lb");
+			expect(data.env.F5XC_EMAIL).toBe("a@b.com");
+		});
+
+		it("getStatus includes tenant and namespace", async () => {
+			writeProfile(f5xcProfilesDir, TEST_PROFILE);
+			writeActiveProfile(f5xcConfigDir, TEST_PROFILE.name);
+
+			const service = ProfileService.init(f5xcConfigDir);
+			await service.loadActive();
+
+			const status = service.getStatus();
+			expect(status.activeProfileTenant).toBe("test-tenant");
+			expect(status.activeProfileNamespace).toBe(TEST_PROFILE.defaultNamespace);
+		});
+
+		it("profiles without env field work unchanged (backward compat)", async () => {
+			writeProfile(f5xcProfilesDir, TEST_PROFILE);
+			writeActiveProfile(f5xcConfigDir, TEST_PROFILE.name);
+
+			const service = ProfileService.init(f5xcConfigDir);
+			const result = await service.loadActive();
+
+			expect(result).not.toBeNull();
+			expect(result?.env).toBeUndefined();
+			const bashEnv = Settings.instance.get("bash.environment") as Record<string, string>;
+			expect(bashEnv.F5XC_API_URL).toBe(TEST_PROFILE.apiUrl);
+			expect(bashEnv.F5XC_TENANT).toBe("test-tenant");
 		});
 	});
 

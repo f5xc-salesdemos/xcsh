@@ -51,9 +51,9 @@ describe("/profile slash command handler", () => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
 		// Ensure F5XC env vars don't leak from system environment
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 
 		testDir = path.join(os.tmpdir(), "test-f5xc-cmd", Snowflake.next());
 		f5xcConfigDir = path.join(testDir, "f5xc-config");
@@ -71,9 +71,9 @@ describe("/profile slash command handler", () => {
 	afterEach(() => {
 		_resetSettingsForTest();
 		ProfileService._resetForTest();
-		delete process.env.F5XC_API_URL;
-		delete process.env.F5XC_API_TOKEN;
-		delete process.env.F5XC_NAMESPACE;
+		for (const key of Object.keys(process.env)) {
+			if (key.startsWith("F5XC_")) delete process.env[key];
+		}
 		if (fs.existsSync(testDir)) {
 			fs.rmSync(testDir, { recursive: true });
 		}
