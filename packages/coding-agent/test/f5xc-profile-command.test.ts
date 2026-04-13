@@ -127,7 +127,10 @@ describe("/profile slash command handler", () => {
 		);
 
 		expect(ctx.messages[0].type).toBe("status");
-		expect(ctx.messages[0].text).toContain("Switched to F5 XC profile: staging");
+		// Activate now shows the same red table as /profile show
+		const plain = ctx.messages[0].text.replace(/\x1b\[[0-9;]*m/g, "");
+		expect(plain).toContain("staging");
+		expect(plain).toContain("F5XC_TENANT");
 
 		const bashEnv = Settings.instance.get("bash.environment") as Record<string, string>;
 		expect(bashEnv.F5XC_API_URL).toBe(TEST_PROFILE_2.apiUrl);

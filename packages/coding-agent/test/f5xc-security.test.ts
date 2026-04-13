@@ -244,8 +244,10 @@ describe("F5XC security: sensitive env var masking", () => {
 		);
 
 		const output = ctx.messages[0].text;
-		expect(output).toContain("F5XC_TENANT:");
-		expect(output).toContain("test-tenant");
+		// Table output has ANSI codes — strip them for content checks
+		const plain = output.replace(/\x1b\[[0-9;]*m/g, "");
+		expect(plain).toContain("F5XC_TENANT");
+		expect(plain).toContain("test-tenant");
 	});
 });
 

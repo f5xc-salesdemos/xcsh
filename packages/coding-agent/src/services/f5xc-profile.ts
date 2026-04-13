@@ -17,12 +17,15 @@ export interface F5XCProfile {
 	};
 }
 
+export type AuthStatus = "connected" | "auth_error" | "offline" | "unknown";
+
 export interface ProfileStatus {
 	activeProfileName: string | null;
 	activeProfileUrl: string | null;
 	activeProfileTenant: string | null;
 	activeProfileNamespace: string | null;
 	credentialSource: "profile" | "environment" | "mixed" | "none";
+	authStatus: AuthStatus;
 	isConfigured: boolean;
 	watcherActive: boolean;
 }
@@ -43,6 +46,7 @@ export class ProfileService {
 	#configDir: string;
 	#activeProfile: F5XCProfile | null = null;
 	#credentialSource: ProfileStatus["credentialSource"] = "none";
+	#authStatus: AuthStatus = "unknown";
 
 	private constructor(configDir: string) {
 		this.#configDir = configDir;
@@ -183,6 +187,36 @@ export class ProfileService {
 		fs.unlinkSync(profilePath);
 	}
 
+	async validateToken(options?: { timeoutMs?: number }): Promise<{ status: AuthStatus; latencyMs?: number }> {
+		const profile = this.#activeProfile;
+		if (!profile) return { status: "unknown" };
+		const url = `${profile.apiUrl}/api/web/namespaces`;
+		const timeout = options?.timeoutMs ?? 3000;
+		try {
+			const start = performance.now();
+			const response = await fetch(url, {
+				method: "GET",
+				headers: { Authorization: `APIToken ${profile.apiToken}`, Accept: "application/json" },
+				signal: AbortSignal.timeout(timeout),
+			});
+			const latencyMs = Math.round(performance.now() - start);
+			if (response.ok) {
+				this.#authStatus = "connected";
+				return { status: "connected", latencyMs };
+			}
+			if (response.status === 401 || response.status === 403) {
+				this.#authStatus = "auth_error";
+				return { status: "auth_error", latencyMs };
+			}
+			// Other status codes (404, 500) — token likely valid, endpoint issue
+			this.#authStatus = "connected";
+			return { status: "connected", latencyMs };
+		} catch {
+			this.#authStatus = "offline";
+			return { status: "offline" };
+		}
+	}
+
 	setNamespace(namespace: string): void {
 		if (!this.#activeProfile) {
 			throw new ProfileError("No active profile. Activate a profile first.");
@@ -206,6 +240,7 @@ export class ProfileService {
 			activeProfileTenant: tenant,
 			activeProfileNamespace: process.env.F5XC_NAMESPACE ?? this.#activeProfile?.defaultNamespace ?? null,
 			credentialSource: this.#credentialSource,
+			authStatus: this.#authStatus,
 			isConfigured: this.#credentialSource !== "none",
 			watcherActive: false,
 		};

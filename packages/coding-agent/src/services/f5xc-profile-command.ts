@@ -1,6 +1,7 @@
 import * as os from "node:os";
 import * as path from "node:path";
 import { ProfileError, ProfileService } from "./f5xc-profile";
+import { formatAuthIndicator, renderF5XCTable, type TableRow } from "./f5xc-table";
 
 interface CommandContext {
 	showStatus(msg: string): void;
@@ -82,11 +83,12 @@ async function handleActivate(ctx: CommandContext, service: ProfileService, name
 		return;
 	}
 	try {
-		const profile = await service.activate(name);
-		ctx.showStatus(`Switched to F5 XC profile: ${name} (${profile.apiUrl})`);
+		await service.activate(name);
 		ctx.statusLine?.invalidate();
 		ctx.updateEditorTopBorder?.();
 		ctx.ui?.requestRender();
+		// Show the same red table as /profile show
+		return handleShow(ctx, service);
 	} catch (err) {
 		ctx.showError(err instanceof ProfileError ? err.message : String(err));
 	}
@@ -117,41 +119,41 @@ async function handleShow(ctx: CommandContext, service: ProfileService, name?: s
 	let tenant = "";
 	try { tenant = new URL(profile.apiUrl).hostname.split(".")[0]; } catch { /* skip */ }
 
-	// Auth credentials grouped at the top
-	const lines = [
-		`Profile:      ${sanitize(profile.name)}`,
-		`  F5XC_TENANT:       ${sanitize(tenant)}`,
-		`  F5XC_API_URL:      ${sanitize(profile.apiUrl)}`,
-		`  F5XC_API_TOKEN:    ${service.maskToken(profile.apiToken)}`,
+	// Validate token
+	const auth = await service.validateToken({ timeoutMs: 3000 });
+
+	// Build table rows — auth section first
+	const rows: TableRow[] = [
+		{ key: "F5XC_TENANT", value: sanitize(tenant) },
+		{ key: "F5XC_API_URL", value: sanitize(profile.apiUrl) },
+		{ key: "F5XC_API_TOKEN", value: service.maskToken(profile.apiToken) },
 	];
 
-	// Show auth-related env vars (USERNAME, CONSOLE_PASSWORD) in the auth section
+	// Auth-related env vars
 	const authKeys = ["F5XC_USERNAME", "F5XC_CONSOLE_PASSWORD"];
 	for (const key of authKeys) {
 		const value = profile.env?.[key];
 		if (value) {
-			const display = isSensitiveKey(key) ? service.maskToken(value) : sanitize(value);
-			lines.push(`  ${sanitize(key)}: ${display}`);
+			rows.push({ key: sanitize(key), value: isSensitiveKey(key) ? service.maskToken(value) : sanitize(value) });
 		}
 	}
 
-	if (profile.metadata?.createdAt) lines.push(`  Created:      ${profile.metadata.createdAt.slice(0, 10)}`);
-	if (profile.metadata?.expiresAt) lines.push(`  Expires:      ${profile.metadata.expiresAt.slice(0, 10)}`);
+	// Auth status indicator
+	rows.push({ key: "Status", value: formatAuthIndicator(auth.status, auth.latencyMs) });
+
+	// Track where environment section starts
+	const envDividerIndex = rows.length;
 
 	// Environment section: namespace + remaining env vars
-	const envLines: string[] = [];
-	envLines.push(`    F5XC_NAMESPACE: ${sanitize(profile.defaultNamespace)}`);
+	rows.push({ key: "F5XC_NAMESPACE", value: sanitize(profile.defaultNamespace) });
 	if (profile.env) {
 		for (const [key, value] of Object.entries(profile.env)) {
-			if (authKeys.includes(key)) continue; // already shown above
-			const display = isSensitiveKey(key) ? service.maskToken(value) : sanitize(value);
-			envLines.push(`    ${sanitize(key)}: ${display}`);
+			if (authKeys.includes(key)) continue;
+			rows.push({ key: sanitize(key), value: isSensitiveKey(key) ? service.maskToken(value) : sanitize(value) });
 		}
 	}
-	lines.push("  Environment:");
-	lines.push(...envLines);
 
-	ctx.showStatus(lines.join("\n"));
+	ctx.showStatus(renderF5XCTable(profile.name, rows, { dividerBefore: envDividerIndex }));
 }
 
 async function handleStatus(ctx: CommandContext, service: ProfileService): Promise<void> {
@@ -160,16 +162,15 @@ async function handleStatus(ctx: CommandContext, service: ProfileService): Promi
 		ctx.showStatus("F5 XC: not configured. Use /profile create or ask me to help set one up.");
 		return;
 	}
-	const lines = [
-		"F5 XC Authentication Status",
-		`  Profile:     ${status.activeProfileName ?? "(none)"}`,
-		`  Tenant:      ${status.activeProfileTenant ?? "(unknown)"}`,
-		`  Source:      ${status.credentialSource}`,
-		`  API URL:     ${status.activeProfileUrl ?? "(not set)"}`,
-		`  Namespace:   ${status.activeProfileNamespace ?? "(not set)"}`,
-		`  Configured:  yes`,
+	const auth = await service.validateToken({ timeoutMs: 3000 });
+	const rows: TableRow[] = [
+		{ key: "Tenant", value: status.activeProfileTenant ?? "(unknown)" },
+		{ key: "Source", value: status.credentialSource },
+		{ key: "API URL", value: status.activeProfileUrl ?? "(not set)" },
+		{ key: "Namespace", value: status.activeProfileNamespace ?? "(not set)" },
+		{ key: "Status", value: formatAuthIndicator(auth.status, auth.latencyMs) },
 	];
-	ctx.showStatus(lines.join("\n"));
+	ctx.showStatus(renderF5XCTable(status.activeProfileName ?? "status", rows));
 }
 
 async function handleCreate(ctx: CommandContext, service: ProfileService, args: string[]): Promise<void> {
