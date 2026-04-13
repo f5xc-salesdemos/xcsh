@@ -10,11 +10,13 @@ export function renderF5XCProfileSegment(): RenderedSegment {
 		const service = ProfileService.instance;
 		const status = service.getStatus();
 
-		if (!status.isConfigured || !status.activeProfileName) {
+		if (!status.isConfigured) {
 			return { content: "", visible: false };
 		}
 
-		return { content: `${status.activeProfileTenant ?? status.activeProfileName}:${status.activeProfileNamespace ?? "default"}`, visible: true };
+		// For env-backed sessions (no profile name), show tenant:namespace from env vars
+		const label = status.activeProfileTenant ?? status.activeProfileName ?? "env";
+		return { content: `${label}:${status.activeProfileNamespace ?? "default"}`, visible: true };
 	} catch {
 		// ProfileService not initialized — silently hide segment
 		return { content: "", visible: false };

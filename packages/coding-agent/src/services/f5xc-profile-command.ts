@@ -119,8 +119,8 @@ async function handleShow(ctx: CommandContext, service: ProfileService, name?: s
 	let tenant = "";
 	try { tenant = new URL(profile.apiUrl).hostname.split(".")[0]; } catch { /* skip */ }
 
-	// Validate token
-	const auth = await service.validateToken({ timeoutMs: 3000 });
+	// Validate the shown profile's token (not necessarily the active one)
+	const auth = await service.validateToken({ timeoutMs: 3000, apiUrl: profile.apiUrl, apiToken: profile.apiToken });
 
 	// Build table rows — auth section first
 	const rows: TableRow[] = [

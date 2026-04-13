@@ -187,16 +187,19 @@ export class ProfileService {
 		fs.unlinkSync(profilePath);
 	}
 
-	async validateToken(options?: { timeoutMs?: number }): Promise<{ status: AuthStatus; latencyMs?: number }> {
-		const profile = this.#activeProfile;
-		if (!profile) return { status: "unknown" };
-		const url = `${profile.apiUrl}/api/web/namespaces`;
+	async validateToken(options?: { timeoutMs?: number; apiUrl?: string; apiToken?: string }): Promise<{ status: AuthStatus; latencyMs?: number }> {
+		// Use explicit credentials if provided (for non-active profiles or env-backed sessions),
+		// otherwise fall back to effective credentials (env override > active profile)
+		const effectiveUrl = options?.apiUrl ?? process.env.F5XC_API_URL ?? this.#activeProfile?.apiUrl;
+		const effectiveToken = options?.apiToken ?? process.env.F5XC_API_TOKEN ?? this.#activeProfile?.apiToken;
+		if (!effectiveUrl || !effectiveToken) return { status: "unknown" };
+		const url = `${effectiveUrl}/api/web/namespaces`;
 		const timeout = options?.timeoutMs ?? 3000;
 		try {
 			const start = performance.now();
 			const response = await fetch(url, {
 				method: "GET",
-				headers: { Authorization: `APIToken ${profile.apiToken}`, Accept: "application/json" },
+				headers: { Authorization: `APIToken ${effectiveToken}`, Accept: "application/json" },
 				signal: AbortSignal.timeout(timeout),
 			});
 			const latencyMs = Math.round(performance.now() - start);
@@ -208,7 +211,6 @@ export class ProfileService {
 				this.#authStatus = "auth_error";
 				return { status: "auth_error", latencyMs };
 			}
-			// Other status codes (404, 500) — token likely valid, endpoint issue
 			this.#authStatus = "connected";
 			return { status: "connected", latencyMs };
 		} catch {
