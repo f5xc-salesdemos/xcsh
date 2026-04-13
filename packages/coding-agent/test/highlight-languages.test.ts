@@ -186,9 +186,14 @@ describe("JSON syntax highlighting", () => {
 		expectTokenNotColor('{"value": null}', "json", "null", COLORS.number);
 	});
 
-	it("highlights string keys as string (JSON spec)", () => {
-		// In JSON syntax, keys are string literals per the grammar
-		expectTokenColor('{"key": "value"}', "json", "key", COLORS.string);
+	it("highlights object keys as variable (distinct from string values)", () => {
+		// Keys are colored as variable (light blue) to distinguish them from
+		// string values (terracotta), matching VS Code Dark+ / Claude Code behavior.
+		expectTokenColor('{"key": "value"}', "json", "key", COLORS.variable);
+	});
+
+	it("does NOT color object keys as string", () => {
+		expectTokenNotColor('{"key": "value"}', "json", "key", COLORS.string);
 	});
 
 	it("highlights punctuation as punctuation", () => {
@@ -298,6 +303,17 @@ describe("HTML syntax highlighting", () => {
 
 	it("highlights attribute values as string", () => {
 		expectTokenColor('<div class="main">', "html", "main", COLORS.string);
+	});
+
+	it("highlights attribute names as variable (light blue)", () => {
+		// Attribute names (entity.other.attribute-name.*) are colored as variable
+		// to distinguish them from tag names (keyword) and attribute values (string),
+		// matching VS Code Dark+ / Claude Code behavior.
+		expectTokenColor('<div class="main">', "html", "class", COLORS.variable);
+	});
+
+	it("does NOT color attribute names as keyword", () => {
+		expectTokenNotColor('<div class="main">', "html", "class", COLORS.keyword);
 	});
 });
 
@@ -583,4 +599,102 @@ describe("Language constants (true/false/null/None) regression", () => {
 			expectTokenNotColor(code, lang, token, COLORS.number);
 		});
 	}
+});
+
+// ============================================================================
+// New scope-mapping behaviors (comprehensive colorization pass)
+// ============================================================================
+
+describe("YAML key/value distinction", () => {
+	it("highlights YAML keys as variable (light blue), not keyword", () => {
+		expectTokenColor("name: Alice", "yaml", "name", COLORS.variable);
+		expectTokenColor("count: 42", "yaml", "count", COLORS.variable);
+		expectTokenColor("enabled: true", "yaml", "enabled", COLORS.variable);
+	});
+
+	it("does NOT color YAML keys as keyword", () => {
+		expectTokenNotColor("name: Alice", "yaml", "name", COLORS.keyword);
+	});
+
+	it("still highlights YAML string values as string", () => {
+		expectTokenColor('name: "Alice"', "yaml", "Alice", COLORS.string);
+	});
+
+	it("still highlights YAML booleans as keyword", () => {
+		expectTokenColor("enabled: true", "yaml", "true", COLORS.keyword);
+	});
+});
+
+describe("CSS property name colorization", () => {
+	it("highlights CSS property names as variable (light blue)", () => {
+		expectTokenColor("div { color: red; }", "css", "color", COLORS.variable);
+		expectTokenColor("div { background-color: #fff; }", "css", "background-color", COLORS.variable);
+		expectTokenColor("div { margin: 0; }", "css", "margin", COLORS.variable);
+		expectTokenColor("div { font-size: 16px; }", "css", "font-size", COLORS.variable);
+	});
+
+	it("does NOT color CSS property names as type (teal)", () => {
+		expectTokenNotColor("div { color: red; }", "css", "color", COLORS.type);
+	});
+});
+
+describe("Ruby symbol colorization", () => {
+	it("highlights Ruby symbols as string (orange)", () => {
+		expectTokenColor(":symbol", "ruby", "symbol", COLORS.string);
+		expectTokenColor(":another_key", "ruby", "another_key", COLORS.string);
+	});
+
+	it("does NOT color Ruby symbols as number (green)", () => {
+		expectTokenNotColor(":symbol", "ruby", "symbol", COLORS.number);
+	});
+});
+
+describe("Bash shebang comment", () => {
+	it("highlights the shebang # as comment (green)", () => {
+		// punctuation.definition.comment.* should map to comment, not punctuation
+		const result = nativeHighlightCode("#!/bin/bash", "bash", HIGHLIGHT_COLORS);
+		// The # is punctuation.definition.comment → should be comment color
+		expect(result).toContain(COLORS.comment);
+	});
+});
+
+describe("Markdown rich text colorization", () => {
+	it("highlights bold text as keyword (blue)", () => {
+		expectTokenColor("**bold text**", "md", "bold text", COLORS.keyword);
+	});
+
+	it("highlights italic text as keyword (blue)", () => {
+		expectTokenColor("*italic text*", "md", "italic text", COLORS.keyword);
+	});
+
+	it("highlights inline code as string (orange)", () => {
+		expectTokenColor("`code`", "md", "code", COLORS.string);
+	});
+
+	it("highlights blockquote content as comment (green)", () => {
+		// The space after > is part of the blockquote body token
+		expectTokenColor("> quoted text", "md", " quoted text", COLORS.comment);
+	});
+
+	it("highlights heading text as keyword (blue)", () => {
+		// entity.name.section.markdown → keyword
+		expectTokenColor("# My Heading", "md", "My Heading", COLORS.keyword);
+		expectTokenColor("## Sub Heading", "md", "Sub Heading", COLORS.keyword);
+	});
+});
+
+describe("Diff line marker colorization", () => {
+	const withDiffColors = { ...HIGHLIGHT_COLORS, inserted: "\x1b[38;2;137;210;129m", deleted: "\x1b[38;2;252;58;75m" };
+
+	it("colors the - prefix marker same as deleted lines", () => {
+		const result = nativeHighlightCode("-removed line\n+added line", "diff", withDiffColors);
+		// Both the '-' marker and 'removed line' should be deleted color
+		expect(result).toContain(`\x1b[38;2;252;58;75m-\x1b[39m`);
+	});
+
+	it("colors the + prefix marker same as inserted lines", () => {
+		const result = nativeHighlightCode("-removed line\n+added line", "diff", withDiffColors);
+		// Both the '+' marker and 'added line' should be inserted color
+		expect(result).toContain(`\x1b[38;2;137;210;129m+\x1b[39m`);
+	});
 });

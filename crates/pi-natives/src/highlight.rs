@@ -82,48 +82,87 @@ struct ScopeMatchers {
 	markup_deleted:   Scope,
 	meta_diff_header: Scope,
 	meta_diff_range:  Scope,
+
+	// Property/attribute names → variable (index 3)
+	entity_other_attribute_name: Scope, /* HTML/XML/Astro attribute names
+	                                     * (entity.other.attribute-name.*) */
+	meta_structure_dict_key:     Scope, /* JSON / YAML dictionary keys
+	                                     * (meta.structure.dictionary.key.*) */
+
+	// YAML mapping keys → variable (index 3); must precede generic entity.name.tag → keyword
+	entity_name_tag_yaml: Scope,
+
+	// CSS / SCSS property names → variable (index 3); must precede generic support.type → type
+	support_type_property_name: Scope,
+
+	// Markdown section headings → keyword (index 1); must precede generic entity.name → variable
+	entity_name_section: Scope,
+
+	// Markdown rich text → appropriate semantic colors
+	markup_bold:   Scope, // bold text  → keyword (index 1)
+	markup_italic: Scope, // italic text → keyword (index 1)
+	markup_quote:  Scope, // blockquotes → comment (index 0)
+	markup_raw:    Scope, // inline code → string  (index 4)
+
+	// Ruby / Elixir / Crystal symbols → string (index 4); must precede generic constant → number
+	constant_other_symbol: Scope,
+
+	// Comment-defining punctuation (shebangs, //, /* */ markers) → comment (index 0)
+	// Must precede generic punctuation → punctuation
+	punctuation_definition_comment: Scope,
 }
 
 impl ScopeMatchers {
 	fn new() -> Self {
 		Self {
-			comment:                   Scope::new("comment").unwrap(),
-			string:                    Scope::new("string").unwrap(),
-			constant_character:        Scope::new("constant.character").unwrap(),
+			comment: Scope::new("comment").unwrap(),
+			string: Scope::new("string").unwrap(),
+			constant_character: Scope::new("constant.character").unwrap(),
 			constant_character_escape: Scope::new("constant.character.escape").unwrap(),
-			meta_string:               Scope::new("meta.string").unwrap(),
-			constant_numeric:          Scope::new("constant.numeric").unwrap(),
-			constant_integer:          Scope::new("constant.integer").unwrap(),
-			constant:                  Scope::new("constant").unwrap(),
-			keyword:                   Scope::new("keyword").unwrap(),
-			constant_language:         Scope::new("constant.language").unwrap(),
-			variable_language:         Scope::new("variable.language").unwrap(),
-			entity_name_tag:           Scope::new("entity.name.tag").unwrap(),
-			storage_type:              Scope::new("storage.type").unwrap(),
-			storage_modifier:          Scope::new("storage.modifier").unwrap(),
-			keyword_control:           Scope::new("keyword.control").unwrap(),
-			entity_name_function:      Scope::new("entity.name.function").unwrap(),
-			support_function:          Scope::new("support.function").unwrap(),
-			meta_function_call:        Scope::new("meta.function-call").unwrap(),
-			variable_function:         Scope::new("variable.function").unwrap(),
-			entity_name_type:          Scope::new("entity.name.type").unwrap(),
-			support_type:              Scope::new("support.type").unwrap(),
-			support_class:             Scope::new("support.class").unwrap(),
-			entity_name_class:         Scope::new("entity.name.class").unwrap(),
-			entity_name_struct:        Scope::new("entity.name.struct").unwrap(),
-			entity_name_enum:          Scope::new("entity.name.enum").unwrap(),
-			entity_name_interface:     Scope::new("entity.name.interface").unwrap(),
-			entity_name_trait:         Scope::new("entity.name.trait").unwrap(),
-			keyword_operator:          Scope::new("keyword.operator").unwrap(),
-			punctuation_accessor:      Scope::new("punctuation.accessor").unwrap(),
-			punctuation:               Scope::new("punctuation").unwrap(),
-			variable:                  Scope::new("variable").unwrap(),
-			entity_name:               Scope::new("entity.name").unwrap(),
-			meta_path:                 Scope::new("meta.path").unwrap(),
-			markup_inserted:           Scope::new("markup.inserted").unwrap(),
-			markup_deleted:            Scope::new("markup.deleted").unwrap(),
-			meta_diff_header:          Scope::new("meta.diff.header").unwrap(),
-			meta_diff_range:           Scope::new("meta.diff.range").unwrap(),
+			meta_string: Scope::new("meta.string").unwrap(),
+			constant_numeric: Scope::new("constant.numeric").unwrap(),
+			constant_integer: Scope::new("constant.integer").unwrap(),
+			constant: Scope::new("constant").unwrap(),
+			keyword: Scope::new("keyword").unwrap(),
+			constant_language: Scope::new("constant.language").unwrap(),
+			variable_language: Scope::new("variable.language").unwrap(),
+			entity_name_tag: Scope::new("entity.name.tag").unwrap(),
+			storage_type: Scope::new("storage.type").unwrap(),
+			storage_modifier: Scope::new("storage.modifier").unwrap(),
+			keyword_control: Scope::new("keyword.control").unwrap(),
+			entity_name_function: Scope::new("entity.name.function").unwrap(),
+			support_function: Scope::new("support.function").unwrap(),
+			meta_function_call: Scope::new("meta.function-call").unwrap(),
+			variable_function: Scope::new("variable.function").unwrap(),
+			entity_name_type: Scope::new("entity.name.type").unwrap(),
+			support_type: Scope::new("support.type").unwrap(),
+			support_class: Scope::new("support.class").unwrap(),
+			entity_name_class: Scope::new("entity.name.class").unwrap(),
+			entity_name_struct: Scope::new("entity.name.struct").unwrap(),
+			entity_name_enum: Scope::new("entity.name.enum").unwrap(),
+			entity_name_interface: Scope::new("entity.name.interface").unwrap(),
+			entity_name_trait: Scope::new("entity.name.trait").unwrap(),
+			keyword_operator: Scope::new("keyword.operator").unwrap(),
+			punctuation_accessor: Scope::new("punctuation.accessor").unwrap(),
+			punctuation: Scope::new("punctuation").unwrap(),
+			variable: Scope::new("variable").unwrap(),
+			entity_name: Scope::new("entity.name").unwrap(),
+			meta_path: Scope::new("meta.path").unwrap(),
+			markup_inserted: Scope::new("markup.inserted").unwrap(),
+			markup_deleted: Scope::new("markup.deleted").unwrap(),
+			meta_diff_header: Scope::new("meta.diff.header").unwrap(),
+			meta_diff_range: Scope::new("meta.diff.range").unwrap(),
+			entity_other_attribute_name: Scope::new("entity.other.attribute-name").unwrap(),
+			meta_structure_dict_key: Scope::new("meta.structure.dictionary.key").unwrap(),
+			entity_name_tag_yaml: Scope::new("entity.name.tag.yaml").unwrap(),
+			support_type_property_name: Scope::new("support.type.property-name").unwrap(),
+			entity_name_section: Scope::new("entity.name.section").unwrap(),
+			markup_bold: Scope::new("markup.bold").unwrap(),
+			markup_italic: Scope::new("markup.italic").unwrap(),
+			markup_quote: Scope::new("markup.quote").unwrap(),
+			markup_raw: Scope::new("markup.raw").unwrap(),
+			constant_other_symbol: Scope::new("constant.other.symbol").unwrap(),
+			punctuation_definition_comment: Scope::new("punctuation.definition.comment").unwrap(),
 		}
 	}
 }
@@ -256,6 +295,20 @@ fn compute_scope_color(s: Scope) -> usize {
 		return 1;
 	}
 
+	// ── Markdown rich text ─────────────────────────────────────────────
+	// Bold and italic → keyword (index 1, blue)
+	if m.markup_bold.is_prefix_of(s) || m.markup_italic.is_prefix_of(s) {
+		return 1;
+	}
+	// Blockquotes → comment (index 0, dim green)
+	if m.markup_quote.is_prefix_of(s) {
+		return 0;
+	}
+	// Inline code spans → string (index 4, orange)
+	if m.markup_raw.is_prefix_of(s) {
+		return 4;
+	}
+
 	// ── String (index 4) ───────────────────────────────────────────────
 	// constant.character.escape (e.g. \n inside strings) -> string
 	if m.constant_character_escape.is_prefix_of(s) {
@@ -305,6 +358,13 @@ fn compute_scope_color(s: Scope) -> usize {
 		return 2;
 	}
 
+	// ── CSS/SCSS property names → variable (index 3) ──────────────────
+	// support.type.property-name.css must come before the generic support.type
+	// check; CSS properties are light-blue (variable) in VS Code Dark+, not teal.
+	if m.support_type_property_name.is_prefix_of(s) {
+		return 3;
+	}
+
 	// ── Type (index 6) ─────────────────────────────────────────────────
 	if m.entity_name_type.is_prefix_of(s)
 		|| m.support_type.is_prefix_of(s)
@@ -318,13 +378,42 @@ fn compute_scope_color(s: Scope) -> usize {
 		return 6;
 	}
 
+	// ── HTML/XML/Astro attribute names → variable (index 3) ──────────────
+	// entity.other.attribute-name.* does NOT start with entity.name, so it
+	// would otherwise fall through to usize::MAX (no color).  Must come
+	// before the entity_name_tag check since both live in the HTML/XML family.
+	if m.entity_other_attribute_name.is_prefix_of(s) {
+		return 3;
+	}
+
+	// ── YAML mapping keys → variable (index 3) ────────────────────────
+	// entity.name.tag.yaml is used for YAML keys.  VS Code Dark+ colors
+	// them as variable (light-blue), not as keyword-blue like HTML tags.
+	// Must come before the generic entity.name.tag → keyword check.
+	if m.entity_name_tag_yaml.is_prefix_of(s) {
+		return 3;
+	}
+
 	// ── HTML/XML tags -> keyword (index 1) ─────────────────────────────
 	// entity.name.tag must come before the generic entity.name -> variable
 	if m.entity_name_tag.is_prefix_of(s) {
 		return 1;
 	}
 
+	// ── Markdown section headings → keyword (index 1) ──────────────────
+	// entity.name.section.markdown must come before the generic entity.name
+	// → variable check.  VS Code Dark+ colors headings as keyword-blue.
+	if m.entity_name_section.is_prefix_of(s) {
+		return 1;
+	}
+
 	// ── Punctuation (index 8) ──────────────────────────────────────────
+	// Comment-defining punctuation (shebang #!, //, /* — scope:
+	// punctuation.definition.comment.*) should render as comment (dim
+	// green) rather than as plain punctuation (gray).
+	if m.punctuation_definition_comment.is_prefix_of(s) {
+		return 0;
+	}
 	if m.punctuation.is_prefix_of(s) {
 		return 8;
 	}
@@ -346,6 +435,14 @@ fn compute_scope_color(s: Scope) -> usize {
 		return 1;
 	}
 
+	// ── Ruby / Elixir / Crystal symbols → string (index 4) ─────────────
+	// constant.other.symbol.ruby/:elixir collides with the generic constant
+	// fallback (→ number/green).  VS Code Dark+ treats symbols as strings
+	// (orange), so check this before the generic constant catch-all.
+	if m.constant_other_symbol.is_prefix_of(s) {
+		return 4;
+	}
+
 	// ── Generic constant -> number (index 5) ───────────────────────────
 	if m.constant.is_prefix_of(s) {
 		return 5;
@@ -357,13 +454,54 @@ fn compute_scope_color(s: Scope) -> usize {
 
 /// Determine the semantic color category from a scope stack.
 /// Uses per-scope caching to avoid repeated prefix checks.
+///
+/// Stack-level checks run first for cases where the innermost scope alone is
+/// ambiguous.  For example, a JSON object key has scope stack
+/// `[…, meta.structure.dictionary.key.json, string.quoted.double.json]`; the
+/// per-scope loop would see `string` first and color the key like a value.
+/// Checking the full stack beforehand lets us distinguish the two.
 #[inline]
 fn scope_to_color_index(scope: &ScopeStack) -> usize {
+	let m = get_scope_matchers();
+	let scopes = scope.as_slice();
+
+	// ── Stack-level context checks ────────────────────────────────────────
+	// JSON / YAML dictionary keys → variable (light blue, index 3).
+	// The key context (meta.structure.dictionary.key.*) sits outside the
+	// string scope in the stack, so it must be checked here, not in the
+	// per-scope loop where string wins first.
+	if scopes
+		.iter()
+		.any(|s| m.meta_structure_dict_key.is_prefix_of(*s))
+	{
+		return 3;
+	}
+
+	// Diff: color every token on a deleted / inserted line with the
+	// appropriate diff color, including the -/+ prefix marker which
+	// otherwise falls into the generic punctuation bucket (gray).
+	if scopes.iter().any(|s| m.markup_deleted.is_prefix_of(*s)) {
+		return 10;
+	}
+	if scopes.iter().any(|s| m.markup_inserted.is_prefix_of(*s)) {
+		return 9;
+	}
+	// Diff header (--- a/file, +++ b/file) and range (@@ ... @@) lines:
+	// the ---, +++, and @@ tokens are punctuation in the stack context of
+	// meta.diff.header / meta.diff.range, so they need a stack-level
+	// override to get keyword-blue instead of gray punctuation.
+	if scopes
+		.iter()
+		.any(|s| m.meta_diff_header.is_prefix_of(*s) || m.meta_diff_range.is_prefix_of(*s))
+	{
+		return 1;
+	}
+
 	SCOPE_COLOR_CACHE.with(|cache| {
 		let mut cache = cache.borrow_mut();
 
 		// Walk from innermost to outermost scope
-		for s in scope.as_slice().iter().rev() {
+		for s in scopes.iter().rev() {
 			let color_idx = *cache.entry(*s).or_insert_with(|| compute_scope_color(*s));
 			if color_idx != usize::MAX {
 				return color_idx;
