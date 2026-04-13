@@ -936,6 +936,24 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<BuiltinSlashCommandSpec> = [
 		description: "Quit the application",
 		handle: shutdownHandler,
 	},
+	{
+		name: "profile",
+		description: "Manage F5 XC authentication profiles",
+		allowArgs: true,
+		subcommands: [
+			{ name: "list", description: "List all profiles" },
+			{ name: "activate", description: "Switch to a named profile", usage: "<name>" },
+			{ name: "show", description: "Show profile details (masked)", usage: "[name]" },
+			{ name: "status", description: "Show current auth status" },
+			{ name: "create", description: "Create a new profile", usage: "<name> <url> <token> [namespace]" },
+			{ name: "delete", description: "Delete a profile", usage: "<name> --confirm" },
+			{ name: "namespace", description: "Switch namespace within active profile", usage: "<namespace>" },
+		],
+		handle: async (command, runtime) => {
+			const { handleProfileCommand } = await import("../services/f5xc-profile-command");
+			await handleProfileCommand(command, runtime.ctx);
+		},
+	},
 ];
 
 const BUILTIN_SLASH_COMMAND_LOOKUP = new Map<string, BuiltinSlashCommandSpec>();

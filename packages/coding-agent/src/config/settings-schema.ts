@@ -75,7 +75,8 @@ export type StatusLineSegmentId =
 	| "session"
 	| "hostname"
 	| "cache_read"
-	| "cache_write";
+	| "cache_write"
+	| "profile_f5xc";
 
 interface UiMetadata {
 	tab: SettingTab;
@@ -205,6 +206,11 @@ export const SETTINGS_SCHEMA = {
 		},
 	},
 	shellPath: { type: "string", default: undefined },
+
+	"bash.environment": {
+		type: "record",
+		default: {} as Record<string, string>,
+	},
 
 	extensions: { type: "array", default: EMPTY_STRING_ARRAY },
 

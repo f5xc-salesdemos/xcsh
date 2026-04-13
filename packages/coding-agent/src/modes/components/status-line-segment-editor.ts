@@ -37,6 +37,7 @@ const SEGMENT_INFO: Record<StatusLineSegmentId, { label: string; short: string }
 	hostname: { label: "Host", short: "hostname" },
 	cache_read: { label: "Cache ↓", short: "cache read" },
 	cache_write: { label: "Cache ↑", short: "cache write" },
+	profile_f5xc: { label: "F5 XC Profile", short: "F5 XC tenant" },
 };
 
 type Column = "left" | "right" | "disabled";

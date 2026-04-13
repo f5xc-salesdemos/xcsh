@@ -60,7 +60,18 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 	const { shell, env: shellEnv, prefix } = settings.getShellConfig();
 	const snapshotPath = shell.includes("bash") ? await getOrCreateSnapshot(shell, shellEnv) : null;
 	const commandCwd = await resolveShellCwd(options?.cwd);
-	const commandEnv = options?.env ? { ...NON_INTERACTIVE_ENV, ...options.env } : NON_INTERACTIVE_ENV;
+	const rawBashEnv = (settings.get("bash.environment") ?? {}) as Record<string, unknown>;
+	const bashEnvironment: Record<string, string> = {};
+	for (const [k, v] of Object.entries(rawBashEnv)) {
+		if (typeof v === "string") bashEnvironment[k] = v;
+		else if (v != null) bashEnvironment[k] = String(v);
+	}
+	const hasBashEnv = Object.keys(bashEnvironment).length > 0;
+	const commandEnv = options?.env
+		? { ...NON_INTERACTIVE_ENV, ...bashEnvironment, ...options.env }
+		: hasBashEnv
+			? { ...NON_INTERACTIVE_ENV, ...bashEnvironment }
+			: NON_INTERACTIVE_ENV;
 
 	// Apply command prefix if configured
 	const prefixedCommand = prefix ? `${prefix} ${command}` : command;

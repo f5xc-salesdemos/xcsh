@@ -408,6 +408,17 @@ export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
 	hostname: hostnameSegment,
 	cache_read: cacheReadSegment,
 	cache_write: cacheWriteSegment,
+	profile_f5xc: {
+		id: "profile_f5xc",
+		render() {
+			try {
+				const { renderF5XCProfileSegment } = require("../../../services/f5xc-profile-segment");
+				return renderF5XCProfileSegment();
+			} catch {
+				return { content: "", visible: false };
+			}
+		},
+	},
 };
 
 export function renderSegment(id: StatusLineSegmentId, ctx: SegmentContext): RenderedSegment {

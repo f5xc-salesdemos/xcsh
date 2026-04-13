@@ -436,3 +436,30 @@ export function getSSHConfigPath(scope: "user" | "project", cwd: string = getPro
 	}
 	return path.join(getProjectAgentDir(cwd), "ssh.json");
 }
+
+// =============================================================================
+// F5 Distributed Cloud (F5 XC) profile paths
+// =============================================================================
+
+const F5XC_DIR_NAME = "f5xc";
+
+/** Get the F5 XC config directory ($XDG_CONFIG_HOME/f5xc or ~/.config/f5xc). */
+export function getF5XCConfigDir(): string {
+	const xdgConfig = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
+	return path.join(xdgConfig, F5XC_DIR_NAME);
+}
+
+/** Get the F5 XC profiles directory (~/.config/f5xc/profiles). */
+export function getF5XCProfilesDir(): string {
+	return path.join(getF5XCConfigDir(), "profiles");
+}
+
+/** Get the path to the active profile indicator file (~/.config/f5xc/active_profile). */
+export function getF5XCActiveProfilePath(): string {
+	return path.join(getF5XCConfigDir(), "active_profile");
+}
+
+/** Get the path to a specific profile JSON file (~/.config/f5xc/profiles/<name>.json). */
+export function getF5XCProfilePath(name: string): string {
+	return path.join(getF5XCProfilesDir(), `${name}.json`);
+}
