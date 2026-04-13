@@ -898,6 +898,12 @@ const ThemeJsonSchema = Type.Object({
 		statusLineGitDirtyFg: Type.Optional(ColorValueSchema),
 		statusLineGitUntrackedFg: Type.Optional(ColorValueSchema),
 		statusLineGitConflictFg: Type.Optional(ColorValueSchema),
+		statusLinePlanModeBg: Type.Optional(ColorValueSchema),
+		statusLinePlanModeFg: Type.Optional(ColorValueSchema),
+		statusLineContextPctBg: Type.Optional(ColorValueSchema),
+		statusLineContextPctFg: Type.Optional(ColorValueSchema),
+		statusLineProfileF5xcBg: Type.Optional(ColorValueSchema),
+		statusLineProfileF5xcFg: Type.Optional(ColorValueSchema),
 	}),
 	export: Type.Optional(
 		Type.Object({
@@ -990,7 +996,13 @@ export type ThemeColor =
 	| "statusLineGitDirtyFg"
 	| "statusLineGitUntrackedFg"
 	| "statusLineGitConflictFg"
-	| "statusLineGitFg";
+	| "statusLineGitFg"
+	| "statusLinePlanModeBg"
+	| "statusLinePlanModeFg"
+	| "statusLineContextPctBg"
+	| "statusLineContextPctFg"
+	| "statusLineProfileF5xcBg"
+	| "statusLineProfileF5xcFg";
 
 /** Set of all valid ThemeColor string values for runtime validation */
 const THEME_COLOR_RECORD = {
@@ -1070,6 +1082,12 @@ const THEME_COLOR_RECORD = {
 	statusLineGitDirtyFg: true,
 	statusLineGitUntrackedFg: true,
 	statusLineGitConflictFg: true,
+	statusLinePlanModeBg: true,
+	statusLinePlanModeFg: true,
+	statusLineContextPctBg: true,
+	statusLineContextPctFg: true,
+	statusLineProfileF5xcBg: true,
+	statusLineProfileF5xcFg: true,
 } satisfies Record<ThemeColor, true>;
 
 const VALID_THEME_COLORS: ReadonlySet<string> = new Set(Object.keys(THEME_COLOR_RECORD));
@@ -1298,6 +1316,12 @@ export class Theme {
 		this.#fgColors.statusLineGitDirtyFg ??= this.#fgColors.statusLineGitFg;
 		this.#fgColors.statusLineGitUntrackedFg ??= this.#fgColors.statusLineGitFg;
 		this.#fgColors.statusLineGitConflictFg ??= this.#fgColors.statusLineGitFg;
+		this.#fgColors.statusLinePlanModeBg ??= this.#fgColors.muted;
+		this.#fgColors.statusLinePlanModeFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineContextPctBg ??= this.#fgColors.muted;
+		this.#fgColors.statusLineContextPctFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineProfileF5xcBg ??= this.#fgColors.muted;
+		this.#fgColors.statusLineProfileF5xcFg ??= this.#fgColors.text;
 		this.#fgColors.contentAccent ??= this.#fgColors.accent;
 		this.#bgColors = {} as Record<ThemeBg, string>;
 		for (const [key, value] of Object.entries(bgColors) as [ThemeBg, string | number][]) {

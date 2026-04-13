@@ -95,6 +95,12 @@
 		"statusLineGitDirtyFg": 0,
 		"statusLineGitUntrackedFg": 0,
 		"statusLineGitConflictFg": 7,
+		"statusLinePlanModeBg": 236,
+		"statusLinePlanModeFg": 117,
+		"statusLineContextPctBg": 238,
+		"statusLineContextPctFg": 252,
+		"statusLineProfileF5xcBg": 52,
+		"statusLineProfileF5xcFg": 231,
 		"pythonMode": "#f0c040",
 		"syntaxControl": "#569CD6"
 	},
