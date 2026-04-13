@@ -171,8 +171,8 @@ After any test run during development, compare:
 bun test 2>&1 | tee /tmp/current-test-results.txt
 
 # Compare fail counts
-BASELINE_FAILS=$(grep -oP '\d+(?= fail)' .worktree-test-baseline.txt || echo 0)
-CURRENT_FAILS=$(grep -oP '\d+(?= fail)' /tmp/current-test-results.txt || echo 0)
+BASELINE_FAILS=$(grep -o '[0-9]* fail' .worktree-test-baseline.txt | grep -o '[0-9]*' || echo 0)
+CURRENT_FAILS=$(grep -o '[0-9]* fail' /tmp/current-test-results.txt | grep -o '[0-9]*' || echo 0)
 
 echo "Baseline: ${BASELINE_FAILS} failures"
 echo "Current:  ${CURRENT_FAILS} failures"
@@ -196,14 +196,16 @@ All feature and bug-fix work follows strict red-green-refactor test-driven devel
 # Step 1: Write a failing test for the new behaviour
 # Create or edit: packages/<package>/test/<feature>.test.ts
 
-# Step 2: Confirm the test fails
+# Step 2: Confirm the test fails (run from inside the package directory)
+cd packages/<package>
 bun test --filter <test-file-name>
 # Expected: at least one FAIL for your new test
 
 # Step 3: Write the minimum implementation to make the test pass
 # Edit: packages/<package>/src/<module>.ts
 
-# Step 4: Confirm the test passes
+# Step 4: Confirm the test passes (run from inside the package directory)
+cd packages/<package>
 bun test --filter <test-file-name>
 # Expected: PASS for your new test
 
@@ -232,7 +234,7 @@ bun run check
 
 ## 5. Linting and Formatting
 
-There are no pre-commit hooks (`husky` is not installed). **You must run linting manually before every commit.**
+There are no active pre-commit hooks. `husky` is not installed, and while `lint-staged` is configured in `package.json`, it is not wired to any git hook — it does not run automatically. **You must run linting manually before every commit.**
 
 ### SOP — TypeScript / JavaScript
 
@@ -276,7 +278,7 @@ The project uses Biome v2 with these settings (defined in `/biome.json`):
 | Quotes | Double |
 | Semicolons | Always |
 | Trailing commas | All |
-| Arrow parentheses | Omit when possible |
+| Arrow parentheses | asNeeded |
 
 ---
 
@@ -474,9 +476,9 @@ bun install && bun --cwd=packages/coding-agent link && bun --cwd=packages/ai lin
 bun test 2>&1 | tee .worktree-test-baseline.txt
 
 # === TDD Cycle ===
-bun test --filter <test>    # red
+cd packages/<package> && bun test --filter <test>    # red
 # ... implement ...
-bun test --filter <test>    # green
+cd packages/<package> && bun test --filter <test>    # green
 bun run check               # lint + types
 
 # === Commit ===
