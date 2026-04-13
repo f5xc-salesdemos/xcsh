@@ -114,7 +114,7 @@ bun --cwd=packages/coding-agent link
 # 6. Link the ai package (required — symlinks local workspace deps)
 bun --cwd=packages/ai link
 
-# 7. Build all workspace packages including native modules
+# 7. Build all workspace packages including native modules (~2-3 min for Rust compilation)
 bun run build:ws
 ```
 
@@ -214,8 +214,8 @@ cd packages/<package>
 bun test
 cd -
 
-# Step 6: Run the full project check from the repo root
-bun run check
+# Step 6: Run the full project check (use check:ts in a worktree)
+bun run check:ts
 
 # Step 7: Compare failure count against baseline
 # (use the comparison script from Section 3)
@@ -243,15 +243,19 @@ There are no active pre-commit hooks. `husky` is not installed, and while `lint-
 bun run fmt
 
 # Lint and type-check (must pass with zero errors)
-bun run check
+# Run from inside your worktree directory:
+bun run check:ts
 ```
+
+> **Worktree note:** `bun run check` runs `check:ts` and `check:rs` in parallel. In a git worktree, `check:rs` fails because Cargo resolves paths relative to the repo root, not the worktree. Use `bun run check:ts` for TypeScript-only changes when working in a worktree. If you need to run `check:rs`, run it from the repository root (`/workspace/xcsh`), not from inside the worktree.
 
 ### SOP — Rust
 
-Only required if your changes touch files in `crates/`:
+Only required if your changes touch files in `crates/`. **Must be run from the repository root, not from inside a worktree:**
 
 ```bash
-# Format check + clippy lints
+# Run from /workspace/xcsh (repository root), not from the worktree
+cd /workspace/xcsh
 bun run check:rs
 ```
 
@@ -479,10 +483,10 @@ bun test 2>&1 | tee .worktree-test-baseline.txt
 cd packages/<package> && bun test --filter <test>    # red
 # ... implement ...
 cd packages/<package> && bun test --filter <test>    # green
-bun run check               # lint + types
+bun run check:ts            # lint + types (use check:ts in worktree)
 
 # === Commit ===
-bun run fmt && bun run check
+bun run fmt && bun run check:ts
 git add <files> && git commit -m "<type>(<scope>): <msg>
 
 Closes #<N>"
