@@ -44,18 +44,23 @@ export interface TableOptions {
 	dividerBefore?: number; // insert ├──┤ divider before this row index
 }
 
+// Measures the visible terminal column width of a string.
+// Delegates to Bun.stringWidth() which strips ANSI escape sequences and handles
+// Unicode wide characters — the same underlying function used by @f5xc-salesdemos/pi-tui.
+const visibleWidth = (s: string): number => (s ? Bun.stringWidth(s) : 0);
+
 export function renderF5XCTable(title: string, rows: TableRow[], options?: TableOptions): string {
-	// Calculate column widths from visible text (strip ANSI for width calc)
-	const stripAnsi = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, "");
-	const maxKey = Math.max(...rows.map(row => stripAnsi(row.key).length), 0);
-	const maxVal = Math.max(...rows.map(row => stripAnsi(row.value).length), 0);
-	const innerWidth = Math.max(maxKey + maxVal + 3, stripAnsi(title).length + 2, 40);
+	// Calculate column widths using visibleWidth (handles ANSI and Unicode)
+	const maxKey = Math.max(...rows.map(row => visibleWidth(row.key)), 0);
+	const maxVal = Math.max(...rows.map(row => visibleWidth(row.value)), 0);
+	// innerWidth = space + maxKey + 2-space separator + maxVal + space = maxKey + maxVal + 4
+	const innerWidth = Math.max(maxKey + maxVal + 4, visibleWidth(title) + 2, 40);
 
 	const lines: string[] = [];
 
 	// Top border: ╭─ title ──────╮
 	const titleText = ` ${title} `;
-	const titlePad = innerWidth - stripAnsi(titleText).length - 1;
+	const titlePad = innerWidth - visibleWidth(titleText) - 1;
 	lines.push(`${r(BOX.tl + BOX.h)}${BOLD}${titleText}${RESET}${r(BOX.h.repeat(Math.max(0, titlePad)) + BOX.tr)}`);
 
 	// Rows
@@ -63,13 +68,13 @@ export function renderF5XCTable(title: string, rows: TableRow[], options?: Table
 		// Optional divider
 		if (options?.dividerBefore === i) {
 			const divLabel = " Environment ";
-			const divPad = innerWidth - stripAnsi(divLabel).length - 1;
+			const divPad = innerWidth - visibleWidth(divLabel) - 1;
 			lines.push(`${r(BOX.lt + BOX.h)}${BOLD}${divLabel}${RESET}${r(BOX.h.repeat(Math.max(0, divPad)) + BOX.rt)}`);
 		}
 
 		const { key, value } = rows[i];
-		const keyPad = maxKey - stripAnsi(key).length;
-		const valPad = innerWidth - maxKey - stripAnsi(value).length - 3;
+		const keyPad = maxKey - visibleWidth(key);
+		const valPad = innerWidth - maxKey - visibleWidth(value) - 4;
 		lines.push(`${r(BOX.v)} ${key}${" ".repeat(keyPad)}  ${value}${" ".repeat(Math.max(0, valPad))} ${r(BOX.v)}`);
 	}
 
