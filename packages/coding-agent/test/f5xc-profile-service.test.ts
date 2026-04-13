@@ -644,6 +644,56 @@ describe("ProfileService", () => {
 			expect(status.activeProfileNamespace).toBe(TEST_PROFILE.defaultNamespace);
 		});
 
+		it("profile switch clears stale F5XC_* vars from previous profile", async () => {
+			// Production has F5XC_CONSOLE_PASSWORD in env map, staging does not
+			const prodWithPass: F5XCProfile = {
+				...TEST_PROFILE,
+				env: { F5XC_CONSOLE_PASSWORD: "secret-pass", F5XC_LB_NAME: "prod-lb" },
+			};
+			const stagingNoPass: F5XCProfile = {
+				...TEST_PROFILE_2,
+				env: { F5XC_LB_NAME: "staging-lb" },
+			};
+			writeProfile(f5xcProfilesDir, prodWithPass);
+			writeProfile(f5xcProfilesDir, stagingNoPass);
+			writeActiveProfile(f5xcConfigDir, prodWithPass.name);
+
+			const service = ProfileService.init(f5xcConfigDir);
+			await service.loadActive();
+
+			// Verify production password is present
+			let bashEnv = Settings.instance.get("bash.environment") as Record<string, string>;
+			expect(bashEnv.F5XC_CONSOLE_PASSWORD).toBe("secret-pass");
+			expect(bashEnv.F5XC_LB_NAME).toBe("prod-lb");
+
+			// Switch to staging — password must be CLEARED
+			await service.activate(stagingNoPass.name);
+			bashEnv = Settings.instance.get("bash.environment") as Record<string, string>;
+			expect(bashEnv.F5XC_CONSOLE_PASSWORD).toBeUndefined();
+			expect(bashEnv.F5XC_LB_NAME).toBe("staging-lb");
+		});
+
+		it("setNamespace switches namespace in active profile", async () => {
+			writeProfile(f5xcProfilesDir, TEST_PROFILE);
+			writeActiveProfile(f5xcConfigDir, TEST_PROFILE.name);
+
+			const service = ProfileService.init(f5xcConfigDir);
+			await service.loadActive();
+
+			expect(service.getStatus().activeProfileNamespace).toBe(TEST_PROFILE.defaultNamespace);
+
+			service.setNamespace("other-ns");
+
+			expect(service.getStatus().activeProfileNamespace).toBe("other-ns");
+			const bashEnv = Settings.instance.get("bash.environment") as Record<string, string>;
+			expect(bashEnv.F5XC_NAMESPACE).toBe("other-ns");
+		});
+
+		it("setNamespace throws when no active profile", () => {
+			const service = ProfileService.init(f5xcConfigDir);
+			expect(() => service.setNamespace("test")).toThrow(/No active profile/);
+		});
+
 		it("profiles without env field work unchanged (backward compat)", async () => {
 			writeProfile(f5xcProfilesDir, TEST_PROFILE);
 			writeActiveProfile(f5xcConfigDir, TEST_PROFILE.name);

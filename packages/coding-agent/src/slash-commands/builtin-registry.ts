@@ -947,6 +947,7 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<BuiltinSlashCommandSpec> = [
 			{ name: "status", description: "Show current auth status" },
 			{ name: "create", description: "Create a new profile", usage: "<name> <url> <token> [namespace]" },
 			{ name: "delete", description: "Delete a profile", usage: "<name> --confirm" },
+			{ name: "namespace", description: "Switch namespace within active profile", usage: "<namespace>" },
 		],
 		handle: async (command, runtime) => {
 			const { handleProfileCommand } = await import("../services/f5xc-profile-command");

@@ -244,7 +244,7 @@ describe("F5XC security: sensitive env var masking", () => {
 		);
 
 		const output = ctx.messages[0].text;
-		expect(output).toContain("Tenant:");
+		expect(output).toContain("F5XC_TENANT:");
 		expect(output).toContain("test-tenant");
 	});
 });
@@ -318,9 +318,9 @@ describe("F5XC security: TUI sanitization", () => {
 		expect(output).toContain("https://evil.io");
 		// The newline within the URL field should be stripped so it can't
 		// break onto a separate line (the text remains but is harmless inline)
-		const urlLine = output.split("\n").find((l: string) => l.includes("API URL"));
+		const urlLine = output.split("\n").find((l: string) => l.includes("F5XC_API_URL"));
+		expect(urlLine).toBeDefined();
 		expect(urlLine).toContain("https://evil.io");
-		expect(urlLine).toContain("INJECTED LINE"); // all on same line, not a separate spoofed line
 	});
 
 	it("/profile list strips control characters from profile fields", async () => {

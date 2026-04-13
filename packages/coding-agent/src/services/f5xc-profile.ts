@@ -183,6 +183,17 @@ export class ProfileService {
 		fs.unlinkSync(profilePath);
 	}
 
+	setNamespace(namespace: string): void {
+		if (!this.#activeProfile) {
+			throw new ProfileError("No active profile. Activate a profile first.");
+		}
+		this.#activeProfile = { ...this.#activeProfile, defaultNamespace: namespace };
+		// Re-apply settings with the new namespace
+		this.#applyToSettings(this.#activeProfile);
+		const hasEnvOverride = !!process.env.F5XC_API_TOKEN || !!process.env.F5XC_NAMESPACE;
+		this.#credentialSource = hasEnvOverride ? "mixed" : "profile";
+	}
+
 	getStatus(): ProfileStatus {
 		const url = process.env.F5XC_API_URL ?? this.#activeProfile?.apiUrl ?? null;
 		let tenant: string | null = null;
@@ -193,7 +204,7 @@ export class ProfileService {
 			activeProfileName: this.#activeProfile?.name ?? null,
 			activeProfileUrl: url,
 			activeProfileTenant: tenant,
-			activeProfileNamespace: this.#activeProfile?.defaultNamespace ?? null,
+			activeProfileNamespace: process.env.F5XC_NAMESPACE ?? this.#activeProfile?.defaultNamespace ?? null,
 			credentialSource: this.#credentialSource,
 			isConfigured: this.#credentialSource !== "none",
 			watcherActive: false,
@@ -297,7 +308,12 @@ export class ProfileService {
 		// it directly), inject profile values for the rest. This avoids both
 		// overriding explicit env vars AND losing profile values for unset keys.
 		const existing = (Settings.instance.get("bash.environment") ?? {}) as Record<string, string>;
-		const merged: Record<string, string> = { ...existing };
+		// Preserve non-F5XC keys (user-defined HTTP_PROXY, PATH, etc.) but clear
+		// all F5XC_* keys to prevent stale credentials leaking across profile switches
+		const merged: Record<string, string> = {};
+		for (const [key, value] of Object.entries(existing)) {
+			if (!key.startsWith("F5XC_")) merged[key] = value;
+		}
 		if (!process.env.F5XC_API_URL) merged.F5XC_API_URL = profile.apiUrl;
 		if (!process.env.F5XC_API_TOKEN) merged.F5XC_API_TOKEN = profile.apiToken;
 		if (!process.env.F5XC_NAMESPACE) merged.F5XC_NAMESPACE = profile.defaultNamespace;

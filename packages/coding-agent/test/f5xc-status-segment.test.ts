@@ -75,7 +75,7 @@ describe("profile.f5xc status line segment", () => {
 
 		const result = renderF5XCProfileSegment();
 		expect(result.visible).toBe(true);
-		expect(result.content).toBe("production:default");
+		expect(result.content).toBe("test-tenant:default");
 	});
 
 	it("returns visible: false when ProfileService is not initialized (crash isolation)", () => {
@@ -107,7 +107,7 @@ describe("profile.f5xc status line segment", () => {
 		const service = ProfileService.init(f5xcConfigDir);
 		await service.loadActive();
 
-		expect(renderF5XCProfileSegment().content).toBe("production:default");
+		expect(renderF5XCProfileSegment().content).toBe("test-tenant:default");
 
 		await service.activate("staging");
 

@@ -396,6 +396,41 @@ describe("/profile slash command handler", () => {
 		expect(ctx.messages[0].text).toContain("* production");
 	});
 
+	// --- /profile namespace ---
+
+	it("/profile namespace switches namespace and shows confirmation", async () => {
+		writeProfile(f5xcProfilesDir, TEST_PROFILE);
+		writeActiveProfile(f5xcConfigDir, TEST_PROFILE.name);
+
+		const service = ProfileService.init(f5xcConfigDir);
+		await service.loadActive();
+
+		const ctx = createMockCtx();
+		await handleProfileCommand(
+			{ name: "profile", args: "namespace other-ns", text: "/profile namespace other-ns" },
+			ctx,
+		);
+
+		expect(ctx.messages[0].type).toBe("status");
+		expect(ctx.messages[0].text).toContain("Namespace switched to: other-ns");
+
+		// Verify it actually changed
+		expect(service.getStatus().activeProfileNamespace).toBe("other-ns");
+	});
+
+	it("/profile namespace with no arg shows usage", async () => {
+		ProfileService.init(f5xcConfigDir);
+
+		const ctx = createMockCtx();
+		await handleProfileCommand(
+			{ name: "profile", args: "namespace", text: "/profile namespace" },
+			ctx,
+		);
+
+		expect(ctx.messages[0].type).toBe("error");
+		expect(ctx.messages[0].text).toContain("Usage");
+	});
+
 	it("/profile unknown shows error with valid subcommands", async () => {
 		ProfileService.init(f5xcConfigDir);
 

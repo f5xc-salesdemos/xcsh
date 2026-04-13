@@ -48,9 +48,11 @@ export async function handleProfileCommand(
 			return handleCreate(ctx, service, rest);
 		case "delete":
 			return handleDelete(ctx, service, rest);
+		case "namespace":
+			return handleNamespace(ctx, service, arg);
 		default:
 			ctx.showError(
-				`Unknown subcommand: ${sub}. Use /profile list|activate|show|status|create|delete`,
+				`Unknown subcommand: ${sub}. Use /profile list|activate|show|status|create|delete|namespace`,
 			);
 	}
 }
@@ -115,24 +117,39 @@ async function handleShow(ctx: CommandContext, service: ProfileService, name?: s
 	let tenant = "";
 	try { tenant = new URL(profile.apiUrl).hostname.split(".")[0]; } catch { /* skip */ }
 
+	// Auth credentials grouped at the top
 	const lines = [
 		`Profile:      ${sanitize(profile.name)}`,
-		`  Tenant:       ${sanitize(tenant)}`,
-		`  API URL:      ${sanitize(profile.apiUrl)}`,
-		`  API Token:    ${service.maskToken(profile.apiToken)}`,
-		`  Namespace:    ${sanitize(profile.defaultNamespace)}`,
+		`  F5XC_TENANT:       ${sanitize(tenant)}`,
+		`  F5XC_API_URL:      ${sanitize(profile.apiUrl)}`,
+		`  F5XC_API_TOKEN:    ${service.maskToken(profile.apiToken)}`,
 	];
+
+	// Show auth-related env vars (USERNAME, CONSOLE_PASSWORD) in the auth section
+	const authKeys = ["F5XC_USERNAME", "F5XC_CONSOLE_PASSWORD"];
+	for (const key of authKeys) {
+		const value = profile.env?.[key];
+		if (value) {
+			const display = isSensitiveKey(key) ? service.maskToken(value) : sanitize(value);
+			lines.push(`  ${sanitize(key)}: ${display}`);
+		}
+	}
+
 	if (profile.metadata?.createdAt) lines.push(`  Created:      ${profile.metadata.createdAt.slice(0, 10)}`);
 	if (profile.metadata?.expiresAt) lines.push(`  Expires:      ${profile.metadata.expiresAt.slice(0, 10)}`);
 
-	// Display additional env vars from profile.env
-	if (profile.env && Object.keys(profile.env).length > 0) {
-		lines.push("  Environment:");
+	// Environment section: namespace + remaining env vars
+	const envLines: string[] = [];
+	envLines.push(`    F5XC_NAMESPACE: ${sanitize(profile.defaultNamespace)}`);
+	if (profile.env) {
 		for (const [key, value] of Object.entries(profile.env)) {
+			if (authKeys.includes(key)) continue; // already shown above
 			const display = isSensitiveKey(key) ? service.maskToken(value) : sanitize(value);
-			lines.push(`    ${sanitize(key)}: ${display}`);
+			envLines.push(`    ${sanitize(key)}: ${display}`);
 		}
 	}
+	lines.push("  Environment:");
+	lines.push(...envLines);
 
 	ctx.showStatus(lines.join("\n"));
 }
@@ -207,6 +224,22 @@ async function handleDelete(ctx: CommandContext, service: ProfileService, args: 
 	try {
 		await service.deleteProfile(name);
 		ctx.showStatus(`Profile '${name}' deleted.`);
+	} catch (err) {
+		ctx.showError(err instanceof ProfileError ? err.message : String(err));
+	}
+}
+
+async function handleNamespace(ctx: CommandContext, service: ProfileService, namespace: string): Promise<void> {
+	if (!namespace) {
+		ctx.showError("Usage: /profile namespace <name>\nSwitches the active namespace without changing the profile. Default is 'default'.");
+		return;
+	}
+	try {
+		service.setNamespace(namespace);
+		ctx.showStatus(`Namespace switched to: ${namespace}`);
+		ctx.statusLine?.invalidate();
+		ctx.updateEditorTopBorder?.();
+		ctx.ui?.requestRender();
 	} catch (err) {
 		ctx.showError(err instanceof ProfileError ? err.message : String(err));
 	}
