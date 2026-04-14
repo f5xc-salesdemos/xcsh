@@ -45,6 +45,12 @@ const HARD_TIMEOUT_GRACE_MS = 5_000;
 const shellSessions = new Map<string, Shell>();
 const brokenShellSessions = new Set<string>();
 
+/** Clear cached shell sessions so bun can exit cleanly after tests. */
+export function _resetShellSessionsForTest(): void {
+	shellSessions.clear();
+	brokenShellSessions.clear();
+}
+
 async function resolveShellCwd(cwd: string | undefined): Promise<string | undefined> {
 	if (!cwd) return undefined;
 

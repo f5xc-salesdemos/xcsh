@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
-import { executeBash } from "@f5xc-salesdemos/xcsh/exec/bash-executor";
+import { executeBash, _resetShellSessionsForTest } from "@f5xc-salesdemos/xcsh/exec/bash-executor";
 
 function makeTempDir(): string {
 	return fs.mkdtempSync(path.join(os.tmpdir(), "xcsh-bash-env-"));
@@ -23,6 +23,7 @@ describe("bash.environment injection into subprocess", () => {
 
 	afterEach(() => {
 		_resetSettingsForTest();
+		_resetShellSessionsForTest();
 		for (const key of Object.keys(process.env)) {
 			if (key.startsWith("F5XC_")) delete process.env[key];
 		}

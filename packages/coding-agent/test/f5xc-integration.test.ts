@@ -4,7 +4,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { Snowflake } from "@f5xc-salesdemos/pi-utils";
 import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
-import { executeBash } from "@f5xc-salesdemos/xcsh/exec/bash-executor";
+import { executeBash, _resetShellSessionsForTest } from "@f5xc-salesdemos/xcsh/exec/bash-executor";
 import { ProfileService } from "@f5xc-salesdemos/xcsh/services/f5xc-profile";
 import {
 	TEST_F5XC_NAMESPACE as TEST_NAMESPACE,
@@ -49,6 +49,7 @@ describe("F5XC authentication end-to-end integration", () => {
 
 	afterEach(() => {
 		_resetSettingsForTest();
+		_resetShellSessionsForTest();
 		ProfileService._resetForTest();
 		for (const key of Object.keys(process.env)) {
 			if (key.startsWith("F5XC_")) delete process.env[key];
