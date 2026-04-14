@@ -11,4 +11,4 @@ Package-specific references:
 - [MCP configuration guide](../../docs/mcp-config.md)
 - [MCP runtime lifecycle](../../docs/mcp-runtime-lifecycle.md)
 - [MCP server/tool authoring](../../docs/mcp-server-tool-authoring.md)
-- [DEVELOPMENT](./DEVELOPMENT.md)
+- [CONTRIBUTING](../../CONTRIBUTING.md)

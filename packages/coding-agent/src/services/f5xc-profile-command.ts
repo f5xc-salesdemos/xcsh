@@ -1,5 +1,6 @@
 import * as os from "node:os";
 import * as path from "node:path";
+import { SECRET_ENV_PATTERNS } from "../secrets/index";
 import { ProfileError, ProfileService } from "./f5xc-profile";
 import { formatAuthIndicator, renderF5XCTable, type TableRow } from "./f5xc-table";
 
@@ -51,8 +52,23 @@ export async function handleProfileCommand(
 			return handleDelete(ctx, service, rest);
 		case "namespace":
 			return handleNamespace(ctx, service, arg);
+		case "env":
+			return handleEnvSubcommand(ctx, service, rest);
+		case "set":
+		case "add":
+			return handleEnvSet(ctx, service, arg);
+		case "unset":
+		case "remove":
+		case "clear":
+			return handleEnvUnset(ctx, service, arg);
 		default:
-			ctx.showError(`Unknown subcommand: ${sub}. Use /profile list|activate|show|status|create|delete|namespace`);
+			// Natural language fallback: detect KEY=VALUE patterns
+			if (ENV_SET_PATTERN.test(command.args)) {
+				return handleEnvSet(ctx, service, command.args);
+			}
+			ctx.showError(
+				`Unknown subcommand: ${sub}. Use /profile list|activate|show|status|create|delete|namespace|env|set|unset`,
+			);
 	}
 }
 
@@ -92,12 +108,8 @@ async function handleActivate(ctx: CommandContext, service: ProfileService, name
 	}
 }
 
-/** Keys containing these substrings are treated as secrets and masked in output */
-const SENSITIVE_KEY_PATTERNS = ["TOKEN", "PASSWORD", "SECRET"];
-
 function isSensitiveKey(key: string): boolean {
-	const upper = key.toUpperCase();
-	return SENSITIVE_KEY_PATTERNS.some(p => upper.includes(p));
+	return SECRET_ENV_PATTERNS.test(key);
 }
 
 async function handleShow(ctx: CommandContext, service: ProfileService, name?: string): Promise<void> {
@@ -247,6 +259,149 @@ async function handleNamespace(ctx: CommandContext, service: ProfileService, nam
 		ctx.statusLine?.invalidate();
 		ctx.updateEditorTopBorder?.();
 		ctx.ui?.requestRender();
+	} catch (err) {
+		ctx.showError(err instanceof ProfileError ? err.message : String(err));
+	}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Environment Variable Management
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Matches KEY=VALUE pairs in freeform text. Keys start with a letter or underscore. */
+const ENV_SET_PATTERN = /([A-Za-z_][A-Za-z0-9_]*)=(\S+)/g;
+
+function parseEnvPairs(text: string): Record<string, string> {
+	const vars: Record<string, string> = {};
+	for (const match of text.matchAll(ENV_SET_PATTERN)) {
+		vars[match[1]] = match[2];
+	}
+	return vars;
+}
+
+/** Extract bare KEY names (uppercase env-var-style words) from text, filtering out common verbs. */
+const NOISE_WORDS = new Set([
+	"remove",
+	"unset",
+	"delete",
+	"clear",
+	"drop",
+	"env",
+	"environment",
+	"variable",
+	"variables",
+	"var",
+	"vars",
+	"from",
+	"my",
+	"profile",
+	"the",
+]);
+
+function parseEnvKeys(text: string): string[] {
+	return text.split(/\s+/).filter(w => /^[A-Za-z_][A-Za-z0-9_]*$/.test(w) && !NOISE_WORDS.has(w.toLowerCase()));
+}
+
+async function handleEnvSubcommand(ctx: CommandContext, service: ProfileService, args: string[]): Promise<void> {
+	const [action, ...rest] = args;
+	const arg = rest.join(" ");
+	switch (action?.toLowerCase()) {
+		case "list":
+		case undefined:
+		case "":
+			return handleEnvList(ctx, service);
+		case "set":
+		case "add":
+			return handleEnvSet(ctx, service, arg);
+		case "unset":
+		case "remove":
+		case "delete":
+		case "clear":
+			return handleEnvUnset(ctx, service, arg);
+		default: {
+			// If the action itself contains KEY=VALUE, treat the whole thing as a set
+			const fullText = [action, ...rest].join(" ");
+			if (ENV_SET_PATTERN.test(fullText)) {
+				return handleEnvSet(ctx, service, fullText);
+			}
+			ctx.showError(`Unknown env action: ${action}. Use /profile env set|unset|list`);
+		}
+	}
+}
+
+async function handleEnvList(ctx: CommandContext, service: ProfileService): Promise<void> {
+	const status = service.getStatus();
+	const profileName = status.activeProfileName;
+	if (!profileName) {
+		ctx.showError("No active profile. Use /profile activate <name> first.");
+		return;
+	}
+	const profiles = await service.listProfiles();
+	const profile = profiles.find(p => p.name === profileName);
+	if (!profile?.env || Object.keys(profile.env).length === 0) {
+		ctx.showStatus(`Profile '${profileName}' has no custom environment variables.`);
+		return;
+	}
+	const rows: TableRow[] = [];
+	for (const [key, value] of Object.entries(profile.env)) {
+		const sensitive = isSensitiveKey(key) || (profile.sensitiveKeys ?? []).includes(key);
+		rows.push({ key: sanitize(key), value: sensitive ? service.maskToken(value) : sanitize(value) });
+	}
+	ctx.showStatus(renderF5XCTable(`${profileName} env`, rows));
+}
+
+async function handleEnvSet(ctx: CommandContext, service: ProfileService, args: string): Promise<void> {
+	const vars = parseEnvPairs(args);
+	const keys = Object.keys(vars);
+	if (keys.length === 0) {
+		ctx.showError("No KEY=VALUE pairs found. Usage: /profile set KEY=VALUE [KEY2=VALUE2 ...]");
+		return;
+	}
+	const status = service.getStatus();
+	const profileName = status.activeProfileName;
+	if (!profileName) {
+		ctx.showError("No active profile. Use /profile activate <name> first.");
+		return;
+	}
+	try {
+		const result = await service.setEnvVars(profileName, vars);
+		const lines: string[] = [];
+		for (const key of keys) {
+			const lock = result.sensitive.includes(key) ? " (auto-sensitive)" : "";
+			const displayValue = isSensitiveKey(key) ? "***" : vars[key];
+			lines.push(`  ${key}=${displayValue}${lock}`);
+		}
+		ctx.showStatus(
+			`Set ${keys.length} variable${keys.length > 1 ? "s" : ""} on '${profileName}':\n${lines.join("\n")}`,
+		);
+		ctx.statusLine?.invalidate();
+	} catch (err) {
+		ctx.showError(err instanceof ProfileError ? err.message : String(err));
+	}
+}
+
+async function handleEnvUnset(ctx: CommandContext, service: ProfileService, args: string): Promise<void> {
+	const keys = parseEnvKeys(args);
+	if (keys.length === 0) {
+		ctx.showError("No variable names found. Usage: /profile unset KEY [KEY2 ...]");
+		return;
+	}
+	const status = service.getStatus();
+	const profileName = status.activeProfileName;
+	if (!profileName) {
+		ctx.showError("No active profile. Use /profile activate <name> first.");
+		return;
+	}
+	try {
+		const result = await service.unsetEnvVars(profileName, keys);
+		if (result.removed.length === 0) {
+			ctx.showStatus(`No matching variables found on '${profileName}'.`);
+			return;
+		}
+		ctx.showStatus(
+			`Removed ${result.removed.length} variable${result.removed.length > 1 ? "s" : ""} from '${profileName}':\n${result.removed.map(k => `  ${k}`).join("\n")}`,
+		);
+		ctx.statusLine?.invalidate();
 	} catch (err) {
 		ctx.showError(err instanceof ProfileError ? err.message : String(err));
 	}

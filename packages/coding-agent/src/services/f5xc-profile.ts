@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { logger } from "@f5xc-salesdemos/pi-utils";
 import { Settings } from "../config/settings";
+import { SECRET_ENV_PATTERNS } from "../secrets/index";
 
 export interface F5XCProfile {
 	name: string;
@@ -210,6 +211,75 @@ export class ProfileService {
 			throw new ProfileError(`Profile '${name}' not found.`, name);
 		}
 		fs.unlinkSync(profilePath);
+	}
+
+	/** Add or update environment variables on a profile. Keys matching secret
+	 *  naming patterns are automatically added to sensitiveKeys. */
+	async setEnvVars(name: string, vars: Record<string, string>): Promise<{ sensitive: string[] }> {
+		this.#validateProfileName(name);
+		const profile = this.#readProfile(name);
+		if (!profile) throw new ProfileError(`Profile '${name}' not found.`, name);
+
+		const env = { ...(profile.env ?? {}), ...vars };
+		const sensitiveSet = new Set(profile.sensitiveKeys ?? []);
+		const newSensitive: string[] = [];
+		for (const key of Object.keys(vars)) {
+			if (SECRET_ENV_PATTERNS.test(key) && !sensitiveSet.has(key)) {
+				sensitiveSet.add(key);
+				newSensitive.push(key);
+			}
+		}
+		// Remove sensitiveKeys entries for keys no longer in env
+		const sensitiveKeys = [...sensitiveSet].filter(k => k in env);
+
+		const updated: F5XCProfile = {
+			...profile,
+			env,
+			sensitiveKeys: sensitiveKeys.length > 0 ? sensitiveKeys : undefined,
+		};
+		const profilePath = path.join(this.profilesDir, `${name}.json`);
+		this.#atomicWrite(profilePath, JSON.stringify(updated, null, 2));
+
+		if (this.#activeProfile?.name === name) {
+			this.#activeProfile = updated;
+			this.#applyToSettings(updated);
+		}
+		return { sensitive: newSensitive };
+	}
+
+	/** Remove environment variables from a profile. Also removes them from sensitiveKeys. */
+	async unsetEnvVars(name: string, keys: string[]): Promise<{ removed: string[] }> {
+		this.#validateProfileName(name);
+		const profile = this.#readProfile(name);
+		if (!profile) throw new ProfileError(`Profile '${name}' not found.`, name);
+
+		const env = { ...(profile.env ?? {}) };
+		const removed: string[] = [];
+		for (const key of keys) {
+			if (key in env) {
+				delete env[key];
+				removed.push(key);
+			}
+		}
+		if (removed.length === 0) return { removed: [] };
+
+		const keySet = new Set(keys);
+		const sensitiveKeys = (profile.sensitiveKeys ?? []).filter(k => !keySet.has(k) && k in env);
+		const envOrUndefined = Object.keys(env).length > 0 ? env : undefined;
+
+		const updated: F5XCProfile = {
+			...profile,
+			env: envOrUndefined,
+			sensitiveKeys: sensitiveKeys.length > 0 ? sensitiveKeys : undefined,
+		};
+		const profilePath = path.join(this.profilesDir, `${name}.json`);
+		this.#atomicWrite(profilePath, JSON.stringify(updated, null, 2));
+
+		if (this.#activeProfile?.name === name) {
+			this.#activeProfile = updated;
+			this.#applyToSettings(updated);
+		}
+		return { removed };
 	}
 
 	async validateToken(options?: {

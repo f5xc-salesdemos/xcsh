@@ -1107,7 +1107,7 @@ Use only script names that exist in `packages/coding-agent/package.json`:
 
 - Typecheck package:
   - `bun --cwd=packages/coding-agent run check`
-- Run package tests:
+- Run package tests (full suite, ~3200 tests):
   - `bun --cwd=packages/coding-agent run test`
 - Reformat prompt assets used by this package:
   - `bun --cwd=packages/coding-agent run format-prompts`
@@ -1118,7 +1118,74 @@ Use only script names that exist in `packages/coding-agent/package.json`:
 - Build compiled binary artifact (`dist/xcsh`):
   - `bun --cwd=packages/coding-agent run build`
 
-`packages/coding-agent/README.md` intentionally delegates install/config/CLI docs to the monorepo root README (`../../README.md`) and keeps package-specific references to `CHANGELOG.md`, `docs/`, and `DEVELOPMENT.md`.
+`packages/coding-agent/README.md` intentionally delegates install/config/CLI docs to the monorepo root README (`../../README.md`) and keeps package-specific references to `CHANGELOG.md` and `docs/`, and links back to the root `CONTRIBUTING.md`.
+
+### Linting and formatting (required before every commit)
+
+All TypeScript/JavaScript code must pass Biome checks before committing. CI enforces this and **will reject PRs with lint or format errors**. CI runs take 5-10 minutes to complete, so catching these locally saves significant iteration time.
+
+**A pre-commit hook runs automatically** via `lint-staged` — it checks only staged files, so it's fast (<1s). If the hook blocks your commit, fix the issues first:
+
+```bash
+# Check what Biome would flag (read-only)
+npx biome check .
+
+# Auto-fix all fixable issues (writes files)
+bun run fix
+
+# Format only (no lint fixes)
+bun run fmt
+```
+
+**Key commands:**
+
+| Command | What it does |
+|---------|-------------|
+| `bun run check` | Biome check + TypeScript type check (read-only) |
+| `bun run lint` | Biome lint only (read-only) |
+| `bun run fmt` | Biome format (writes files) |
+| `bun run fix` | Biome check + auto-fix (writes files) |
+
+Biome configuration is in `biome.json` at the repo root. It enforces tabs (width 3), double quotes, semicolons always, and 120-char line width.
+
+### Resource-aware testing
+
+The full test suite (`bun test` or `turbo run test`) runs ~3200 tests with a default concurrency of 20 parallel test files. In resource-constrained environments (containers, CI runners with limited RAM, devcontainers) this can OOM or saturate the CPU.
+
+**Preferred workflow: targeted tests first, full suite in CI.**
+
+Use `--filter` to run only tests related to your changes:
+
+```bash
+# Run tests matching a keyword (matches file paths and test names)
+bun test --filter "profile"
+bun test --filter "secret"
+bun test --filter "slash"
+
+# Run a specific test file
+bun test test/f5xc-profile-service.test.ts
+```
+
+If you must run the full suite locally, limit concurrency:
+
+```bash
+# Limit to 4 parallel test files (safe for 4GB containers)
+bun test --max-concurrency 4
+
+# Single-file sequential (slowest but minimal resources)
+bun test --max-concurrency 1
+```
+
+**TDD validation loop for constrained environments:**
+
+```
+1. tsgo -p tsconfig.json --noEmit          # Type check (fast, ~2s)
+2. npx biome check .                       # Lint + format (fast, <1s)
+3. bun test --filter "<area>"              # Targeted tests (~3-5s)
+4. Full suite runs in CI after push        # 3200 tests, ~90s
+```
+
+Steps 1-3 catch the vast majority of issues without risking OOM. Step 4 is the safety net.
 
 ### Playbook: add a built-in tool
 
