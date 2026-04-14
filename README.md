@@ -1341,7 +1341,7 @@ Key ideas:
 
 `/debug` opens tools for debugging, reporting, and profiling.
 
-For architecture and contribution guidelines, see [packages/coding-agent/DEVELOPMENT.md](packages/coding-agent/DEVELOPMENT.md).
+For architecture and contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 

@@ -948,6 +948,9 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<BuiltinSlashCommandSpec> = [
 			{ name: "create", description: "Create a new profile", usage: "<name> <url> <token> [namespace]" },
 			{ name: "delete", description: "Delete a profile", usage: "<name> --confirm" },
 			{ name: "namespace", description: "Switch namespace within active profile", usage: "<namespace>" },
+			{ name: "env", description: "Manage environment variables", usage: "set|unset|list [KEY=VALUE ...]" },
+			{ name: "set", description: "Set environment variable(s)", usage: "KEY=VALUE [KEY2=VALUE2 ...]" },
+			{ name: "unset", description: "Remove environment variable(s)", usage: "KEY [KEY2 ...]" },
 		],
 		handle: async (command, runtime) => {
 			const { handleProfileCommand } = await import("../services/f5xc-profile-command");

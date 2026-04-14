@@ -1,0 +1,6 @@
+#!/bin/sh
+# Pre-commit hook: runs lint-staged to check only staged files with Biome.
+# Installed automatically via `bun install` (prepare script sets core.hooksPath).
+# To bypass in emergencies: git commit --no-verify
+
+npx lint-staged
