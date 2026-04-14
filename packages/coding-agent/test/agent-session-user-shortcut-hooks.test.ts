@@ -27,6 +27,7 @@ describe("AgentSession user shortcut hooks", () => {
 
 	afterEach(async () => {
 		vi.restoreAllMocks();
+		bashExecutor._resetShellSessionsForTest();
 		if (session) {
 			await session.dispose();
 		}

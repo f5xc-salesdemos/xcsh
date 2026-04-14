@@ -49,6 +49,8 @@ const brokenShellSessions = new Set<string>();
 export function _resetShellSessionsForTest(): void {
 	shellSessions.clear();
 	brokenShellSessions.clear();
+	// Force GC so native Shell handles close immediately via Rust Drop
+	if (typeof Bun !== "undefined") Bun.gc(true);
 }
 
 async function resolveShellCwd(cwd: string | undefined): Promise<string | undefined> {
