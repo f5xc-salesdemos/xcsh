@@ -1,11 +1,13 @@
+import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
-import { getOAuthProviders, type OAuthProvider } from "@f5xc-salesdemos/pi-ai";
+import { getOAuthProviders, loginLiteLLM, type OAuthProvider } from "@f5xc-salesdemos/pi-ai";
 import type { Component } from "@f5xc-salesdemos/pi-tui";
 import { Input, Loader, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
-import { getAgentDbPath, getConfigDirName, getProjectDir } from "@f5xc-salesdemos/pi-utils";
+import { getAgentDbPath, getAgentDir, getConfigDirName, getProjectDir } from "@f5xc-salesdemos/pi-utils";
 import { invalidate as invalidateFsCache } from "../../capability/fs";
+import { generateModelsYml, probeLiteLLMConnection, readLiteLLMConfig } from "../../config/auto-config";
 import { getRoleInfo } from "../../config/model-registry";
 import { settings } from "../../config/settings";
 import { DebugSelectorComponent } from "../../debug";
@@ -818,7 +820,92 @@ export class SelectorController {
 		await this.showSessionSelector();
 	}
 
+	async #handleLiteLLMLogin(): Promise<void> {
+		this.ctx.showStatus("Configuring LiteLLM proxy…");
+
+		// Read existing config for idempotent defaults
+		const modelsPath = path.join(getAgentDir(), "models.yml");
+		const existing = readLiteLLMConfig(modelsPath);
+
+		try {
+			// Sequential prompts for base URL + API key
+			const result = await loginLiteLLM({
+				defaults: existing,
+				onPrompt: async prompt => {
+					this.ctx.chatContainer.addChild(new Spacer(1));
+					this.ctx.chatContainer.addChild(new Text(theme.fg("text", prompt.message), 1, 0));
+					if (prompt.placeholder) {
+						this.ctx.chatContainer.addChild(new Text(theme.fg("dim", `e.g., ${prompt.placeholder}`), 1, 0));
+					}
+					this.ctx.ui.requestRender();
+
+					const { promise, resolve } = Promise.withResolvers<string>();
+					const codeInput = new Input();
+					codeInput.onSubmit = () => {
+						const value = codeInput.getValue();
+						this.ctx.editorContainer.clear();
+						this.ctx.editorContainer.addChild(this.ctx.editor);
+						this.ctx.ui.setFocus(this.ctx.editor);
+						resolve(value);
+					};
+					this.ctx.editorContainer.clear();
+					this.ctx.editorContainer.addChild(codeInput);
+					this.ctx.ui.setFocus(codeInput);
+					return promise;
+				},
+			});
+
+			// Verification
+			this.ctx.chatContainer.addChild(new Spacer(1));
+			this.ctx.chatContainer.addChild(new Text(theme.fg("dim", `Connecting to ${result.baseUrl}…`), 1, 0));
+			this.ctx.ui.requestRender();
+
+			const probe = await probeLiteLLMConnection(result.baseUrl, result.apiKey);
+
+			if (probe.reachable) {
+				this.ctx.chatContainer.addChild(
+					new Text(
+						theme.fg("success", `${theme.status.success} OK — ${probe.models.length} models available`),
+						1,
+						0,
+					),
+				);
+			} else {
+				this.ctx.chatContainer.addChild(
+					new Text(theme.fg("error", `${theme.status.error} FAIL — ${probe.error ?? "connection failed"}`), 1, 0),
+				);
+			}
+
+			// Write models.yml
+			const yml = generateModelsYml(result.baseUrl, { apiBasePath: probe.apiBasePath });
+			fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
+			fs.writeFileSync(modelsPath, yml);
+
+			// Save API key in auth storage (onAuth is unused for litellm but required by the signature)
+			await this.ctx.session.modelRegistry.authStorage.login("litellm" as OAuthProvider, {
+				onAuth: () => {},
+				onPrompt: async () => result.apiKey,
+			});
+
+			// Refresh model registry
+			await this.ctx.session.modelRegistry.refresh();
+
+			this.ctx.chatContainer.addChild(new Spacer(1));
+			this.ctx.chatContainer.addChild(
+				new Text(theme.fg("success", `LiteLLM configuration saved to ${modelsPath}`), 1, 0),
+			);
+			this.ctx.ui.requestRender();
+		} catch (error: unknown) {
+			this.ctx.showError(`LiteLLM login failed: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	}
+
 	async #handleOAuthLogin(providerId: string): Promise<void> {
+		// LiteLLM has its own flow with config persistence
+		if (providerId === "litellm") {
+			return this.#handleLiteLLMLogin();
+		}
+
 		this.ctx.showStatus(`Logging in to ${providerId}…`);
 		const manualInput = this.ctx.oauthManualInput;
 		const useManualInput = CALLBACK_SERVER_PROVIDERS.has(providerId as OAuthProvider);
