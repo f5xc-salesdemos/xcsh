@@ -253,7 +253,9 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 
 			const pushUpdate = () => {
 				if (!onUpdate) return;
-				const tailText = tailBuffer.text();
+				const obfuscator = this.session?.obfuscator;
+				const rawTail = tailBuffer.text();
+				const tailText = obfuscator?.hasSecrets() ? obfuscator.obfuscate(rawTail) : rawTail;
 				onUpdate({
 					content: [{ type: "text", text: tailText }],
 					details: buildUpdateDetails(),
@@ -265,6 +267,9 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 			outputSink = new OutputSink({
 				artifactPath,
 				artifactId,
+				maskSecrets: this.session?.obfuscator?.hasSecrets()
+					? t => this.session!.obfuscator!.obfuscate(t)
+					: undefined,
 				onChunk: chunk => {
 					appendTail(chunk);
 					pushUpdate();
@@ -289,6 +294,9 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 				deadlineMs,
 				signal: combinedSignal,
 				sessionId,
+				maskSecrets: this.session?.obfuscator?.hasSecrets()
+					? t => this.session!.obfuscator!.obfuscate(t)
+					: undefined,
 				kernelMode: this.session.settings.get("python.kernelMode"),
 				useSharedGateway: this.session.settings.get("python.sharedGateway"),
 				sessionFile: sessionFile ?? undefined,

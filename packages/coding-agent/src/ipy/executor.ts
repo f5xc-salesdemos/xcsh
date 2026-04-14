@@ -43,6 +43,8 @@ export interface PythonExecutorOptions {
 	/** Artifact path/id for full output storage */
 	artifactPath?: string;
 	artifactId?: string;
+	/** Mask sensitive values in output. */
+	maskSecrets?: (text: string) => string;
 }
 
 export interface PythonKernelExecutor {
@@ -635,6 +637,7 @@ async function executeWithKernel(
 		onChunk: options?.onChunk,
 		artifactPath: options?.artifactPath,
 		artifactId: options?.artifactId,
+		maskSecrets: options?.maskSecrets,
 	});
 	const displayOutputs: KernelDisplayOutput[] = [];
 	const deadlineMs = getExecutionDeadlineMs(options);

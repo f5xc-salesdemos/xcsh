@@ -162,6 +162,8 @@ export interface ToolSession {
 	asyncJobManager?: AsyncJobManager;
 	/** Settings instance for passing to subagents */
 	settings: Settings;
+	/** Secret obfuscator for masking sensitive env var values in tool output. */
+	obfuscator?: import("../secrets/obfuscator").SecretObfuscator;
 	/** Shared native search DB for grep/glob/fuzzyFind-backed workflows. */
 	searchDb?: SearchDb;
 	/** Plan mode state (if active) */

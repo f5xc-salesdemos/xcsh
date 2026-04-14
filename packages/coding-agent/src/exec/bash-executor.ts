@@ -22,6 +22,8 @@ export interface BashExecutorOptions {
 	/** Artifact path/id for full output storage */
 	artifactPath?: string;
 	artifactId?: string;
+	/** Mask sensitive values (e.g. env var secrets) in output. */
+	maskSecrets?: (text: string) => string;
 }
 
 export interface BashResult {
@@ -42,6 +44,14 @@ const HARD_TIMEOUT_GRACE_MS = 5_000;
 
 const shellSessions = new Map<string, Shell>();
 const brokenShellSessions = new Set<string>();
+
+/** Clear cached shell sessions so bun can exit cleanly after tests. */
+export function _resetShellSessionsForTest(): void {
+	shellSessions.clear();
+	brokenShellSessions.clear();
+	// Force GC so native Shell handles close immediately via Rust Drop
+	if (typeof Bun !== "undefined") Bun.gc(true);
+}
 
 async function resolveShellCwd(cwd: string | undefined): Promise<string | undefined> {
 	if (!cwd) return undefined;
@@ -89,6 +99,7 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 		// Throttle the streaming preview callback to avoid saturating the
 		// event loop when commands produce massive output (e.g. seq 1 50M).
 		chunkThrottleMs: options?.onChunk ? 50 : 0,
+		maskSecrets: options?.maskSecrets,
 	});
 
 	// sink.push() is synchronous — buffer management, counters, and onChunk
