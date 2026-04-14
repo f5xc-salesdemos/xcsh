@@ -902,6 +902,10 @@ const ThemeJsonSchema = Type.Object({
 		statusLinePlanModeFg: Type.Optional(ColorValueSchema),
 		statusLineContextPctBg: Type.Optional(ColorValueSchema),
 		statusLineContextPctFg: Type.Optional(ColorValueSchema),
+		statusLineContextPctNormalBg: Type.Optional(ColorValueSchema),
+		statusLineContextPctWarningBg: Type.Optional(ColorValueSchema),
+		statusLineContextPctPurpleBg: Type.Optional(ColorValueSchema),
+		statusLineContextPctErrorBg: Type.Optional(ColorValueSchema),
 		statusLineProfileF5xcBg: Type.Optional(ColorValueSchema),
 		statusLineProfileF5xcFg: Type.Optional(ColorValueSchema),
 	}),
@@ -1001,6 +1005,10 @@ export type ThemeColor =
 	| "statusLinePlanModeFg"
 	| "statusLineContextPctBg"
 	| "statusLineContextPctFg"
+	| "statusLineContextPctNormalBg"
+	| "statusLineContextPctWarningBg"
+	| "statusLineContextPctPurpleBg"
+	| "statusLineContextPctErrorBg"
 	| "statusLineProfileF5xcBg"
 	| "statusLineProfileF5xcFg";
 
@@ -1086,6 +1094,10 @@ const THEME_COLOR_RECORD = {
 	statusLinePlanModeFg: true,
 	statusLineContextPctBg: true,
 	statusLineContextPctFg: true,
+	statusLineContextPctNormalBg: true,
+	statusLineContextPctWarningBg: true,
+	statusLineContextPctPurpleBg: true,
+	statusLineContextPctErrorBg: true,
 	statusLineProfileF5xcBg: true,
 	statusLineProfileF5xcFg: true,
 } satisfies Record<ThemeColor, true>;
@@ -1320,6 +1332,10 @@ export class Theme {
 		this.#fgColors.statusLinePlanModeFg ??= this.#fgColors.text;
 		this.#fgColors.statusLineContextPctBg ??= this.#fgColors.muted;
 		this.#fgColors.statusLineContextPctFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineContextPctNormalBg ??= this.#fgColors.statusLineContextPctBg;
+		this.#fgColors.statusLineContextPctWarningBg ??= this.#fgColors.statusLineContextPctBg;
+		this.#fgColors.statusLineContextPctPurpleBg ??= this.#fgColors.statusLineContextPctBg;
+		this.#fgColors.statusLineContextPctErrorBg ??= this.#fgColors.statusLineContextPctBg;
 		this.#fgColors.statusLineProfileF5xcBg ??= this.#fgColors.muted;
 		this.#fgColors.statusLineProfileF5xcFg ??= this.#fgColors.text;
 		this.#fgColors.contentAccent ??= this.#fgColors.accent;

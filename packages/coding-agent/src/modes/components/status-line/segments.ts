@@ -5,7 +5,7 @@ import { TERMINAL } from "@f5xc-salesdemos/pi-tui";
 import { formatDuration, formatNumber, getProjectDir, relativePathWithinRoot } from "@f5xc-salesdemos/pi-utils";
 import { theme } from "../../../modes/theme/theme";
 import { shortenPath } from "../../../tools/render-utils";
-import { getContextUsageLevel, getContextUsageThemeColor } from "./context-thresholds";
+import { getContextUsageBgThemeColor, getContextUsageLevel, getContextUsageThemeColor } from "./context-thresholds";
 import type { RenderedSegment, SegmentContext, StatusLineSegment, StatusLineSegmentId } from "./types";
 
 export type { SegmentContext } from "./types";
@@ -287,17 +287,24 @@ const contextPctSegment: StatusLineSegment = {
 	render(ctx) {
 		const pct = ctx.contextPercent;
 		const window = ctx.contextWindow;
+		const level = getContextUsageLevel(pct, window);
+		const compact = ctx.options?.context_pct?.compact;
 
-		const autoIcon = ctx.autoCompactEnabled && theme.icon.auto ? ` ${theme.icon.auto}` : "";
-		const text = `${pct.toFixed(1)}%/${formatNumber(window)}${autoIcon}`;
+		let text: string;
+		if (compact) {
+			text = `${Math.round(pct)}%`;
+		} else {
+			const autoIcon = ctx.autoCompactEnabled && theme.icon.auto ? ` ${theme.icon.auto}` : "";
+			text = `${pct.toFixed(1)}%/${formatNumber(window)}${autoIcon}`;
+		}
 
-		const color = getContextUsageThemeColor(getContextUsageLevel(pct, window));
-		const content = withIcon(theme.icon.context, theme.fg(color, text));
+		const color = getContextUsageThemeColor(level);
+		const content = compact ? theme.fg(color, text) : withIcon(theme.icon.context, theme.fg(color, text));
 
 		return {
 			content,
 			visible: true,
-			bg: theme.fgColorAsBg("statusLineContextPctBg"),
+			bg: theme.fgColorAsBg(getContextUsageBgThemeColor(level)),
 			fg: theme.getFgAnsi("statusLineContextPctFg"),
 		};
 	},
