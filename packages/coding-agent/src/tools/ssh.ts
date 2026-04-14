@@ -167,17 +167,22 @@ export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails> {
 		const tailBuffer = new TailBuffer(DEFAULT_MAX_BYTES);
 		const { path: artifactPath, id: artifactId } = (await this.session.allocateOutputArtifact?.("ssh")) ?? {};
 
+		const obfuscator = this.session.obfuscator;
+		const maskSecrets = obfuscator?.hasSecrets() ? (t: string) => obfuscator.obfuscate(t) : undefined;
+
 		const result = await executeSSH(hostConfig, remoteCommand, {
 			timeout: timeoutMs,
 			signal,
 			compatEnabled: hostInfo.compatEnabled,
 			artifactPath,
 			artifactId,
+			maskSecrets,
 			onChunk: chunk => {
 				tailBuffer.append(chunk);
 				if (onUpdate) {
+					const preview = maskSecrets ? maskSecrets(tailBuffer.text()) : tailBuffer.text();
 					onUpdate({
-						content: [{ type: "text", text: tailBuffer.text() }],
+						content: [{ type: "text", text: preview }],
 						details: {},
 					});
 				}

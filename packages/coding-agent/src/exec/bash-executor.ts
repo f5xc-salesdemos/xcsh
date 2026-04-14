@@ -22,6 +22,8 @@ export interface BashExecutorOptions {
 	/** Artifact path/id for full output storage */
 	artifactPath?: string;
 	artifactId?: string;
+	/** Mask sensitive values (e.g. env var secrets) in output. */
+	maskSecrets?: (text: string) => string;
 }
 
 export interface BashResult {
@@ -89,6 +91,7 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 		// Throttle the streaming preview callback to avoid saturating the
 		// event loop when commands produce massive output (e.g. seq 1 50M).
 		chunkThrottleMs: options?.onChunk ? 50 : 0,
+		maskSecrets: options?.maskSecrets,
 	});
 
 	// sink.push() is synchronous — buffer management, counters, and onChunk

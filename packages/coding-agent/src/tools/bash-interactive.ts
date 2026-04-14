@@ -292,9 +292,14 @@ export async function runInteractiveBashPty(
 		env?: Record<string, string>;
 		artifactPath?: string;
 		artifactId?: string;
+		maskSecrets?: (text: string) => string;
 	},
 ): Promise<BashInteractiveResult> {
-	const sink = new OutputSink({ artifactPath: options.artifactPath, artifactId: options.artifactId });
+	const sink = new OutputSink({
+		artifactPath: options.artifactPath,
+		artifactId: options.artifactId,
+		maskSecrets: options.maskSecrets,
+	});
 	const result = await ui.custom<BashInteractiveResult>(
 		(tui, uiTheme, _keybindings, done) => {
 			const session = new PtySession();
@@ -358,8 +363,9 @@ export async function runInteractiveBashPty(
 					},
 					(err, chunk) => {
 						if (finished || err || !chunk) return;
-						component.appendOutput(chunk);
-						const normalizedChunk = normalizeCaptureChunk(chunk);
+						const masked = options.maskSecrets ? options.maskSecrets(chunk) : chunk;
+						component.appendOutput(masked);
+						const normalizedChunk = normalizeCaptureChunk(masked);
 						sink.push(normalizedChunk);
 						tui.requestRender();
 					},

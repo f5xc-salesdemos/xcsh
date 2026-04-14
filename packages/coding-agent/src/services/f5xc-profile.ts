@@ -9,6 +9,8 @@ export interface F5XCProfile {
 	apiToken: string;
 	defaultNamespace: string;
 	env?: Record<string, string>;
+	/** Env var names from `env` whose values should be masked in output (e.g. ["F5XC_USERNAME"]). */
+	sensitiveKeys?: string[];
 	metadata?: {
 		createdAt?: string;
 		expiresAt?: string;
@@ -42,6 +44,12 @@ export class ProfileError extends Error {
 
 export class ProfileService {
 	static #instance: ProfileService | null = null;
+	static #onProfileChangeListeners: Array<(profile: F5XCProfile) => void> = [];
+
+	/** Register a callback invoked after a profile is activated or its settings applied. */
+	static onProfileChange(cb: (profile: F5XCProfile) => void): void {
+		ProfileService.#onProfileChangeListeners.push(cb);
+	}
 
 	#configDir: string;
 	#activeProfile: F5XCProfile | null = null;
@@ -55,6 +63,23 @@ export class ProfileService {
 	static init(configDir: string): ProfileService {
 		ProfileService.#instance = new ProfileService(configDir);
 		return ProfileService.#instance;
+	}
+
+	/**
+	 * Return the values of env vars marked as sensitive in the active profile.
+	 * Safe to call before init — returns empty array if no profile is loaded.
+	 */
+	static getSensitiveProfileValues(): string[] {
+		const instance = ProfileService.#instance;
+		if (!instance) return [];
+		const profile = instance.#activeProfile;
+		if (!profile?.sensitiveKeys?.length || !profile.env) return [];
+		const values: string[] = [];
+		for (const key of profile.sensitiveKeys) {
+			const value = profile.env[key];
+			if (value) values.push(value);
+		}
+		return values;
 	}
 
 	static get instance(): ProfileService {
@@ -329,12 +354,22 @@ export class ProfileService {
 				if (Object.keys(env).length === 0) env = undefined;
 			}
 
+			// Read optional sensitiveKeys — accept only string[] with keys present in env
+			let sensitiveKeys: string[] | undefined;
+			if (Array.isArray(parsed.sensitiveKeys) && env) {
+				const filtered = parsed.sensitiveKeys.filter(
+					(k: unknown): k is string => typeof k === "string" && k in env,
+				);
+				sensitiveKeys = filtered.length > 0 ? filtered : undefined;
+			}
+
 			return {
 				name, // Canonical identity is the filename, not parsed.name
 				apiUrl: parsed.apiUrl,
 				apiToken: parsed.apiToken,
 				defaultNamespace: parsed.defaultNamespace ?? "default",
 				env,
+				sensitiveKeys,
 				metadata: parsed.metadata,
 			};
 		} catch (err) {
@@ -384,5 +419,10 @@ export class ProfileService {
 		}
 
 		Settings.instance.override("bash.environment", merged);
+
+		// Notify listeners (e.g. obfuscator refresh) about the profile change.
+		for (const cb of ProfileService.#onProfileChangeListeners) {
+			cb(profile);
+		}
 	}
 }

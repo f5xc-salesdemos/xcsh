@@ -17,6 +17,8 @@ export interface SSHExecutorOptions {
 	/** Artifact path/id for full output storage */
 	artifactPath?: string;
 	artifactId?: string;
+	/** Mask sensitive values in output. */
+	maskSecrets?: (text: string) => string;
 }
 
 export interface SSHResult {
@@ -87,6 +89,7 @@ export async function executeSSH(
 		onChunk: options?.onChunk,
 		artifactPath: options?.artifactPath,
 		artifactId: options?.artifactId,
+		maskSecrets: options?.maskSecrets,
 	});
 
 	const streams = [child.stdout.pipeTo(sink.createInput())];

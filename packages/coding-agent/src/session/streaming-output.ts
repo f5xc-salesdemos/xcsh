@@ -34,6 +34,8 @@ export interface OutputSinkOptions {
 	onChunk?: (chunk: string) => void;
 	/** Minimum ms between onChunk calls. 0 = every chunk (default). */
 	chunkThrottleMs?: number;
+	/** Mask sensitive values (e.g. env var secrets) in output chunks and final dump. */
+	maskSecrets?: (text: string) => string;
 }
 
 export interface TruncationResult {
@@ -541,6 +543,8 @@ export class OutputSink {
 	readonly #onChunk?: (chunk: string) => void;
 	readonly #chunkThrottleMs: number;
 
+	readonly #maskSecrets?: (text: string) => string;
+
 	constructor(options?: OutputSinkOptions) {
 		const {
 			artifactPath,
@@ -548,12 +552,14 @@ export class OutputSink {
 			spillThreshold = DEFAULT_MAX_BYTES,
 			onChunk,
 			chunkThrottleMs = 0,
+			maskSecrets,
 		} = options ?? {};
 		this.#artifactPath = artifactPath;
 		this.#artifactId = artifactId;
 		this.#spillThreshold = spillThreshold;
 		this.#onChunk = onChunk;
 		this.#chunkThrottleMs = chunkThrottleMs;
+		this.#maskSecrets = maskSecrets;
 	}
 
 	/**
@@ -562,6 +568,7 @@ export class OutputSink {
 	 */
 	push(chunk: string): void {
 		chunk = sanitizeWithOptionalSixelPassthrough(chunk, sanitizeText);
+		if (this.#maskSecrets) chunk = this.#maskSecrets(chunk);
 
 		// Throttled onChunk: only call the callback when enough time has passed.
 		if (this.#onChunk) {
@@ -686,8 +693,13 @@ export class OutputSink {
 
 		if (this.#file) await this.#file.sink.end();
 
+		// Safety net: re-mask the concatenated buffer to catch secret values
+		// that were split across chunk boundaries during streaming.
+		const raw = `${noticeLine}${this.#buffer}`;
+		const output = this.#maskSecrets ? this.#maskSecrets(raw) : raw;
+
 		return {
-			output: `${noticeLine}${this.#buffer}`,
+			output,
 			truncated: this.#truncated,
 			totalLines,
 			totalBytes: this.#totalBytes,

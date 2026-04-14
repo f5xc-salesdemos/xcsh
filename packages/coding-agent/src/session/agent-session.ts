@@ -507,7 +507,7 @@ export class AgentSession {
 
 	#streamingEditFileCache = new Map<string, string>();
 	#promptInFlightCount = 0;
-	#obfuscator: SecretObfuscator | undefined;
+	#resolveObfuscator: () => SecretObfuscator | undefined;
 	#checkpointState: CheckpointState | undefined = undefined;
 	#pendingRewindReport: string | undefined = undefined;
 	#promptGeneration = 0;
@@ -585,7 +585,7 @@ export class AgentSession {
 			this.#getConfiguredDefaultSelectedMCPToolNames(),
 		);
 		this.#ttsrManager = config.ttsrManager;
-		this.#obfuscator = config.obfuscator;
+		this.#resolveObfuscator = () => config.obfuscator;
 		this.agent.setAssistantMessageEventInterceptor((message, assistantMessageEvent) => {
 			const event: AgentEvent = {
 				type: "message_update",
@@ -726,7 +726,7 @@ export class AgentSession {
 		// writes `#HASH#` tokens to the session file; convertToLlm re-obfuscates outbound
 		// traffic on the next turn. Walks text, thinking, and toolCall arguments/intent.
 		let displayEvent: AgentEvent = event;
-		const obfuscator = this.#obfuscator;
+		const obfuscator = this.#resolveObfuscator();
 		if (obfuscator && event.type === "message_end" && event.message.role === "assistant") {
 			const message = event.message;
 			const deobfuscatedContent = obfuscator.deobfuscateObject(message.content);
@@ -1532,7 +1532,8 @@ export class AgentSession {
 		let normalizedDiff = normalizeDiff(diffForCheck.replace(/\r/g, ""));
 		if (!normalizedDiff) return;
 		// Deobfuscate the diff so removed lines match real file content
-		if (this.#obfuscator) normalizedDiff = this.#obfuscator.deobfuscate(normalizedDiff);
+		const diffObfuscator = this.#resolveObfuscator();
+		if (diffObfuscator) normalizedDiff = diffObfuscator.deobfuscate(normalizedDiff);
 		if (!normalizedDiff) return;
 		const lines = normalizedDiff.split("\n");
 		const hasChangeLine = lines.some(line => line.startsWith("+") || line.startsWith("-"));
@@ -2184,7 +2185,7 @@ export class AgentSession {
 	}
 
 	buildDisplaySessionContext(): SessionContext {
-		return deobfuscateSessionContext(this.sessionManager.buildSessionContext(), this.#obfuscator);
+		return deobfuscateSessionContext(this.sessionManager.buildSessionContext(), this.#resolveObfuscator());
 	}
 
 	/** Convert session messages using the same pre-LLM pipeline as the active session. */

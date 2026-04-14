@@ -15,6 +15,7 @@ import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import type { Theme } from "../modes/theme/theme";
 import { highlightCode } from "../modes/theme/theme";
 import bashDescription from "../prompts/tools/bash.md" with { type: "text" };
+import { SECRET_ENV_PATTERNS, type SecretObfuscator } from "../secrets";
 import { DEFAULT_MAX_BYTES, TailBuffer } from "../session/streaming-output";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
@@ -30,6 +31,9 @@ import { formatToolWorkingDirectory, replaceTabs } from "./render-utils";
 import { ToolAbortError, ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 import { clampTimeout } from "./tool-timeouts";
+
+// Module-level obfuscator reference for the renderer (set by BashTool constructor).
+let _sessionObfuscator: SecretObfuscator | undefined;
 
 export const BASH_DEFAULT_PREVIEW_LINES = 10;
 
@@ -118,11 +122,20 @@ function escapeBashEnvValueForDisplay(value: string): string {
 		.replaceAll("`", "\\`");
 }
 
-function formatBashEnvAssignments(env: Record<string, string> | undefined): string {
+function formatBashEnvAssignments(
+	env: Record<string, string> | undefined,
+	obfuscator?: import("../secrets/obfuscator").SecretObfuscator,
+): string {
 	if (!env || Object.keys(env).length === 0) return "";
 	return Object.entries(env)
 		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([key, value]) => `${key}="${escapeBashEnvValueForDisplay(value)}"`)
+		.map(([key, value]) => {
+			// Mask if name matches hardcoded patterns OR if the obfuscator recognizes the value as a secret.
+			const isSensitiveName = SECRET_ENV_PATTERNS.test(key);
+			const isSensitiveValue = obfuscator?.hasSecrets() && obfuscator.obfuscate(value) !== value;
+			const display = isSensitiveName || isSensitiveValue ? "***" : escapeBashEnvValueForDisplay(value);
+			return `${key}="${display}"`;
+		})
 		.join(" ");
 }
 
@@ -220,6 +233,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 	readonly #asyncEnabled: boolean;
 
 	constructor(private readonly session: ToolSession) {
+		_sessionObfuscator = session.obfuscator;
 		this.#asyncEnabled = this.session.settings.get("async.enabled");
 		this.parameters = this.#asyncEnabled ? bashSchemaWithAsync : bashSchemaBase;
 		this.description = prompt.render(bashDescription, {
@@ -360,6 +374,11 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 		const timeoutSec = clampTimeout("bash", rawTimeout);
 		const timeoutMs = timeoutSec * 1000;
 
+		// Build secret masking callback from the session obfuscator (always-on for env secrets).
+		const obfuscator = this.session.obfuscator;
+		_sessionObfuscator = obfuscator; // Keep module-level ref fresh for renderer
+		const maskSecrets = obfuscator?.hasSecrets() ? (t: string) => obfuscator.obfuscate(t) : undefined;
+
 		if (asyncRequested) {
 			const manager = this.session.asyncJobManager;
 			if (!manager) {
@@ -382,9 +401,11 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 							env: resolvedEnv,
 							artifactPath,
 							artifactId,
+							maskSecrets,
 							onChunk: chunk => {
 								tailBuffer.append(chunk);
-								void reportProgress(tailBuffer.text(), { async: { state: "running", jobId, type: "bash" } });
+								const preview = maskSecrets ? maskSecrets(tailBuffer.text()) : tailBuffer.text();
+								void reportProgress(preview, { async: { state: "running", jobId, type: "bash" } });
 							},
 						});
 						const outputText = this.#formatResultOutput(result, headLines, tailLines);
@@ -425,6 +446,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 					env: resolvedEnv,
 					artifactPath,
 					artifactId,
+					maskSecrets,
 				})
 			: await executeBash(command, {
 					cwd: commandCwd,
@@ -434,11 +456,13 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 					env: resolvedEnv,
 					artifactPath,
 					artifactId,
+					maskSecrets,
 					onChunk: chunk => {
 						tailBuffer.append(chunk);
 						if (onUpdate) {
+							const preview = maskSecrets ? maskSecrets(tailBuffer.text()) : tailBuffer.text();
 							onUpdate({
-								content: [{ type: "text", text: tailBuffer.text() }],
+								content: [{ type: "text", text: preview }],
 								details: {},
 							});
 						}
@@ -506,7 +530,9 @@ function formatBashCommand(args: BashRenderArgs): string {
 	const prompt = "$";
 	const cwd = getProjectDir();
 	const displayWorkdir = formatToolWorkingDirectory(args.cwd, cwd);
-	const renderedCommand = [formatBashEnvAssignments(getBashEnvForDisplay(args)), command].filter(Boolean).join(" ");
+	const renderedCommand = [formatBashEnvAssignments(getBashEnvForDisplay(args), _sessionObfuscator), command]
+		.filter(Boolean)
+		.join(" ");
 	return displayWorkdir ? `${prompt} cd ${displayWorkdir} && ${renderedCommand}` : `${prompt} ${renderedCommand}`;
 }
 
