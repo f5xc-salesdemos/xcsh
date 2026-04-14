@@ -66,3 +66,16 @@ export function getContextUsageThemeColor(level: ContextUsageLevel): ThemeColor 
 			return "statusLineContext";
 	}
 }
+
+export function getContextUsageBgThemeColor(level: ContextUsageLevel): ThemeColor {
+	switch (level) {
+		case "error":
+			return "statusLineContextPctErrorBg";
+		case "purple":
+			return "statusLineContextPctPurpleBg";
+		case "warning":
+			return "statusLineContextPctWarningBg";
+		case "normal":
+			return "statusLineContextPctNormalBg";
+	}
+}

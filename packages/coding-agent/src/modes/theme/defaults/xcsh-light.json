@@ -84,6 +84,12 @@
 		"statusLineOutput": "f5DarkRed",
 		"statusLineCost": "warningAmber",
 		"statusLineSubagents": "f5Red",
+		"statusLineContextPctBg": 252,
+		"statusLineContextPctFg": 232,
+		"statusLineContextPctNormalBg": 25,
+		"statusLineContextPctWarningBg": 28,
+		"statusLineContextPctPurpleBg": 136,
+		"statusLineContextPctErrorBg": 124,
 		"pythonMode": "warningAmber",
 		"syntaxControl": "f5Red"
 	},

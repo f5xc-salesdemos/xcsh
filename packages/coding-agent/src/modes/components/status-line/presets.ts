@@ -92,13 +92,14 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 	},
 
 	xcsh: {
-		leftSegments: ["os_icon", "path", "git"],
-		rightSegments: ["plan_mode", "context_pct", "profile_f5xc"],
+		leftSegments: ["context_pct", "path", "git"],
+		rightSegments: ["plan_mode", "profile_f5xc"],
 		separator: "powerline",
 		segmentOptions: {
 			model: { showThinkingLevel: true },
 			path: { abbreviate: true, maxLength: 40, stripWorkPrefix: true },
 			git: { showBranch: true, showStaged: true, showUnstaged: true, showUntracked: true },
+			context_pct: { compact: true },
 		},
 	},
 
