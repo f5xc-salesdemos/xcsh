@@ -69,9 +69,7 @@ describe("AgentSession obfuscator initialization order", () => {
 			initialState: { model, systemPrompt: "Test", tools: [] },
 		});
 
-		const obfuscator = new SecretObfuscator([
-			{ type: "plain", content: "super-secret-token-12345" },
-		]);
+		const obfuscator = new SecretObfuscator([{ type: "plain", content: "super-secret-token-12345" }]);
 
 		// Construction must not throw even with an active obfuscator
 		session = new AgentSession({
