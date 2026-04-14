@@ -70,6 +70,69 @@ export function generateModelsYml(baseUrl: string, options?: GenerateModelsYmlOp
 	return lines.join("\n");
 }
 
+export interface LiteLLMConfig {
+	baseUrl: string;
+	apiKey: string;
+}
+
+/**
+ * Read existing models.yml and extract the anthropic provider's base URL and API key.
+ *
+ * - baseUrl: strips `/anthropic` suffix to recover the root proxy URL
+ * - apiKey: if it matches /^[A-Z][A-Z0-9_]+$/ (env var name pattern), resolves via
+ *   process.env; otherwise uses the literal value
+ * - Falls back to getLiteLLMBaseUrl() for baseUrl and $env.LITELLM_API_KEY for apiKey
+ *   when the file is missing or the anthropic block is incomplete
+ */
+export function readLiteLLMConfig(modelsPath: string): LiteLLMConfig | undefined {
+	if (!fs.existsSync(modelsPath)) return undefined;
+
+	let rawBaseUrl: string | undefined;
+	let rawApiKey: string | undefined;
+
+	// Line-by-line state machine: locate the anthropic provider block
+	const content = fs.readFileSync(modelsPath, "utf8");
+	const lines = content.split("\n");
+	let inAnthropicBlock = false;
+
+	for (const line of lines) {
+		// Detect entry into anthropic provider block
+		if (/^\s{2}anthropic\s*:/.test(line)) {
+			inAnthropicBlock = true;
+			continue;
+		}
+		// Detect leaving the block: a new sibling provider key (2-space indent, non-empty)
+		if (inAnthropicBlock && /^\s{2}\S/.test(line)) {
+			inAnthropicBlock = false;
+		}
+
+		if (inAnthropicBlock) {
+			const baseUrlMatch = line.match(/^\s+baseUrl\s*:\s*"?([^"]+)"?\s*$/);
+			if (baseUrlMatch) {
+				rawBaseUrl = baseUrlMatch[1].trim();
+			}
+			const apiKeyMatch = line.match(/^\s+apiKey\s*:\s*(.+)\s*$/);
+			if (apiKeyMatch) {
+				rawApiKey = apiKeyMatch[1].trim().replace(/^["']|["']$/g, "");
+			}
+		}
+	}
+
+	// Resolve base URL: strip /anthropic suffix
+	const resolvedBaseUrl = rawBaseUrl ? rawBaseUrl.replace(/\/anthropic\/?$/, "") : getLiteLLMBaseUrl();
+
+	// Resolve API key: env var name pattern → process.env lookup; otherwise literal
+	const resolvedApiKey = rawApiKey
+		? /^[A-Z][A-Z0-9_]+$/.test(rawApiKey)
+			? (process.env[rawApiKey] ?? $env.LITELLM_API_KEY)
+			: rawApiKey
+		: $env.LITELLM_API_KEY;
+
+	if (!resolvedBaseUrl || !resolvedApiKey) return undefined;
+
+	return { baseUrl: resolvedBaseUrl, apiKey: resolvedApiKey };
+}
+
 /** Generate config.yml with sensible defaults for LiteLLM. */
 export function generateConfigYml(): string {
 	return [
