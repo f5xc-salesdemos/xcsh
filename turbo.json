@@ -69,7 +69,6 @@
 				"^check",
 				"^build"
 			],
-			"concurrency": 2,
 			"inputs": [
 				"$TURBO_DEFAULT$",
 				"!dist/**",
