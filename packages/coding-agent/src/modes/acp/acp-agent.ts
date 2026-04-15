@@ -161,14 +161,14 @@ export class AcpAgent implements Agent {
 			protocolVersion: PROTOCOL_VERSION,
 			agentInfo: {
 				name: "xcsh",
-				title: "Oh My Pi",
+				title: "xcsh",
 				version: VERSION,
 			},
 			authMethods: [
 				{
 					id: "agent",
 					name: "Agent-managed authentication",
-					description: "Oh My Pi uses its existing local authentication and provider configuration.",
+					description: "xcsh uses its existing local authentication and provider configuration.",
 				},
 			],
 			agentCapabilities: {

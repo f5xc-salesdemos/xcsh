@@ -8,7 +8,7 @@ Only the latest release is supported with security updates.
 
 To report a security issue, either:
 
-- Email can1357 directly, or
+- Contact the f5xc-salesdemos organization maintainers, or
 - Open a [private security advisory](https://github.com/f5xc-salesdemos/xcsh/security/advisories/new) on GitHub
 
 Include steps to reproduce and any relevant details. Do not open a public issue for security vulnerabilities.

@@ -976,7 +976,7 @@ export class DapSessionManager {
 	#buildInitializeArguments(adapter: DapResolvedAdapter): DapInitializeArguments {
 		return {
 			clientID: "xcsh",
-			clientName: "Oh My Pi",
+			clientName: "xcsh",
 			adapterID: adapter.name,
 			locale: "en-US",
 			linesStartAt1: true,

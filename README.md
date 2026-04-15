@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/hero.png?raw=true" alt="Pi Monorepo">
+  <img src="https://github.com/f5xc-salesdemos/xcsh/blob/main/assets/hero.png?raw=true" alt="xcsh">
 </p>
 
 <p align="center">
-  <strong>AI coding agent for the terminal</strong>
+  <strong>Network security engineer for the terminal</strong>
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  Fork of <a href="https://github.com/badlogic/pi-mono">badlogic/pi-mono</a> by <a href="https://github.com/mariozechner">@mariozechner</a>
+  Built on the foundation of <a href="https://github.com/badlogic/pi-mono">badlogic/pi-mono</a> by <a href="https://github.com/mariozechner">@mariozechner</a>
 </p>
 
 ## Table of Contents
@@ -1325,12 +1325,15 @@ Works with session files and JSON event logs from `--mode json`.
 
 ## Philosophy
 
-xcsh is a fork of [pi-mono](https://github.com/badlogic/pi-mono) by [Mario Zechner](https://github.com/mariozechner), extended with a batteries-included coding workflow.
+xcsh is built on the foundation of [pi-mono](https://github.com/badlogic/pi-mono) by [Mario Zechner](https://github.com/mariozechner) and extended by the oh-my-pi project.
+xcsh repurposes this foundation as a network security engineer operating in the terminal.
 
 Key ideas:
 
-- Keep interactive terminal-first UX for real coding work
-- Include practical built-ins (tools, sessions, branching, subagents, extensibility)
+- Terminal-first workflow for network operations, security analysis, and infrastructure work
+- Deep fluency with APIs, protocols, and infrastructure as code
+- Network engineer mindset: bash scripting, all OSI layers, DDoS analysis, SSL/TLS, MITM proxy, traffic forensics
+- Extensible via Skills: product-specific knowledge layers on top of a strong foundation
 - Make advanced behavior configurable rather than hidden
 
 ---
