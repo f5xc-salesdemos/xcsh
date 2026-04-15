@@ -43,6 +43,7 @@ import { setSessionTerminalTitle } from "../../utils/title-generator";
 import { AgentDashboard } from "../components/agent-dashboard";
 import { AssistantMessageComponent } from "../components/assistant-message";
 import { ExtensionDashboard } from "../components/extensions";
+import { GutterBlock } from "../components/gutter-block";
 import { HistorySearchComponent } from "../components/history-search";
 import { ModelSelectorComponent } from "../components/model-selector";
 import { OAuthSelectorComponent } from "../components/oauth-selector";
@@ -268,16 +269,18 @@ export class SelectorController {
 			// Settings with UI side effects
 			case "showImages":
 				for (const child of this.ctx.chatContainer.children) {
-					if (child instanceof ToolExecutionComponent) {
-						child.setShowImages(value as boolean);
+					const unwrapped = child instanceof GutterBlock ? child.child : child;
+					if (unwrapped instanceof ToolExecutionComponent) {
+						unwrapped.setShowImages(value as boolean);
 					}
 				}
 				break;
 			case "hideThinking":
 				this.ctx.hideThinkingBlock = value as boolean;
 				for (const child of this.ctx.chatContainer.children) {
-					if (child instanceof AssistantMessageComponent) {
-						child.setHideThinkingBlock(value as boolean);
+					const unwrapped = child instanceof GutterBlock ? child.child : child;
+					if (unwrapped instanceof AssistantMessageComponent) {
+						unwrapped.setHideThinkingBlock(value as boolean);
 					}
 				}
 				this.ctx.chatContainer.clear();

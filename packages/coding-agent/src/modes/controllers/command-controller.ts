@@ -21,6 +21,7 @@ import { buildMemoryToolDeveloperInstructions, clearMemoryData, enqueueMemoryCon
 import { BashExecutionComponent } from "../../modes/components/bash-execution";
 import { BorderedLoader } from "../../modes/components/bordered-loader";
 import { DynamicBorder } from "../../modes/components/dynamic-border";
+import { createToolGutter } from "../../modes/components/gutter-block";
 import { PythonExecutionComponent } from "../../modes/components/python-execution";
 import { getMarkdownTheme, getSymbolTheme, theme } from "../../modes/theme/theme";
 import type { InteractiveModeContext } from "../../modes/types";
@@ -691,12 +692,14 @@ export class CommandController {
 	async handleBashCommand(command: string, excludeFromContext = false): Promise<void> {
 		const isDeferred = this.ctx.session.isStreaming;
 		this.ctx.bashComponent = new BashExecutionComponent(command, this.ctx.ui, excludeFromContext);
+		let bashGutter: ReturnType<typeof createToolGutter> | undefined;
 
 		if (isDeferred) {
 			this.ctx.pendingMessagesContainer.addChild(this.ctx.bashComponent);
 			this.ctx.pendingBashComponents.push(this.ctx.bashComponent);
 		} else {
-			this.ctx.chatContainer.addChild(this.ctx.bashComponent);
+			bashGutter = createToolGutter(this.ctx.ui, this.ctx.bashComponent);
+			this.ctx.chatContainer.addChild(bashGutter);
 		}
 		this.ctx.ui.requestRender();
 
@@ -732,6 +735,7 @@ export class CommandController {
 			this.ctx.showError(`Bash command failed: ${error instanceof Error ? error.message : "Unknown error"}`);
 		}
 
+		bashGutter?.setDone();
 		this.ctx.bashComponent = undefined;
 		this.ctx.ui.requestRender();
 	}
@@ -739,12 +743,14 @@ export class CommandController {
 	async handlePythonCommand(code: string, excludeFromContext = false): Promise<void> {
 		const isDeferred = this.ctx.session.isStreaming;
 		this.ctx.pythonComponent = new PythonExecutionComponent(code, this.ctx.ui, excludeFromContext);
+		let pythonGutter: ReturnType<typeof createToolGutter> | undefined;
 
 		if (isDeferred) {
 			this.ctx.pendingMessagesContainer.addChild(this.ctx.pythonComponent);
 			this.ctx.pendingPythonComponents.push(this.ctx.pythonComponent);
 		} else {
-			this.ctx.chatContainer.addChild(this.ctx.pythonComponent);
+			pythonGutter = createToolGutter(this.ctx.ui, this.ctx.pythonComponent);
+			this.ctx.chatContainer.addChild(pythonGutter);
 		}
 		this.ctx.ui.requestRender();
 
@@ -773,6 +779,7 @@ export class CommandController {
 			this.ctx.showError(`Python execution failed: ${error instanceof Error ? error.message : "Unknown error"}`);
 		}
 
+		pythonGutter?.setDone();
 		this.ctx.pythonComponent = undefined;
 		this.ctx.ui.requestRender();
 	}
