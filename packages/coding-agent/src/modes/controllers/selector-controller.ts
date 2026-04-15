@@ -876,8 +876,12 @@ export class SelectorController {
 				);
 			}
 
-			// Write models.yml
-			const yml = generateModelsYml(result.baseUrl, { apiBasePath: probe.apiBasePath });
+			// Write models.yml with the literal API key so both providers work
+			// without requiring the LITELLM_API_KEY env var to be set
+			const yml = generateModelsYml(result.baseUrl, {
+				apiBasePath: probe.apiBasePath,
+				apiKeyLiteral: result.apiKey,
+			});
 			fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
 			fs.writeFileSync(modelsPath, yml);
 
@@ -886,6 +890,14 @@ export class SelectorController {
 				onAuth: () => {},
 				onPrompt: async () => result.apiKey,
 			});
+
+			// Clear stale discovery cache so refresh re-probes the new proxy
+			const cacheDbPath = modelsPath.replace(/\.yml$/, ".db");
+			try {
+				fs.unlinkSync(cacheDbPath);
+			} catch {
+				/* ignore if absent */
+			}
 
 			// Refresh model registry
 			await this.ctx.session.modelRegistry.refresh();
