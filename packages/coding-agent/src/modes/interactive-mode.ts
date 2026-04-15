@@ -28,15 +28,13 @@ import type {
 import type { CompactOptions } from "../extensibility/extensions/types";
 import { BUILTIN_SLASH_COMMANDS, loadSlashCommands } from "../extensibility/slash-commands";
 import { resolveLocalUrlToPath } from "../internal-urls";
-import { LSP_STARTUP_EVENT_CHANNEL, type LspStartupEvent } from "../lsp/startup-events";
 import { renameApprovedPlanFile } from "../plan-mode/approved-plan";
 import planModeApprovedPrompt from "../prompts/system/plan-mode-approved.md" with { type: "text" };
 import type { AgentSession, AgentSessionEvent } from "../session/agent-session";
 import { HistoryStorage } from "../session/history-storage";
 import type { SessionContext, SessionManager } from "../session/session-manager";
-import { getRecentSessions } from "../session/session-manager";
 import { STTController, type SttState } from "../stt";
-import type { ExitPlanModeDetails, LspStartupServerInfo } from "../tools";
+import type { ExitPlanModeDetails } from "../tools";
 import type { EventBus } from "../utils/event-bus";
 import { getEditorCommand, openInEditor } from "../utils/external-editor";
 import { popTerminalTitle, pushTerminalTitle, setSessionTerminalTitle } from "../utils/title-generator";
@@ -51,7 +49,8 @@ import type { HookSelectorComponent } from "./components/hook-selector";
 import type { PythonExecutionComponent } from "./components/python-execution";
 import { StatusLineComponent } from "./components/status-line";
 import type { ToolExecutionHandle } from "./components/tool-execution";
-import { WelcomeComponent, type LspServerInfo as WelcomeLspServerInfo } from "./components/welcome";
+import { WelcomeComponent } from "./components/welcome";
+import { runWelcomeChecks } from "./components/welcome-checks";
 import { BtwController } from "./controllers/btw-controller";
 import { CommandController } from "./controllers/command-controller";
 import { EventController } from "./controllers/event-controller";
@@ -168,7 +167,6 @@ export class InteractiveMode implements InteractiveModeContext {
 	#pendingModelSwitch: { model: Model; thinkingLevel?: ThinkingLevel } | undefined;
 	#planModeHasEntered = false;
 	#planReviewContainer: Container | undefined;
-	readonly lspServers: LspStartupServerInfo[] | undefined = undefined;
 	mcpManager?: import("../mcp").MCPManager;
 	readonly #toolUiContextSetter: (uiContext: ExtensionUIContext, hasUI: boolean) => void;
 
@@ -195,7 +193,6 @@ export class InteractiveMode implements InteractiveModeContext {
 		version: string,
 		changelogMarkdown: string | undefined = undefined,
 		setToolUIContext: (uiContext: ExtensionUIContext, hasUI: boolean) => void = () => {},
-		lspServers: LspStartupServerInfo[] | undefined = undefined,
 		mcpManager?: import("../mcp").MCPManager,
 		eventBus?: EventBus,
 	) {
@@ -207,14 +204,10 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#version = version;
 		this.#changelogMarkdown = changelogMarkdown;
 		this.#toolUiContextSetter = setToolUIContext;
-		this.lspServers = lspServers;
 		this.mcpManager = mcpManager;
 		this.#eventBus = eventBus;
 		if (eventBus) {
 			this.#eventBusUnsubscribers.push(
-				eventBus.on(LSP_STARTUP_EVENT_CHANNEL, data => {
-					this.#handleLspStartupEvent(data as LspStartupEvent);
-				}),
 				eventBus.on("cwd:changed", () => {
 					this.ui.requestRender();
 				}),
@@ -311,18 +304,9 @@ export class InteractiveMode implements InteractiveModeContext {
 			getProjectDir(),
 		);
 
-		// Get current model info for welcome screen
-		const modelName = this.session.model?.name ?? "Unknown";
-		const providerName = this.session.model?.provider ?? "Unknown";
-
-		// Get recent sessions
-		const recentSessions = await logger.time("InteractiveMode.init:recentSessions", () =>
-			getRecentSessions(this.sessionManager.getSessionDir()).then(sessions =>
-				sessions.map(s => ({
-					name: s.name,
-					timeAgo: s.timeAgo,
-				})),
-			),
+		// Run blocking welcome screen status checks (model + profile)
+		const welcomeResult = await logger.time("InteractiveMode.init:welcomeChecks", () =>
+			runWelcomeChecks(this.session.model, this.session.modelRegistry.authStorage),
 		);
 
 		const startupQuiet = settings.get("startup.quiet");
@@ -335,13 +319,7 @@ export class InteractiveMode implements InteractiveModeContext {
 
 		if (!startupQuiet) {
 			// Add welcome header
-			this.#welcomeComponent = new WelcomeComponent(
-				this.#version,
-				modelName,
-				providerName,
-				recentSessions,
-				this.#getWelcomeLspServers(),
-			);
+			this.#welcomeComponent = new WelcomeComponent(this.#version, welcomeResult.model, welcomeResult.profile);
 
 			// Setup UI layout
 			this.ui.addChild(new Spacer(1));
@@ -1104,29 +1082,6 @@ export class InteractiveMode implements InteractiveModeContext {
 
 	showWarning(message: string): void {
 		this.#uiHelpers.showWarning(message);
-	}
-
-	#handleLspStartupEvent(_event: LspStartupEvent): void {
-		this.#updateWelcomeLspServers();
-	}
-
-	#getWelcomeLspServers(): WelcomeLspServerInfo[] {
-		return (
-			this.lspServers?.map(server => ({
-				name: server.name,
-				status: server.status,
-				fileTypes: server.fileTypes,
-			})) ?? []
-		);
-	}
-
-	#updateWelcomeLspServers(): void {
-		if (!this.#welcomeComponent) {
-			return;
-		}
-
-		this.#welcomeComponent.setLspServers(this.#getWelcomeLspServers());
-		this.ui.requestRender();
 	}
 
 	ensureLoadingAnimation(): void {

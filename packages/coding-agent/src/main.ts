@@ -55,7 +55,6 @@ import { type CreateAgentSessionOptions, createAgentSession, discoverAuthStorage
 import type { AgentSession } from "./session/agent-session";
 import { resolveResumableSession, type SessionInfo, SessionManager } from "./session/session-manager";
 import { resolvePromptInput } from "./system-prompt";
-import type { LspStartupServerInfo } from "./tools";
 import { getChangelogPath, getNewEntries, parseChangelog } from "./utils/changelog";
 import type { EventBus } from "./utils/event-bus";
 
@@ -150,21 +149,12 @@ async function runInteractiveMode(
 	versionCheckPromise: Promise<string | undefined>,
 	initialMessages: string[],
 	setExtensionUIContext: (uiContext: ExtensionUIContext, hasUI: boolean) => void,
-	lspServers: LspStartupServerInfo[] | undefined,
 	mcpManager: MCPManager | undefined,
 	eventBus?: EventBus,
 	initialMessage?: string,
 	initialImages?: ImageContent[],
 ): Promise<void> {
-	const mode = new InteractiveMode(
-		session,
-		version,
-		changelogMarkdown,
-		setExtensionUIContext,
-		lspServers,
-		mcpManager,
-		eventBus,
-	);
+	const mode = new InteractiveMode(session, version, changelogMarkdown, setExtensionUIContext, mcpManager, eventBus);
 
 	await mode.init();
 
@@ -788,7 +778,7 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 		}
 	}
 
-	const { session, setToolUIContext, modelFallbackMessage, lspServers, mcpManager, eventBus } = await logger.time(
+	const { session, setToolUIContext, modelFallbackMessage, mcpManager, eventBus } = await logger.time(
 		"createAgentSession",
 		createAgentSession,
 		sessionOptions,
@@ -902,7 +892,6 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 			versionCheckPromise,
 			parsedArgs.messages,
 			setToolUIContext,
-			lspServers,
 			mcpManager,
 			eventBus,
 			initialMessage,

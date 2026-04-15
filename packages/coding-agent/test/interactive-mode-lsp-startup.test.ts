@@ -68,7 +68,7 @@ describe("InteractiveMode LSP startup welcome banner", () => {
 				fileTypes: [".rs"],
 			},
 		];
-		mode = new InteractiveMode(session, "test", undefined, () => {}, lspServers, undefined, eventBus);
+		mode = new InteractiveMode(session, "test", undefined, () => {}, undefined, eventBus);
 	});
 
 	afterEach(async () => {
