@@ -831,9 +831,9 @@ export class SelectorController {
 
 		// Read existing config for idempotent defaults
 		const modelsPath = path.join(getAgentDir(), "models.yml");
-		const existing = readLiteLLMConfig(modelsPath);
 
 		try {
+			const existing = readLiteLLMConfig(modelsPath);
 			// Sequential prompts for base URL + API key
 			const result = await loginLiteLLM({
 				defaults: existing,
@@ -899,12 +899,6 @@ export class SelectorController {
 				fs.writeFileSync(configPath, generateConfigYml());
 			}
 			healConfigYmlModelRoles(configPath);
-
-			// Save API key in auth storage (onAuth is unused for litellm but required by the signature)
-			await this.ctx.session.modelRegistry.authStorage.login("litellm" as OAuthProvider, {
-				onAuth: () => {},
-				onPrompt: async () => result.apiKey,
-			});
 
 			// Force online refresh so the registry re-probes the new proxy
 			// instead of serving stale data from the in-process SQLite cache.
