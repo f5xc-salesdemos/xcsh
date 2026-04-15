@@ -875,8 +875,8 @@ export class AuthStorage {
 				return;
 			}
 			case "litellm": {
-				const apiKey = await loginLiteLLM(ctrl);
-				await saveApiKeyCredential(apiKey);
+				const result = await loginLiteLLM(ctrl);
+				await saveApiKeyCredential(result.apiKey);
 				return;
 			}
 			case "moonshot": {

@@ -78,7 +78,13 @@ export { loginKilo } from "./kilo";
 // Kimi Code
 export { loginKimi, refreshKimiToken } from "./kimi";
 // LiteLLM (API key)
-export { loginLiteLLM } from "./litellm";
+export {
+	type LiteLLMLoginDefaults,
+	type LiteLLMLoginOptions,
+	type LiteLLMLoginResult,
+	loginLiteLLM,
+	maskApiKey,
+} from "./litellm";
 // LM Studio (optional API key)
 export { DEFAULT_LOCAL_TOKEN, loginLmStudio } from "./lm-studio";
 // MiniMax Coding Plan (API key)
