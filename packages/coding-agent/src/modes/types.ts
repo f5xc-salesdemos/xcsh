@@ -18,6 +18,7 @@ import type { ExitPlanModeDetails, LspStartupServerInfo } from "../tools";
 import type { AssistantMessageComponent } from "./components/assistant-message";
 import type { BashExecutionComponent } from "./components/bash-execution";
 import type { CustomEditor } from "./components/custom-editor";
+import type { GutterBlock } from "./components/gutter-block";
 import type { HookEditorComponent } from "./components/hook-editor";
 import type { HookInputComponent } from "./components/hook-input";
 import type { HookSelectorComponent } from "./components/hook-selector";
@@ -96,6 +97,7 @@ export interface InteractiveModeContext {
 	pythonComponent: PythonExecutionComponent | undefined;
 	isPythonMode: boolean;
 	streamingComponent: AssistantMessageComponent | undefined;
+	streamingAssistantGutter: GutterBlock<AssistantMessageComponent> | undefined;
 	streamingMessage: AssistantMessage | undefined;
 	loadingAnimation: Loader | undefined;
 	autoCompactionLoader: Loader | undefined;

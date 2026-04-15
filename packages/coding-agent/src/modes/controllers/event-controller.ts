@@ -3,6 +3,12 @@ import type { AssistantMessage, ImageContent } from "@f5xc-salesdemos/pi-ai";
 import { Loader, TERMINAL, Text } from "@f5xc-salesdemos/pi-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
+import {
+	createStreamingAssistantGutter,
+	createSystemGutter,
+	createToolGutter,
+	type GutterBlock,
+} from "../../modes/components/gutter-block";
 import { ReadToolGroupComponent } from "../../modes/components/read-tool-group";
 import { TodoReminderComponent } from "../../modes/components/todo-reminder";
 import { ToolExecutionComponent } from "../../modes/components/tool-execution";
@@ -15,6 +21,7 @@ import type { ExitPlanModeDetails } from "../../tools";
 
 export class EventController {
 	#lastReadGroup: ReadToolGroupComponent | undefined = undefined;
+	#lastReadGroupGutter: GutterBlock<ReadToolGroupComponent> | undefined = undefined;
 	#lastThinkingCount = 0;
 	#renderedCustomMessages = new Set<string>();
 	#lastIntent: string | undefined = undefined;
@@ -23,6 +30,8 @@ export class EventController {
 	#readToolCallAssistantComponents = new Map<string, AssistantMessageComponent>();
 	#lastAssistantComponent: AssistantMessageComponent | undefined = undefined;
 	#idleCompactionTimer?: NodeJS.Timeout;
+	#pendingGutters = new Map<string, GutterBlock<any>>();
+	// streamingAssistantGutter is stored on ctx for cross-controller access (e.g. thinking toggle)
 	constructor(private ctx: InteractiveModeContext) {}
 
 	dispose(): void {
@@ -30,18 +39,40 @@ export class EventController {
 	}
 
 	#resetReadGroup(): void {
+		// Only clear the grouping state so the next reads start a new group.
+		// setDone() is handled by #cleanupReadGutter() when each read actually completes,
+		// so we never prematurely mark a group as done (e.g. read + edit patterns).
 		this.#lastReadGroup = undefined;
+		this.#lastReadGroupGutter = undefined;
 	}
 
-	#getReadGroup(): ReadToolGroupComponent {
+	#getReadGroup(toolCallId?: string): ReadToolGroupComponent {
 		if (!this.#lastReadGroup) {
 			this.ctx.chatContainer.addChild(new Text("", 0, 0));
 			const group = new ReadToolGroupComponent();
 			group.setExpanded(this.ctx.toolOutputExpanded);
-			this.ctx.chatContainer.addChild(group);
+			const gutter = createToolGutter(this.ctx.ui, group);
+			this.ctx.chatContainer.addChild(gutter);
 			this.#lastReadGroup = group;
+			this.#lastReadGroupGutter = gutter;
+		}
+		// Track the group gutter under each read tool ID so async completion can find it
+		if (toolCallId && this.#lastReadGroupGutter) {
+			this.#pendingGutters.set(toolCallId, this.#lastReadGroupGutter);
 		}
 		return this.#lastReadGroup;
+	}
+
+	/** Remove a read tool's gutter entry; setDone() if no other reads share the same group gutter */
+	#cleanupReadGutter(toolCallId: string): void {
+		const gutter = this.#pendingGutters.get(toolCallId);
+		this.#pendingGutters.delete(toolCallId);
+		if (gutter) {
+			const stillActive = Array.from(this.#pendingGutters.values()).some(g => g === gutter);
+			if (!stillActive) {
+				gutter.setDone();
+			}
+		}
 	}
 
 	#trackReadToolCall(toolCallId: string, args: unknown): void {
@@ -156,7 +187,11 @@ export class EventController {
 					this.#resetReadGroup();
 					this.ctx.streamingComponent = new AssistantMessageComponent(undefined, this.ctx.hideThinkingBlock);
 					this.ctx.streamingMessage = event.message;
-					this.ctx.chatContainer.addChild(this.ctx.streamingComponent);
+					this.ctx.streamingAssistantGutter = createStreamingAssistantGutter(
+						this.ctx.ui,
+						this.ctx.streamingComponent,
+					);
+					this.ctx.chatContainer.addChild(this.ctx.streamingAssistantGutter);
 					this.ctx.streamingComponent.updateContent(this.ctx.streamingMessage);
 					this.ctx.ui.requestRender();
 				}
@@ -173,6 +208,7 @@ export class EventController {
 					if (thinkingCount > this.#lastThinkingCount) {
 						this.#resetReadGroup();
 						this.#lastThinkingCount = thinkingCount;
+						this.ctx.streamingAssistantGutter?.setThinkingMode();
 					}
 
 					for (const content of this.ctx.streamingMessage.content) {
@@ -183,7 +219,7 @@ export class EventController {
 							if (component) {
 								component.updateArgs(content.arguments, content.id);
 							} else {
-								const group = this.#getReadGroup();
+								const group = this.#getReadGroup(content.id);
 								group.updateArgs(content.arguments, content.id);
 								this.ctx.pendingTools.set(content.id, group);
 							}
@@ -213,8 +249,10 @@ export class EventController {
 								this.ctx.sessionManager.getCwd(),
 							);
 							component.setExpanded(this.ctx.toolOutputExpanded);
-							this.ctx.chatContainer.addChild(component);
+							const gutter = createToolGutter(this.ctx.ui, component);
+							this.ctx.chatContainer.addChild(gutter);
 							this.ctx.pendingTools.set(content.id, component);
+							this.#pendingGutters.set(content.id, gutter);
 						} else {
 							const component = this.ctx.pendingTools.get(content.id);
 							if (component) {
@@ -265,6 +303,8 @@ export class EventController {
 					}
 					this.#lastAssistantComponent = this.ctx.streamingComponent;
 					this.#lastAssistantComponent.setUsageInfo(event.message.usage);
+					this.ctx.streamingAssistantGutter?.setDone();
+					this.ctx.streamingAssistantGutter = undefined;
 					this.ctx.streamingComponent = undefined;
 					this.ctx.streamingMessage = undefined;
 					this.ctx.statusLine.invalidate();
@@ -282,7 +322,7 @@ export class EventController {
 						if (component) {
 							component.updateArgs(event.args, event.toolCallId);
 						} else {
-							const group = this.#getReadGroup();
+							const group = this.#getReadGroup(event.toolCallId);
 							group.updateArgs(event.args, event.toolCallId);
 							this.ctx.pendingTools.set(event.toolCallId, group);
 						}
@@ -305,8 +345,10 @@ export class EventController {
 						this.ctx.sessionManager.getCwd(),
 					);
 					component.setExpanded(this.ctx.toolOutputExpanded);
-					this.ctx.chatContainer.addChild(component);
+					const gutter = createToolGutter(this.ctx.ui, component);
+					this.ctx.chatContainer.addChild(gutter);
 					this.ctx.pendingTools.set(event.toolCallId, component);
+					this.#pendingGutters.set(event.toolCallId, gutter);
 					this.ctx.ui.requestRender();
 				}
 				break;
@@ -324,6 +366,8 @@ export class EventController {
 						event.toolCallId,
 					);
 					if (isFinalAsyncState) {
+						this.#pendingGutters.get(event.toolCallId)?.setDone();
+						this.#pendingGutters.delete(event.toolCallId);
 						this.ctx.pendingTools.delete(event.toolCallId);
 						this.#backgroundToolCallIds.delete(event.toolCallId);
 					}
@@ -344,6 +388,7 @@ export class EventController {
 						if (asyncState === "running") {
 							this.#backgroundToolCallIds.add(event.toolCallId);
 						} else {
+							this.#cleanupReadGutter(event.toolCallId);
 							this.#backgroundToolCallIds.delete(event.toolCallId);
 							this.#clearReadToolCall(event.toolCallId);
 						}
@@ -351,7 +396,7 @@ export class EventController {
 					} else {
 						let component = this.ctx.pendingTools.get(event.toolCallId);
 						if (!component) {
-							const group = this.#getReadGroup();
+							const group = this.#getReadGroup(event.toolCallId);
 							const args = this.#readToolCallArgs.get(event.toolCallId);
 							if (args) {
 								group.updateArgs(args, event.toolCallId);
@@ -369,6 +414,7 @@ export class EventController {
 						if (isBackgroundRunning) {
 							this.#backgroundToolCallIds.add(event.toolCallId);
 						} else {
+							this.#cleanupReadGutter(event.toolCallId);
 							this.ctx.pendingTools.delete(event.toolCallId);
 							this.#backgroundToolCallIds.delete(event.toolCallId);
 							this.#clearReadToolCall(event.toolCallId);
@@ -388,6 +434,8 @@ export class EventController {
 						if (isBackgroundRunning) {
 							this.#backgroundToolCallIds.add(event.toolCallId);
 						} else {
+							this.#pendingGutters.get(event.toolCallId)?.setDone();
+							this.#pendingGutters.delete(event.toolCallId);
 							this.ctx.pendingTools.delete(event.toolCallId);
 							this.#backgroundToolCallIds.delete(event.toolCallId);
 						}
@@ -424,19 +472,24 @@ export class EventController {
 					this.ctx.statusContainer.clear();
 				}
 				if (this.ctx.streamingComponent) {
-					this.ctx.chatContainer.removeChild(this.ctx.streamingComponent);
+					this.ctx.chatContainer.removeChild(this.ctx.streamingAssistantGutter ?? this.ctx.streamingComponent);
+					this.ctx.streamingAssistantGutter?.dispose();
+					this.ctx.streamingAssistantGutter = undefined;
 					this.ctx.streamingComponent = undefined;
 					this.ctx.streamingMessage = undefined;
 				}
 				await this.ctx.flushPendingModelSwitch();
 				for (const toolCallId of Array.from(this.ctx.pendingTools.keys())) {
 					if (!this.#backgroundToolCallIds.has(toolCallId)) {
+						this.#pendingGutters.get(toolCallId)?.setDone();
+						this.#pendingGutters.delete(toolCallId);
 						this.ctx.pendingTools.delete(toolCallId);
 					}
 				}
 				this.#backgroundToolCallIds = new Set(
 					Array.from(this.#backgroundToolCallIds).filter(toolCallId => this.ctx.pendingTools.has(toolCallId)),
 				);
+				this.#resetReadGroup();
 				this.#readToolCallArgs.clear();
 				this.#readToolCallAssistantComponents.clear();
 				this.#lastAssistantComponent = undefined;
@@ -558,14 +611,14 @@ export class EventController {
 			case "ttsr_triggered": {
 				const component = new TtsrNotificationComponent(event.rules);
 				component.setExpanded(this.ctx.toolOutputExpanded);
-				this.ctx.chatContainer.addChild(component);
+				this.ctx.chatContainer.addChild(createSystemGutter(this.ctx.ui, component));
 				this.ctx.ui.requestRender();
 				break;
 			}
 
 			case "todo_reminder": {
 				const component = new TodoReminderComponent(event.todos, event.attempt, event.maxAttempts);
-				this.ctx.chatContainer.addChild(component);
+				this.ctx.chatContainer.addChild(createSystemGutter(this.ctx.ui, component));
 				this.ctx.ui.requestRender();
 				break;
 			}

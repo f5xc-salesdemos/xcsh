@@ -4,6 +4,7 @@ import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
 import type { AutocompleteProvider, SlashCommand } from "@f5xc-salesdemos/pi-tui";
 import { $env } from "@f5xc-salesdemos/pi-utils";
 import { settings } from "../../config/settings";
+import { createStreamingAssistantGutter } from "../../modes/components/gutter-block";
 import { createPromptActionAutocompleteProvider } from "../../modes/prompt-action-autocomplete";
 import { theme } from "../../modes/theme/theme";
 import type { InteractiveModeContext } from "../../modes/types";
@@ -673,11 +674,18 @@ export class InputController {
 		this.ctx.chatContainer.clear();
 		this.ctx.rebuildChatFromMessages();
 
-		// If streaming, re-add the streaming component with updated visibility and re-render
+		// If streaming, recreate a fresh gutter (the old one was disposed by clear())
 		if (this.ctx.streamingComponent && this.ctx.streamingMessage) {
 			this.ctx.streamingComponent.setHideThinkingBlock(this.ctx.hideThinkingBlock);
 			this.ctx.streamingComponent.updateContent(this.ctx.streamingMessage);
-			this.ctx.chatContainer.addChild(this.ctx.streamingComponent);
+			const newGutter = createStreamingAssistantGutter(this.ctx.ui, this.ctx.streamingComponent);
+			// Restore thinking mode if the message has thinking content
+			const hasThinking = this.ctx.streamingMessage.content.some(c => c.type === "thinking" && c.thinking.trim());
+			if (hasThinking) {
+				newGutter.setThinkingMode();
+			}
+			this.ctx.streamingAssistantGutter = newGutter;
+			this.ctx.chatContainer.addChild(newGutter);
 		}
 
 		this.ctx.showStatus(`Thinking blocks: ${this.ctx.hideThinkingBlock ? "hidden" : "visible"}`);

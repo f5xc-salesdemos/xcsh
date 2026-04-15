@@ -44,6 +44,7 @@ import type { AssistantMessageComponent } from "./components/assistant-message";
 import type { BashExecutionComponent } from "./components/bash-execution";
 import { CustomEditor } from "./components/custom-editor";
 import { DynamicBorder } from "./components/dynamic-border";
+import { DisposableContainer, type GutterBlock } from "./components/gutter-block";
 import type { HookEditorComponent } from "./components/hook-editor";
 import type { HookInputComponent } from "./components/hook-input";
 import type { HookSelectorComponent } from "./components/hook-selector";
@@ -132,6 +133,7 @@ export class InteractiveMode implements InteractiveModeContext {
 	pythonComponent: PythonExecutionComponent | undefined = undefined;
 	isPythonMode = false;
 	streamingComponent: AssistantMessageComponent | undefined = undefined;
+	streamingAssistantGutter: GutterBlock<AssistantMessageComponent> | undefined = undefined;
 	streamingMessage: AssistantMessage | undefined = undefined;
 	loadingAnimation: Loader | undefined = undefined;
 	autoCompactionLoader: Loader | undefined = undefined;
@@ -222,7 +224,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.ui = new TUI(new ProcessTerminal(), settings.get("showHardwareCursor"));
 		this.ui.setClearOnShrink(settings.get("clearOnShrink"));
 		setMermaidRenderCallback(() => this.ui.requestRender());
-		this.chatContainer = new Container();
+		this.chatContainer = new DisposableContainer();
 		this.pendingMessagesContainer = new Container();
 		this.statusContainer = new Container();
 		this.todoContainer = new Container();
