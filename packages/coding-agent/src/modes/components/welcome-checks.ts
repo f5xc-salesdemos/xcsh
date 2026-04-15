@@ -73,8 +73,8 @@ async function validateModelConnection(model: Model | undefined, authStorage: Au
 		});
 		const latencyMs = Math.round(performance.now() - start);
 		return { state: "connected", provider, latencyMs };
-	} catch (err) {
-		logger.warn("Welcome model validation failed:", err);
+	} catch {
+		logger.warn("Welcome model validation failed");
 		return { state: "auth_error", provider };
 	}
 }
@@ -104,8 +104,8 @@ async function checkProfileStatus(): Promise<WelcomeProfileStatus> {
 			default:
 				return { state: "no_profile" };
 		}
-	} catch (err) {
-		logger.warn("Welcome profile validation failed:", err);
+	} catch {
+		logger.warn("Welcome profile validation failed");
 		return { state: "no_profile" };
 	}
 }
