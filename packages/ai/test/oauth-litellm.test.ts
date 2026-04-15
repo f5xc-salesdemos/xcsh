@@ -99,8 +99,8 @@ describe("maskApiKey", () => {
 		expect(maskApiKey("sk-abcdefghij")).toBe("sk-****ghij");
 	});
 
-	it("returns key as-is when shorter than 8 chars", () => {
-		expect(maskApiKey("short")).toBe("short");
+	it("returns **** when shorter than 8 chars", () => {
+		expect(maskApiKey("short")).toBe("****");
 	});
 
 	it("returns empty string for undefined", () => {

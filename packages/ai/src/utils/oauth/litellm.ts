@@ -26,7 +26,8 @@ export interface LiteLLMLoginOptions extends OAuthController {
  * Returns empty string for undefined/short keys.
  */
 export function maskApiKey(key: string | undefined): string {
-	if (!key || key.length < 8) return key ?? "";
+	if (!key) return "";
+	if (key.length < 8) return "****";
 	return `${key.slice(0, 3)}****${key.slice(-4)}`;
 }
 

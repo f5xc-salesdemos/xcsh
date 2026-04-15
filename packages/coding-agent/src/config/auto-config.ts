@@ -182,7 +182,7 @@ export function generateConfigYml(): string {
  * to fall through to the "first available model" fallback which picks stale
  * cached models that the proxy can't serve.
  */
-function healConfigYmlModelRoles(configPath: string): void {
+export function healConfigYmlModelRoles(configPath: string): void {
 	try {
 		const content = fs.readFileSync(configPath, "utf-8");
 		if (content.includes("modelRoles:")) return; // Already has modelRoles

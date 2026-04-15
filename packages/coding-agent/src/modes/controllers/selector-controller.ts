@@ -7,7 +7,13 @@ import type { Component } from "@f5xc-salesdemos/pi-tui";
 import { Input, Loader, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
 import { getAgentDbPath, getAgentDir, getConfigDirName, getProjectDir } from "@f5xc-salesdemos/pi-utils";
 import { invalidate as invalidateFsCache } from "../../capability/fs";
-import { generateModelsYml, probeLiteLLMConnection, readLiteLLMConfig } from "../../config/auto-config";
+import {
+	generateConfigYml,
+	generateModelsYml,
+	healConfigYmlModelRoles,
+	probeLiteLLMConnection,
+	readLiteLLMConfig,
+} from "../../config/auto-config";
 import { getRoleInfo } from "../../config/model-registry";
 import { settings } from "../../config/settings";
 import { DebugSelectorComponent } from "../../debug";
@@ -874,6 +880,8 @@ export class SelectorController {
 				this.ctx.chatContainer.addChild(
 					new Text(theme.fg("error", `${theme.status.error} FAIL — ${probe.error ?? "connection failed"}`), 1, 0),
 				);
+				this.ctx.ui.requestRender();
+				return;
 			}
 
 			// Write models.yml with the literal API key so both providers work
@@ -884,6 +892,13 @@ export class SelectorController {
 			});
 			fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
 			fs.writeFileSync(modelsPath, yml);
+
+			// Create/heal config.yml for model defaults
+			const configPath = path.join(path.dirname(modelsPath), "config.yml");
+			if (!fs.existsSync(configPath)) {
+				fs.writeFileSync(configPath, generateConfigYml());
+			}
+			healConfigYmlModelRoles(configPath);
 
 			// Save API key in auth storage (onAuth is unused for litellm but required by the signature)
 			await this.ctx.session.modelRegistry.authStorage.login("litellm" as OAuthProvider, {
