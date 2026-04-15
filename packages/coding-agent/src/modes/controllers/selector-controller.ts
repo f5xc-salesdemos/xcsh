@@ -891,16 +891,9 @@ export class SelectorController {
 				onPrompt: async () => result.apiKey,
 			});
 
-			// Clear stale discovery cache so refresh re-probes the new proxy
-			const cacheDbPath = modelsPath.replace(/\.yml$/, ".db");
-			try {
-				fs.unlinkSync(cacheDbPath);
-			} catch {
-				/* ignore if absent */
-			}
-
-			// Refresh model registry
-			await this.ctx.session.modelRegistry.refresh();
+			// Force online refresh so the registry re-probes the new proxy
+			// instead of serving stale data from the in-process SQLite cache.
+			await this.ctx.session.modelRegistry.refresh("online");
 
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(

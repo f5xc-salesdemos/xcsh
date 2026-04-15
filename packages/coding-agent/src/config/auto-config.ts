@@ -52,7 +52,11 @@ export interface GenerateModelsYmlOptions {
 /** Generate models.yml content for LiteLLM proxy. */
 export function generateModelsYml(baseUrl: string, options?: GenerateModelsYmlOptions): string {
 	const apiBase = options?.apiBasePath ?? "/v1";
-	const apiKeyValue = options?.apiKeyLiteral ?? "LITELLM_API_KEY";
+	// When a literal API key is provided, double-quote it to handle YAML-significant
+	// characters (: ! # { } [ ] ' " etc.). Escape backslashes and double quotes first.
+	const apiKeyValue = options?.apiKeyLiteral
+		? `"${options.apiKeyLiteral.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`
+		: "LITELLM_API_KEY";
 	const keyComment = options?.apiKeyLiteral
 		? "# API key stored as literal value"
 		: "# API key resolved from LITELLM_API_KEY env var at runtime";
