@@ -1,6 +1,6 @@
 {
 	"name": "@f5xc-salesdemos/pi-natives",
-	"version": "15.18.0",
+	"version": "16.0.0",
 	"description": "Native Rust bindings for grep, clipboard, image processing, syntax highlighting, PTY, and shell operations via N-API",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",
@@ -56,11 +56,11 @@
 		}
 	},
 	"optionalDependencies": {
-		"@f5xc-salesdemos/pi-natives-linux-x64-gnu": "15.18.0",
-		"@f5xc-salesdemos/pi-natives-linux-arm64-gnu": "15.18.0",
-		"@f5xc-salesdemos/pi-natives-darwin-x64": "15.18.0",
-		"@f5xc-salesdemos/pi-natives-darwin-arm64": "15.18.0",
-		"@f5xc-salesdemos/pi-natives-win32-x64-msvc": "15.18.0"
+		"@f5xc-salesdemos/pi-natives-linux-x64-gnu": "16.0.0",
+		"@f5xc-salesdemos/pi-natives-linux-arm64-gnu": "16.0.0",
+		"@f5xc-salesdemos/pi-natives-darwin-x64": "16.0.0",
+		"@f5xc-salesdemos/pi-natives-darwin-arm64": "16.0.0",
+		"@f5xc-salesdemos/pi-natives-win32-x64-msvc": "16.0.0"
 	},
 	"files": [
 		"native",
