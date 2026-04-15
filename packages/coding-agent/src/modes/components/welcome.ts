@@ -18,18 +18,24 @@ export class WelcomeComponent implements Component {
 	}
 
 	render(termWidth: number): string[] {
-		const maxWidth = 120;
-		const boxWidth = Math.min(maxWidth, Math.max(0, termWidth - 2));
-		if (boxWidth < 4) return [];
-		const dualContentWidth = boxWidth - 3;
 		const minLeftCol = 48;
 		const minRightCol = 20;
-		const desiredLeftCol = Math.min(50, Math.max(minLeftCol, Math.floor(dualContentWidth * 0.35)));
+		const preferredLeftCol = 50;
+
+		// Content-driven right column width
+		const naturalRight = this.#measureStatusWidth() + 1; // +1 right padding
+		const idealRight = Math.max(naturalRight, minRightCol);
+		const idealBox = preferredLeftCol + idealRight + 3; // 3 border chars: │ + │ + │
+		const boxWidth = Math.min(idealBox, Math.max(0, termWidth - 2));
+		if (boxWidth < 4) return [];
+
+		const dualContentWidth = boxWidth - 3;
+		// When terminal is narrower than ideal, shrink left column toward minLeftCol first
 		const dualLeftCol =
-			dualContentWidth >= minRightCol + 1
-				? Math.min(desiredLeftCol, dualContentWidth - minRightCol)
-				: Math.max(1, dualContentWidth - 1);
-		const dualRightCol = Math.max(1, dualContentWidth - dualLeftCol);
+			dualContentWidth >= preferredLeftCol + idealRight
+				? preferredLeftCol
+				: Math.max(minLeftCol, dualContentWidth - idealRight);
+		const dualRightCol = Math.max(0, dualContentWidth - dualLeftCol);
 		const showRightColumn = dualLeftCol >= minLeftCol && dualRightCol >= minRightCol;
 		const leftCol = showRightColumn ? dualLeftCol : boxWidth - 2;
 		const rightCol = showRightColumn ? dualRightCol : 0;
@@ -100,6 +106,14 @@ export class WelcomeComponent implements Component {
 		return lines;
 	}
 
+	#measureStatusWidth(): number {
+		const lines: string[] = [" Model Provider", ...this.#renderModelStatus()];
+		if (this.profileStatus) {
+			lines.push(" F5 XC Profile", ...this.#renderProfileStatus());
+		}
+		return Math.max(...lines.map(l => visibleWidth(l)));
+	}
+
 	#buildStatusLines(rightCol: number): string[] {
 		const lines: string[] = [];
 		const separatorWidth = Math.max(0, rightCol - 2);
@@ -150,12 +164,12 @@ export class WelcomeComponent implements Component {
 			case "auth_error":
 				return [
 					` ${theme.fg("error", "\u2717")} ${theme.fg("muted", n)} ${theme.fg("error", "\u2014 token invalid")}`,
-					`   ${theme.fg("dim", "Run /profile to update credentials")}`,
+					`   ${theme.fg("dim", "Run /profile to update")}`,
 				];
 			case "offline":
 				return [
 					` ${theme.fg("warning", "\u26A0")} ${theme.fg("muted", n)} ${theme.fg("warning", "\u2014 unreachable")}`,
-					`   ${theme.fg("dim", "Check network or run /profile to update")}`,
+					`   ${theme.fg("dim", "Check network, /profile")}`,
 				];
 			case "no_profile":
 				return [
