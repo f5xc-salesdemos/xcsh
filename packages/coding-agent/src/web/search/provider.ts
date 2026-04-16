@@ -71,8 +71,12 @@ export async function resolveProviderChain(
 	const providers: SearchProvider[] = [];
 
 	if (preferredProvider !== "auto") {
-		if (await getSearchProvider(preferredProvider).isAvailable()) {
-			providers.push(getSearchProvider(preferredProvider));
+		try {
+			if (await getSearchProvider(preferredProvider).isAvailable()) {
+				providers.push(getSearchProvider(preferredProvider));
+			}
+		} catch {
+			// Preferred provider check failed; continue with fallback chain
 		}
 	}
 
@@ -80,8 +84,12 @@ export async function resolveProviderChain(
 		if (id === preferredProvider) continue;
 
 		const provider = getSearchProvider(id);
-		if (await provider.isAvailable()) {
-			providers.push(provider);
+		try {
+			if (await provider.isAvailable()) {
+				providers.push(provider);
+			}
+		} catch {
+			// Provider availability check failed; skip and continue
 		}
 	}
 
