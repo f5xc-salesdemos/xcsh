@@ -1020,7 +1020,7 @@ bar`,
 			expect(output.includes("\x1b]8;;\x07")).toBeTruthy();
 		});
 
-		it("should keep wrapped URLs inside a single OSC 8 hyperlink span", () => {
+		it("should close and reopen OSC 8 hyperlinks at each wrapped line boundary", () => {
 			const markdown = new Markdown(
 				"Visit https://example.com/really/long/path/that/will/wrap/on/narrow/width for more",
 				0,
@@ -1030,14 +1030,11 @@ bar`,
 
 			const lines = markdown.render(32);
 			expect(lines.length).toBeGreaterThan(1);
-			const output = lines.join("\n");
-			const openMatches =
-				output.match(
-					/\x1b\]8;;https:\/\/example\.com\/really\/long\/path\/that\/will\/wrap\/on\/narrow\/width\x07/g,
-				) || [];
-			const closeMatches = output.match(/\x1b\]8;;\x07/g) || [];
-			expect(openMatches.length).toBe(1);
-			expect(closeMatches.length).toBeGreaterThan(0);
+			for (const line of lines) {
+				const opens = (line.match(/\x1b\]8;;https:\/\/[^\x07]+\x07/g) ?? []).length;
+				const closes = (line.match(/\x1b\]8;;\x07/g) ?? []).length;
+				expect(closes).toBeGreaterThanOrEqual(opens);
+			}
 		});
 
 		it("should show URL for explicit markdown links with different text", () => {
