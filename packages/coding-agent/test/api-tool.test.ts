@@ -158,8 +158,10 @@ describe("ApiDescribeTool", () => {
 
 describe("ApiCallTool", () => {
 	let tmpDir: string;
+	let origFetch: typeof fetch;
 
 	beforeEach(async () => {
+		origFetch = globalThis.fetch;
 		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-call-test-"));
 		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(TEST_CATALOG));
 		process.env.TEST_TOKEN = "test-token-123";
@@ -168,6 +170,7 @@ describe("ApiCallTool", () => {
 	});
 
 	afterEach(async () => {
+		globalThis.fetch = origFetch;
 		await fs.rm(tmpDir, { recursive: true, force: true });
 		delete process.env.TEST_TOKEN;
 		delete process.env.TEST_URL;
@@ -176,7 +179,6 @@ describe("ApiCallTool", () => {
 
 	test("executes a low-danger GET operation and returns JSON response", async () => {
 		const mockItems = [{ id: "1", name: "item-one" }];
-		const origFetch = globalThis.fetch;
 		globalThis.fetch = (async () =>
 			new Response(JSON.stringify(mockItems), { status: 200 })) as unknown as typeof fetch;
 
@@ -187,13 +189,10 @@ describe("ApiCallTool", () => {
 		const result = await tool.execute("id1", { service: "test-svc", operation: "list_items" });
 		const text = (result.content[0] as { type: "text"; text: string }).text;
 		expect(text).toContain("item-one");
-
-		globalThis.fetch = origFetch;
 	});
 
 	test("sends Authorization header with resolved token", async () => {
 		let capturedHeaders: Record<string, string> = {};
-		const origFetch = globalThis.fetch;
 		globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
 			capturedHeaders = Object.fromEntries(Object.entries(init?.headers ?? {})) as Record<string, string>;
 			return new Response(JSON.stringify({}), { status: 200 });
@@ -205,12 +204,9 @@ describe("ApiCallTool", () => {
 
 		await tool.execute("id1", { service: "test-svc", operation: "list_items" });
 		expect(capturedHeaders.Authorization).toBe("APIToken test-token-123");
-
-		globalThis.fetch = origFetch;
 	});
 
 	test("returns error on API 404 response", async () => {
-		const origFetch = globalThis.fetch;
 		globalThis.fetch = (async () =>
 			new Response(JSON.stringify({ message: "Not Found" }), { status: 404 })) as unknown as typeof fetch;
 
@@ -221,8 +217,6 @@ describe("ApiCallTool", () => {
 		const result = await tool.execute("id1", { service: "test-svc", operation: "list_items" });
 		const text = (result.content[0] as { type: "text"; text: string }).text;
 		expect(text).toContain("HTTP 404");
-
-		globalThis.fetch = origFetch;
 	});
 
 	test("returns error for unknown operation", async () => {
