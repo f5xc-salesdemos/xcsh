@@ -644,7 +644,19 @@ export class VimTool implements AgentTool<typeof vimSchema, VimToolDetails> {
 
 				await executeVimSteps(engine, steps, {
 					pauseLastStep: params.pause === true,
-					onKbdStep: emitUpdate ? () => emitUpdate() : undefined,
+					onKbdStep: emitUpdate
+						? () => {
+								// Force update in prompt modes (command/search) so every keystroke
+								// is reported to onUpdate — users need to see each character of
+								// their ex-command input, and throttling can cause intermediate
+								// states to be skipped under heavy event-loop load (CI).
+								const forcePrompt =
+									engine.inputMode === "command" ||
+									engine.inputMode === "search-forward" ||
+									engine.inputMode === "search-backward";
+								return emitUpdate(forcePrompt);
+							}
+						: undefined,
 					onInsertStep: emitUpdate ? () => emitUpdate(true) : undefined,
 				});
 
