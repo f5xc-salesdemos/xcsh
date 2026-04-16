@@ -1,0 +1,221 @@
+{
+   "service": "f5xc",
+   "displayName": "F5 Distributed Cloud",
+   "version": "1.0.0",
+   "specSource": "f5xc-salesdemos/api-specs-enriched",
+   "auth": {
+      "type": "api_token",
+      "headerName": "Authorization",
+      "headerTemplate": "APIToken {token}",
+      "tokenSource": "F5XC_API_TOKEN",
+      "baseUrlSource": "F5XC_API_URL"
+   },
+   "defaults": {
+      "namespace": { "source": "F5XC_NAMESPACE" }
+   },
+   "categories": [
+      {
+         "name": "load-balancers",
+         "displayName": "Load Balancers",
+         "operations": [
+            {
+               "name": "list_http_loadbalancers",
+               "description": "List all HTTP load balancers in a namespace",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/http_loadbalancers",
+               "dangerLevel": "low",
+               "parameters": [{ "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" }]
+            },
+            {
+               "name": "get_http_loadbalancer",
+               "description": "Get a specific HTTP load balancer by name",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/http_loadbalancers/{name}",
+               "dangerLevel": "low",
+               "parameters": [
+                  { "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" },
+                  { "name": "name", "in": "path", "required": true, "type": "string" }
+               ]
+            },
+            {
+               "name": "delete_http_loadbalancer",
+               "description": "Delete an HTTP load balancer by name",
+               "method": "DELETE",
+               "path": "/api/config/namespaces/{namespace}/http_loadbalancers/{name}",
+               "dangerLevel": "high",
+               "parameters": [
+                  { "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" },
+                  { "name": "name", "in": "path", "required": true, "type": "string" }
+               ],
+               "commonErrors": [
+                  { "code": 404, "reason": "Load balancer not found", "solution": "Use list_http_loadbalancers to verify the name" },
+                  { "code": 409, "reason": "Has dependent resources", "solution": "Remove virtual hosts or service policies referencing this LB first" }
+               ]
+            },
+            {
+               "name": "list_tcp_loadbalancers",
+               "description": "List all TCP load balancers in a namespace",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/tcp_loadbalancers",
+               "dangerLevel": "low",
+               "parameters": [{ "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" }]
+            }
+         ]
+      },
+      {
+         "name": "origin-pools",
+         "displayName": "Origin Pools",
+         "operations": [
+            {
+               "name": "list_origin_pools",
+               "description": "List all origin pools in a namespace",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/origin_pools",
+               "dangerLevel": "low",
+               "parameters": [{ "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" }]
+            },
+            {
+               "name": "get_origin_pool",
+               "description": "Get a specific origin pool by name",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/origin_pools/{name}",
+               "dangerLevel": "low",
+               "parameters": [
+                  { "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" },
+                  { "name": "name", "in": "path", "required": true, "type": "string" }
+               ]
+            },
+            {
+               "name": "delete_origin_pool",
+               "description": "Delete an origin pool by name",
+               "method": "DELETE",
+               "path": "/api/config/namespaces/{namespace}/origin_pools/{name}",
+               "dangerLevel": "high",
+               "parameters": [
+                  { "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" },
+                  { "name": "name", "in": "path", "required": true, "type": "string" }
+               ],
+               "prerequisites": ["Ensure no load balancers reference this origin pool before deleting"]
+            }
+         ]
+      },
+      {
+         "name": "security",
+         "displayName": "Security",
+         "operations": [
+            {
+               "name": "list_app_firewalls",
+               "description": "List all WAF/app firewall policies in a namespace",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/app_firewalls",
+               "dangerLevel": "low",
+               "parameters": [{ "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" }]
+            },
+            {
+               "name": "get_app_firewall",
+               "description": "Get a specific app firewall policy by name",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/app_firewalls/{name}",
+               "dangerLevel": "low",
+               "parameters": [
+                  { "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" },
+                  { "name": "name", "in": "path", "required": true, "type": "string" }
+               ]
+            },
+            {
+               "name": "list_service_policys",
+               "description": "List all service policies in a namespace",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/service_policys",
+               "dangerLevel": "low",
+               "parameters": [{ "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" }]
+            },
+            {
+               "name": "get_service_policy",
+               "description": "Get a specific service policy by name",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/service_policys/{name}",
+               "dangerLevel": "low",
+               "parameters": [
+                  { "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" },
+                  { "name": "name", "in": "path", "required": true, "type": "string" }
+               ]
+            }
+         ]
+      },
+      {
+         "name": "health-checks",
+         "displayName": "Health Checks",
+         "operations": [
+            {
+               "name": "list_healthchecks",
+               "description": "List all health check configurations in a namespace",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/healthchecks",
+               "dangerLevel": "low",
+               "parameters": [{ "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" }]
+            },
+            {
+               "name": "get_healthcheck",
+               "description": "Get a specific health check by name",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/healthchecks/{name}",
+               "dangerLevel": "low",
+               "parameters": [
+                  { "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" },
+                  { "name": "name", "in": "path", "required": true, "type": "string" }
+               ]
+            }
+         ]
+      },
+      {
+         "name": "namespaces",
+         "displayName": "Namespace Management",
+         "operations": [
+            {
+               "name": "list_namespaces",
+               "description": "List all namespaces in the tenant",
+               "method": "GET",
+               "path": "/api/web/namespaces",
+               "dangerLevel": "low",
+               "parameters": []
+            },
+            {
+               "name": "get_namespace",
+               "description": "Get details for a specific namespace",
+               "method": "GET",
+               "path": "/api/web/namespaces/{name}",
+               "dangerLevel": "low",
+               "parameters": [
+                  { "name": "name", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" }
+               ]
+            }
+         ]
+      },
+      {
+         "name": "certificates",
+         "displayName": "Certificates",
+         "operations": [
+            {
+               "name": "list_certificates",
+               "description": "List all TLS certificates in a namespace",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/certificates",
+               "dangerLevel": "low",
+               "parameters": [{ "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" }]
+            },
+            {
+               "name": "get_certificate",
+               "description": "Get a specific certificate by name",
+               "method": "GET",
+               "path": "/api/config/namespaces/{namespace}/certificates/{name}",
+               "dangerLevel": "low",
+               "parameters": [
+                  { "name": "namespace", "in": "path", "required": true, "type": "string", "default": "$F5XC_NAMESPACE" },
+                  { "name": "name", "in": "path", "required": true, "type": "string" }
+               ]
+            }
+         ]
+      }
+   ]
+}
