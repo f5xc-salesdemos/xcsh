@@ -1,7 +1,24 @@
 import { logger } from "@f5xc-salesdemos/pi-utils";
 import type { ApiAuthConfig, ApiOperation, ResolvedAuth } from "./api-types";
 
+const CACHE_TTL_MS = 60_000;
+const CACHE_MAX_SIZE = 100;
+const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+interface CacheEntry {
+	data: unknown;
+	expiresAt: number;
+}
+
 export class ApiExecutor {
+	#cache = new Map<string, CacheEntry>();
+	#lruOrder: string[] = [];
+
+	clearCache(): void {
+		this.#cache.clear();
+		this.#lruOrder = [];
+	}
+
 	resolveAuth(auth: ApiAuthConfig): ResolvedAuth {
 		const baseUrl = this.#requireEnv(auth.baseUrlSource);
 		const headers: Record<string, string> = {};
@@ -79,6 +96,19 @@ export class ApiExecutor {
 		}
 
 		const url = this.resolveUrl(auth.baseUrl, op.path, pathParams, queryParams);
+
+		if (op.method === "GET") {
+			const cached = this.#getCached(url);
+			if (cached !== undefined) {
+				logger.debug("ApiExecutor: cache hit", { url });
+				return { ok: true, data: cached };
+			}
+		}
+
+		if (WRITE_METHODS.has(op.method)) {
+			this.#invalidateByPrefix(auth.baseUrl + op.path.replace(/\/\{[^}]+\}$/, ""));
+		}
+
 		const headers: Record<string, string> = { "Content-Type": "application/json", ...auth.headers };
 		const init: RequestInit = { method: op.method, headers, signal };
 
@@ -112,7 +142,43 @@ export class ApiExecutor {
 			return { ok: false, status: response.status, error: `HTTP ${response.status}: ${errMsg}` };
 		}
 
+		if (op.method === "GET") {
+			this.#setCache(url, data);
+		}
+
 		return { ok: true, data };
+	}
+
+	#getCached(url: string): unknown | undefined {
+		const entry = this.#cache.get(url);
+		if (!entry) return undefined;
+		if (Date.now() > entry.expiresAt) {
+			this.#cache.delete(url);
+			this.#lruOrder = this.#lruOrder.filter(k => k !== url);
+			return undefined;
+		}
+		this.#lruOrder = this.#lruOrder.filter(k => k !== url);
+		this.#lruOrder.push(url);
+		return entry.data;
+	}
+
+	#setCache(url: string, data: unknown): void {
+		if (this.#cache.size >= CACHE_MAX_SIZE) {
+			const oldest = this.#lruOrder.shift();
+			if (oldest) this.#cache.delete(oldest);
+		}
+		this.#cache.set(url, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+		this.#lruOrder = this.#lruOrder.filter(k => k !== url);
+		this.#lruOrder.push(url);
+	}
+
+	#invalidateByPrefix(prefix: string): void {
+		for (const key of this.#cache.keys()) {
+			if (key.startsWith(prefix)) {
+				this.#cache.delete(key);
+				this.#lruOrder = this.#lruOrder.filter(k => k !== key);
+			}
+		}
 	}
 
 	#requireEnv(name: string): string {

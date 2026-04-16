@@ -199,3 +199,93 @@ describe("ApiExecutor.execute()", () => {
 		expect(capturedBody!).toBe(JSON.stringify({ name: "new-item" }));
 	});
 });
+
+describe("ApiExecutor — response caching", () => {
+	const auth: ResolvedAuth = { headers: { Authorization: "APIToken test" }, baseUrl: "https://api.example.com" };
+	const getOp: ApiOperation = {
+		name: "list_widgets",
+		description: "List widgets",
+		method: "GET",
+		path: "/api/widgets",
+		dangerLevel: "low",
+		parameters: [],
+	};
+	const deleteOp: ApiOperation = {
+		name: "delete_widget",
+		description: "Delete a widget",
+		method: "DELETE",
+		path: "/api/widgets/{name}",
+		dangerLevel: "high",
+		parameters: [{ name: "name", in: "path", required: true, type: "string" }],
+	};
+
+	let origFetch: typeof fetch;
+
+	beforeEach(() => {
+		origFetch = globalThis.fetch;
+	});
+
+	afterEach(() => {
+		globalThis.fetch = origFetch;
+	});
+
+	test("GET response is cached on second call", async () => {
+		let callCount = 0;
+		globalThis.fetch = (async (url: string | URL | Request) => {
+			callCount++;
+			return new Response(JSON.stringify({ items: [1, 2] }), { status: 200 });
+		}) as unknown as typeof fetch;
+		const executor = new ApiExecutor();
+		await executor.execute(auth, getOp, {});
+		await executor.execute(auth, getOp, {});
+		expect(callCount).toBe(1);
+	});
+
+	test("DELETE invalidates cached GET for same resource path", async () => {
+		let callCount = 0;
+		globalThis.fetch = (async (url: string | URL | Request) => {
+			callCount++;
+			const u = typeof url === "string" ? url : url.toString();
+			if (u.includes("/foo")) return new Response(JSON.stringify({}), { status: 200 });
+			return new Response(JSON.stringify({ items: [1] }), { status: 200 });
+		}) as unknown as typeof fetch;
+		const executor = new ApiExecutor();
+		await executor.execute(auth, getOp, {});
+		await executor.execute(auth, deleteOp, { name: "foo" });
+		await executor.execute(auth, getOp, {});
+		expect(callCount).toBe(3);
+	});
+
+	test("clearCache() forces re-fetch on next GET", async () => {
+		let callCount = 0;
+		globalThis.fetch = (async () => {
+			callCount++;
+			return new Response(JSON.stringify({ items: [] }), { status: 200 });
+		}) as unknown as typeof fetch;
+		const executor = new ApiExecutor();
+		await executor.execute(auth, getOp, {});
+		executor.clearCache();
+		await executor.execute(auth, getOp, {});
+		expect(callCount).toBe(2);
+	});
+
+	test("POST response is never cached", async () => {
+		const postOp: ApiOperation = {
+			name: "create_widget",
+			description: "Create a widget",
+			method: "POST",
+			path: "/api/widgets",
+			dangerLevel: "medium",
+			parameters: [],
+		};
+		let callCount = 0;
+		globalThis.fetch = (async () => {
+			callCount++;
+			return new Response(JSON.stringify({ name: "new" }), { status: 201 });
+		}) as unknown as typeof fetch;
+		const executor = new ApiExecutor();
+		await executor.execute(auth, postOp, {}, { name: "new" });
+		await executor.execute(auth, postOp, {}, { name: "new" });
+		expect(callCount).toBe(2);
+	});
+});
