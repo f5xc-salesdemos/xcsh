@@ -1,3 +1,5 @@
+import * as os from "node:os";
+import * as path from "node:path";
 import type { AgentTool } from "@f5xc-salesdemos/pi-agent-core";
 import type { ToolChoice } from "@f5xc-salesdemos/pi-ai";
 import { $env, $flag, isBunTestRuntime, logger } from "@f5xc-salesdemos/pi-utils";
@@ -12,12 +14,15 @@ import { checkPythonKernelAvailability } from "../ipy/kernel";
 import { LspTool } from "../lsp";
 import type { DiscoverableMCPSearchIndex, DiscoverableMCPTool } from "../mcp/discoverable-tool-metadata";
 import type { PlanModeState } from "../plan-mode/state";
+import { ApiCatalogService } from "../services/api-catalog";
+import { ApiExecutor } from "../services/api-executor";
 import type { CustomMessage } from "../session/messages";
 import type { ToolChoiceQueue } from "../session/tool-choice-queue";
 import { TaskTool } from "../task";
 import type { AgentOutputManager } from "../task/output-manager";
 import type { EventBus } from "../utils/event-bus";
 import { SearchTool } from "../web/search";
+import { ApiCallTool, ApiDescribeTool, ApiDiscoverTool, ApiServicesTool } from "./api-tool";
 import { AskTool } from "./ask";
 import { AstEditTool } from "./ast-edit";
 import { AstGrepTool } from "./ast-grep";
@@ -244,6 +249,23 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	web_search: s => new SearchTool(s),
 	search_tool_bm25: SearchToolBm25Tool.createIf,
 	write: s => new WriteTool(s),
+	api_services: _s => {
+		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
+		return new ApiServicesTool(catalog);
+	},
+	api_discover: _s => {
+		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
+		return new ApiDiscoverTool(catalog);
+	},
+	api_describe: _s => {
+		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
+		return new ApiDescribeTool(catalog);
+	},
+	api_call: _s => {
+		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
+		const executor = new ApiExecutor();
+		return new ApiCallTool(catalog, executor);
+	},
 };
 
 export const HIDDEN_TOOLS: Record<string, ToolFactory> = {
