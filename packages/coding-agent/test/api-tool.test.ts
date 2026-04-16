@@ -717,3 +717,388 @@ describe("ApiBatchTool — edge cases", () => {
 		expect(elapsed).toBeGreaterThanOrEqual(180);
 	});
 });
+
+// ─── Fix 1: Provider resolve check ───────────────────────────────────────────
+
+describe("ApiCallTool — Fix 1: provider resolve check", () => {
+	let tmpDir: string;
+	let origFetch: typeof fetch;
+
+	beforeEach(async () => {
+		origFetch = globalThis.fetch;
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-resolve-check-"));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(TEST_CATALOG));
+		process.env.TEST_TOKEN = "test-token-123";
+		process.env.TEST_URL = "https://api.example.com";
+		process.env.TEST_NS = "default";
+	});
+
+	afterEach(async () => {
+		globalThis.fetch = origFetch;
+		await fs.rm(tmpDir, { recursive: true, force: true });
+		delete process.env.TEST_TOKEN;
+		delete process.env.TEST_URL;
+		delete process.env.TEST_NS;
+	});
+
+	test("returns error when session buildToolChoice returns falsy for resolve", async () => {
+		let fetchCalled = false;
+		globalThis.fetch = (async () => {
+			fetchCalled = true;
+			return new Response(JSON.stringify({}), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		// Session whose buildToolChoice returns undefined (degraded)
+		const degradedSession = {
+			getToolChoiceQueue: () => ({ pushOnce: () => {} }),
+			buildToolChoice: (_name: string) => undefined,
+			steer: () => {},
+		} as unknown as import("../src/tools").ToolSession;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor, degradedSession);
+
+		const result = await tool.execute("id1", {
+			service: "test-svc",
+			operation: "delete_item",
+			params: { id: "abc" },
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+
+		// Should NOT execute the API call
+		expect(fetchCalled).toBe(false);
+		// Should return a meaningful error about resolve protocol
+		expect(text.toLowerCase()).toContain("resolve");
+	});
+
+	test("returns error when session buildToolChoice returns a string (degraded)", async () => {
+		let fetchCalled = false;
+		globalThis.fetch = (async () => {
+			fetchCalled = true;
+			return new Response(JSON.stringify({}), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		// Session whose buildToolChoice returns a plain string (degraded mode)
+		const degradedSession = {
+			getToolChoiceQueue: () => ({ pushOnce: () => {} }),
+			buildToolChoice: (_name: string) => "resolve",
+			steer: () => {},
+		} as unknown as import("../src/tools").ToolSession;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor, degradedSession);
+
+		const result = await tool.execute("id1", {
+			service: "test-svc",
+			operation: "delete_item",
+			params: { id: "abc" },
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+
+		expect(fetchCalled).toBe(false);
+		expect(text.toLowerCase()).toContain("resolve");
+	});
+
+	test("proceeds to queue when session buildToolChoice returns a valid tool choice object", async () => {
+		let fetchCalled = false;
+		globalThis.fetch = (async () => {
+			fetchCalled = true;
+			return new Response(JSON.stringify({}), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const validSession = {
+			getToolChoiceQueue: () => ({ pushOnce: () => {} }),
+			buildToolChoice: (_name: string) => ({ type: "tool", name: "resolve" }),
+			steer: () => {},
+		} as unknown as import("../src/tools").ToolSession;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor, validSession);
+
+		const result = await tool.execute("id1", {
+			service: "test-svc",
+			operation: "delete_item",
+			params: { id: "abc" },
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+
+		// Should NOT have executed fetch (queued for confirmation instead)
+		expect(fetchCalled).toBe(false);
+		// Should return a confirmation preview (not a resolve-protocol error)
+		expect(text.toLowerCase()).toContain("high");
+		expect(text.toLowerCase()).not.toContain("does not support the resolve");
+	});
+});
+
+// ─── Fix 2: resolvedParams and body in preview ───────────────────────────────
+
+describe("ApiCallTool — Fix 2: resolvedParams and body in preview", () => {
+	let tmpDir: string;
+	let origFetch: typeof fetch;
+
+	beforeEach(async () => {
+		origFetch = globalThis.fetch;
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-preview-params-"));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(TEST_CATALOG));
+		process.env.TEST_TOKEN = "test-token-123";
+		process.env.TEST_URL = "https://api.example.com";
+		process.env.TEST_NS = "default";
+	});
+
+	afterEach(async () => {
+		globalThis.fetch = origFetch;
+		await fs.rm(tmpDir, { recursive: true, force: true });
+		delete process.env.TEST_TOKEN;
+		delete process.env.TEST_URL;
+		delete process.env.TEST_NS;
+	});
+
+	test("preview includes resolvedParams in the JSON output", async () => {
+		const validSession = {
+			getToolChoiceQueue: () => ({ pushOnce: () => {} }),
+			buildToolChoice: (_name: string) => ({ type: "tool", name: "resolve" }),
+			steer: () => {},
+		} as unknown as import("../src/tools").ToolSession;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor, validSession);
+
+		const result = await tool.execute("id1", {
+			service: "test-svc",
+			operation: "delete_item",
+			params: { id: "target-resource" },
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+
+		// The preview JSON should contain resolvedParams and the value "target-resource"
+		expect(text).toContain("resolvedParams");
+		expect(text).toContain("target-resource");
+	});
+
+	test("preview includes body when body is provided", async () => {
+		// Add a POST operation with a body to the test catalog
+		const catalogWithPost = {
+			...TEST_CATALOG,
+			categories: [
+				{
+					name: "items",
+					displayName: "Items",
+					operations: [
+						{
+							name: "create_item",
+							description: "Create an item",
+							method: "POST",
+							path: "/api/items",
+							dangerLevel: "high",
+							parameters: [],
+						},
+					],
+				},
+			],
+		};
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(catalogWithPost));
+
+		const validSession = {
+			getToolChoiceQueue: () => ({ pushOnce: () => {} }),
+			buildToolChoice: (_name: string) => ({ type: "tool", name: "resolve" }),
+			steer: () => {},
+		} as unknown as import("../src/tools").ToolSession;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor, validSession);
+
+		const result = await tool.execute("id1", {
+			service: "test-svc",
+			operation: "create_item",
+			body: { name: "my-new-item", value: 42 },
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+
+		expect(text).toContain("body");
+		expect(text).toContain("my-new-item");
+	});
+
+	test("preview omits body key when no body is provided", async () => {
+		const validSession = {
+			getToolChoiceQueue: () => ({ pushOnce: () => {} }),
+			buildToolChoice: (_name: string) => ({ type: "tool", name: "resolve" }),
+			steer: () => {},
+		} as unknown as import("../src/tools").ToolSession;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor, validSession);
+
+		const result = await tool.execute("id1", {
+			service: "test-svc",
+			operation: "delete_item",
+			params: { id: "some-id" },
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+
+		// Extract JSON block from the preview text
+		const jsonMatch = text.match(/\{[\s\S]*\}/);
+		expect(jsonMatch).not.toBeNull();
+		const parsed = JSON.parse(jsonMatch![0]);
+		expect(parsed).not.toHaveProperty("body");
+		expect(parsed).toHaveProperty("resolvedParams");
+	});
+});
+
+// ─── Fix 3: Abort signal in api_batch ────────────────────────────────────────
+
+describe("ApiBatchTool — Fix 3: abort signal propagation", () => {
+	let tmpDir: string;
+	let origFetch: typeof fetch;
+
+	const ABORT_CATALOG = {
+		service: "abort-svc",
+		displayName: "Abort Test Service",
+		version: "1.0.0",
+		auth: {
+			type: "api_token",
+			headerName: "Authorization",
+			headerTemplate: "APIToken {token}",
+			tokenSource: "TEST_TOKEN",
+			baseUrlSource: "TEST_BASE_URL",
+		},
+		defaults: {},
+		categories: [
+			{
+				name: "items",
+				displayName: "Items",
+				operations: [
+					{
+						name: "op_one",
+						description: "Op one",
+						method: "GET",
+						path: "/one",
+						dangerLevel: "low",
+						parameters: [],
+					},
+					{
+						name: "op_two",
+						description: "Op two",
+						method: "GET",
+						path: "/two",
+						dangerLevel: "low",
+						parameters: [],
+					},
+					{
+						name: "op_three",
+						description: "Op three",
+						method: "GET",
+						path: "/three",
+						dangerLevel: "low",
+						parameters: [],
+					},
+				],
+			},
+		],
+	};
+
+	beforeEach(async () => {
+		origFetch = globalThis.fetch;
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-batch-abort-"));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(ABORT_CATALOG));
+		process.env.TEST_TOKEN = "abort-token";
+		process.env.TEST_BASE_URL = "https://api.example.com";
+	});
+
+	afterEach(async () => {
+		globalThis.fetch = origFetch;
+		await fs.rm(tmpDir, { recursive: true, force: true });
+		delete process.env.TEST_TOKEN;
+		delete process.env.TEST_BASE_URL;
+	});
+
+	test("stops iteration when signal is aborted before first iteration", async () => {
+		let fetchCallCount = 0;
+		globalThis.fetch = (async () => {
+			fetchCallCount++;
+			return new Response(JSON.stringify({ ok: true }), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const controller = new AbortController();
+		controller.abort(); // Already aborted
+
+		await tool.execute(
+			"id",
+			{
+				service: "abort-svc",
+				operations: [{ operation: "op_one" }, { operation: "op_two" }, { operation: "op_three" }],
+			},
+			controller.signal,
+		);
+
+		// None should execute because signal was already aborted
+		expect(fetchCallCount).toBe(0);
+	});
+
+	test("stops iteration when signal is aborted mid-batch", async () => {
+		let fetchCallCount = 0;
+		const controller = new AbortController();
+
+		globalThis.fetch = (async () => {
+			fetchCallCount++;
+			// Abort after first call
+			if (fetchCallCount === 1) controller.abort();
+			return new Response(JSON.stringify({ ok: true }), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		await tool.execute(
+			"id",
+			{
+				service: "abort-svc",
+				operations: [{ operation: "op_one" }, { operation: "op_two" }, { operation: "op_three" }],
+			},
+			controller.signal,
+		);
+
+		// Only the first operation executes; subsequent iterations are skipped
+		expect(fetchCallCount).toBe(1);
+	});
+
+	test("abort-aware delay resolves early when signal fires", async () => {
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const controller = new AbortController();
+		// Abort after a short delay to cut the 200ms inter-op sleep short
+		setTimeout(() => controller.abort(), 30);
+
+		const start = performance.now();
+		await tool.execute(
+			"id",
+			{
+				service: "abort-svc",
+				operations: [{ operation: "op_one" }, { operation: "op_two" }],
+			},
+			controller.signal,
+		);
+		const elapsed = performance.now() - start;
+
+		// The total time should be well under 200ms because the delay was cut short
+		expect(elapsed).toBeLessThan(180);
+	});
+});

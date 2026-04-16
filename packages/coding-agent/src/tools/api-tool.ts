@@ -265,6 +265,20 @@ export class ApiCallTool implements AgentTool<typeof callSchema> {
 
 		// Gate high-danger operations behind user confirmation when session is available
 		if (op.dangerLevel === "high" && this.#session) {
+			// Fix 1: Check that the session supports the resolve protocol before queuing.
+			// buildToolChoice("resolve") returns falsy or a plain string in degraded sessions.
+			const resolveChoice = this.#session.buildToolChoice?.("resolve");
+			if (!resolveChoice || typeof resolveChoice === "string") {
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Cannot execute high-danger operation '${op.method} ${op.path}': the current session does not support the resolve confirmation protocol. Use a session with resolve support or reduce the danger level.`,
+						},
+					],
+				};
+			}
+
 			const doExecute = async (): Promise<AgentToolResult> => {
 				const result = await this.#executor.execute(
 					resolvedAuth,
@@ -287,11 +301,18 @@ export class ApiCallTool implements AgentTool<typeof callSchema> {
 				reject: async _reason => ({ content: [{ type: "text", text: "Operation cancelled." }] }),
 			});
 
-			const opJson = JSON.stringify(
-				{ method: op.method, path: op.path, dangerLevel: op.dangerLevel, description: op.description },
-				null,
-				2,
-			);
+			// Fix 2: Include resolvedParams and body in the preview so the user sees the concrete target.
+			const previewObj: Record<string, unknown> = {
+				method: op.method,
+				path: op.path,
+				dangerLevel: op.dangerLevel,
+				description: op.description,
+				resolvedParams,
+			};
+			if (body !== undefined) {
+				previewObj.body = body;
+			}
+			const opJson = JSON.stringify(previewObj, null, 2);
 			return {
 				content: [
 					{
@@ -362,7 +383,7 @@ export class ApiBatchTool implements AgentTool<typeof batchSchema> {
 	async execute(
 		_toolCallId: string,
 		{ service, operations, mode = "best-effort" }: Static<typeof batchSchema>,
-		_signal?: AbortSignal,
+		signal?: AbortSignal,
 	): Promise<AgentToolResult> {
 		const services = await this.#catalog.getServices();
 		if (!services.some(s => s.service === service)) {
@@ -379,6 +400,8 @@ export class ApiBatchTool implements AgentTool<typeof batchSchema> {
 		const results: Array<{ operation: string; ok: boolean; data?: unknown; error?: string }> = [];
 
 		for (const item of operations) {
+			// Fix 3a: Check abort signal at the start of each iteration.
+			if (signal?.aborted) break;
 			const op = await this.#catalog.getOperation(service, item.operation);
 			if (!op) {
 				const err = {
@@ -421,6 +444,7 @@ export class ApiBatchTool implements AgentTool<typeof batchSchema> {
 				op,
 				resolvedParams,
 				item.body as Record<string, unknown> | undefined,
+				signal,
 			);
 			results.push({
 				operation: item.operation,
@@ -430,7 +454,18 @@ export class ApiBatchTool implements AgentTool<typeof batchSchema> {
 
 			if (!result.ok && mode === "strict") break;
 
-			await new Promise(resolve => setTimeout(resolve, 200));
+			// Fix 3b: Make the inter-operation delay abort-aware.
+			await new Promise<void>(resolve => {
+				const timer = setTimeout(resolve, 200);
+				signal?.addEventListener(
+					"abort",
+					() => {
+						clearTimeout(timer);
+						resolve();
+					},
+					{ once: true },
+				);
+			});
 		}
 
 		const lines = results.map(r =>
