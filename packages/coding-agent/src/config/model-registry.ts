@@ -25,9 +25,10 @@ import {
 	unregisterCustomApis,
 	unregisterOAuthProviders,
 } from "@f5xc-salesdemos/pi-ai";
-import { isRecord, logger } from "@f5xc-salesdemos/pi-utils";
+import { $env, isRecord, logger } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type ConfigError, ConfigFile } from "../config";
+import { hasLiteLLMEnv, probeAndUpgradeLiteLLMConfig, startupHealthCheck } from "../config/auto-config";
 import { parseModelString, resolveProviderModelReference } from "../config/model-resolver";
 import { isValidThemeColor, type ThemeColor } from "../modes/theme/theme";
 import type { AuthStorage, OAuthCredential } from "../session/auth-storage";
@@ -766,6 +767,7 @@ export class ModelRegistry {
 	#suppressedSelectors: Map<string, number> = new Map();
 	#backgroundRefresh?: Promise<void>;
 	#lastDiscoveryWarnings: Map<string, string> = new Map();
+	#hasProbed = false;
 	// Runtime extension model overlays — persist across refresh() cycles so that
 	// models registered by extensions survive the model selector's offline reload.
 	#runtimeModelOverlays: CustomModelOverlay[] = [];
@@ -798,6 +800,14 @@ export class ModelRegistry {
 	 * Reload models from disk (built-in + custom from models.json).
 	 */
 	async refresh(strategy: ModelRefreshStrategy = "online-if-uncached"): Promise<void> {
+		// On first refresh, probe LiteLLM proxy and upgrade config with discovery if available
+		if (!this.#hasProbed && hasLiteLLMEnv()) {
+			this.#hasProbed = true;
+			const upgraded = await probeAndUpgradeLiteLLMConfig(this.#modelsConfigFile.path());
+			if (upgraded) {
+				this.#modelsConfigFile.invalidate();
+			}
+		}
 		this.#reloadStaticModels();
 		this.#suppressedSelectors.clear();
 		await this.#refreshRuntimeDiscoveries(strategy);
@@ -1041,7 +1051,22 @@ export class ModelRegistry {
 	}
 
 	#loadCustomModels(): CustomModelsResult {
-		const { value, error, status } = this.#modelsConfigFile.tryLoad();
+		let result = this.#modelsConfigFile.tryLoad();
+
+		// Self-healing: detect missing, corrupt, or drifted config and auto-repair from env vars
+		if (result.status !== "ok" || result.value) {
+			const repaired = startupHealthCheck(
+				result.status,
+				this.#modelsConfigFile.path(),
+				result.status === "ok" && result.value ? result.value.providers : undefined,
+			);
+			if (repaired) {
+				this.#modelsConfigFile.invalidate();
+				result = this.#modelsConfigFile.tryLoad();
+			}
+		}
+
+		const { value, error, status } = result;
 
 		if (status === "error") {
 			return {
@@ -1282,8 +1307,28 @@ export class ModelRegistry {
 	): Promise<Model<Api>[]> {
 		// Skip providers already handled by configured discovery (e.g. user-configured ollama with discovery.type)
 		const configuredDiscoveryProviders = new Set(this.#discoverableProviders.map(p => p.provider));
+
+		// When a LiteLLM proxy is configured, providers whose baseUrl points to the
+		// LiteLLM proxy are proxied through it. Their built-in discovery would query
+		// the proxy's model listing endpoint, which may return model IDs the proxy
+		// can't serve for chat. Skip them — the litellm discovery provider handles
+		// model listing instead. Providers with other custom baseUrls (not LiteLLM)
+		// still need built-in discovery to discover new models at their endpoint.
+		const liteLLMBaseUrl = hasLiteLLMEnv() ? $env.LITELLM_BASE_URL?.trim().replace(/\/+$/, "") : undefined;
+		const proxiedProviders = liteLLMBaseUrl
+			? new Set(
+					[...this.#providerOverrides.keys()].filter(id => {
+						const override = this.#providerOverrides.get(id);
+						return override?.baseUrl?.startsWith(liteLLMBaseUrl);
+					}),
+				)
+			: new Set<string>();
+
 		const managerOptions = (await this.#collectBuiltInModelManagerOptions()).filter(opts => {
 			if (configuredDiscoveryProviders.has(opts.providerId)) {
+				return false;
+			}
+			if (proxiedProviders.has(opts.providerId)) {
 				return false;
 			}
 			return providerFilter ? providerFilter.has(opts.providerId) : true;
