@@ -341,3 +341,38 @@ describe("CI verify-npm-install uses version-pinned install with backoff (PR #93
 		expect(src).toContain("EXPECTED_VERSION: ${{ github.ref_name }}");
 	});
 });
+
+describe("vim ex-command onUpdate throttle bypass (commit 8f5b630ac)", () => {
+	it("vim.ts onKbdStep forces update when engine.inputMode is command or search mode", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/tools/vim.ts"), "utf8");
+		// Without these checks, all three prompt input modes throttle at 16ms and drop keystrokes
+		expect(src).toContain('engine.inputMode === "command"');
+		expect(src).toContain('engine.inputMode === "search-forward"');
+		expect(src).toContain('engine.inputMode === "search-backward"');
+	});
+
+	it("vim.ts emitUpdate is called with a truthy force flag in prompt input modes", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/tools/vim.ts"), "utf8");
+		// forcePrompt bypasses the FRAME_INTERVAL_MS throttle — must be passed to emitUpdate
+		expect(src).toContain("const forcePrompt =");
+		expect(src).toContain("emitUpdate(forcePrompt)");
+	});
+});
+
+describe("TUI isMultiplexer late-binding function for test isolation (commit be6d33f98)", () => {
+	it("tui.ts defines isMultiplexer as a function not a const", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../../tui/src/tui.ts"), "utf8");
+		// const isMultiplexer evaluates at import time — tests clearing TMUX/STY/ZELLIJ still see true
+		// function isMultiplexer() re-reads process.env on every call, enabling proper test isolation
+		expect(src).toContain("function isMultiplexer()");
+		expect(src).not.toContain("const isMultiplexer =");
+	});
+
+	it("tui.ts calls isMultiplexer() with parentheses at every usage site", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../../tui/src/tui.ts"), "utf8");
+		// Every reference must be a call — bare reference re-introduces the eager-evaluation bug
+		const allRefs = (src.match(/isMultiplexer/g) ?? []).length;
+		const callRefs = (src.match(/isMultiplexer\(\)/g) ?? []).length;
+		expect(callRefs).toBe(allRefs);
+	});
+});
