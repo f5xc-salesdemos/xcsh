@@ -296,6 +296,35 @@ describe("Anthropic auth litellm passthrough (upstream PR #721)", () => {
 	});
 });
 
+// ─── LiteLLM openai-compat discovery schema ───────────────────────────────
+
+describe("LiteLLM openai-compat discovery schema (blocks xcsh startup for proxy users)", () => {
+	// When auto-config.ts generates models.yml it writes discovery.type: openai-compat.
+	// If the schema removes this literal, every LiteLLM user gets a startup error.
+	// This guard caught a regression introduced in the v17 rebase.
+	it("model-registry.ts schema includes openai-compat as valid discovery type", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/config/model-registry.ts"), "utf8");
+		expect(src).toContain('Type.Literal("openai-compat")');
+	});
+
+	it("model-registry.ts has #discoverOpenAICompatModels method", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/config/model-registry.ts"), "utf8");
+		expect(src).toContain("#discoverOpenAICompatModels");
+	});
+
+	it('model-registry.ts switch routes case "openai-compat" to discovery method', async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/config/model-registry.ts"), "utf8");
+		expect(src).toContain('case "openai-compat":');
+		expect(src).toContain("return this.#discoverOpenAICompatModels(providerConfig);");
+	});
+
+	it("auto-config.ts generates discovery.type: openai-compat (must stay in sync with schema)", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/config/auto-config.ts"), "utf8");
+		// If this fails, the generated models.yml would write a type the schema rejects
+		expect(src).toContain("type: openai-compat");
+	});
+});
+
 // ─── CI verify-npm-install backoff ────────────────────────────────────────
 
 describe("CI verify-npm-install uses version-pinned install with backoff (PR #93)", () => {

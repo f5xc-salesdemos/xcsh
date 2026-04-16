@@ -247,7 +247,12 @@ const ModelOverrideSchema = Type.Object({
 type ModelOverride = Static<typeof ModelOverrideSchema>;
 
 const ProviderDiscoverySchema = Type.Object({
-	type: Type.Union([Type.Literal("ollama"), Type.Literal("llama.cpp"), Type.Literal("lm-studio")]),
+	type: Type.Union([
+		Type.Literal("ollama"),
+		Type.Literal("llama.cpp"),
+		Type.Literal("lm-studio"),
+		Type.Literal("openai-compat"),
+	]),
 });
 
 const ProviderAuthSchema = Type.Union([Type.Literal("apiKey"), Type.Literal("none")]);
@@ -1308,6 +1313,8 @@ export class ModelRegistry {
 				return this.#discoverLlamaCppModels(providerConfig);
 			case "lm-studio":
 				return this.#discoverLmStudioModels(providerConfig);
+			case "openai-compat":
+				return this.#discoverOpenAICompatModels(providerConfig);
 		}
 	}
 
@@ -1663,6 +1670,53 @@ export class ModelRegistry {
 						supportsDeveloperRole: false,
 						supportsReasoningEffort: false,
 					},
+				}),
+			);
+		}
+		return this.#applyProviderModelOverrides(providerConfig.provider, discovered);
+	}
+
+	async #discoverOpenAICompatModels(providerConfig: DiscoveryProviderConfig): Promise<Model<Api>[]> {
+		const baseUrl = (providerConfig.baseUrl ?? "").replace(/\/+$/, "");
+		if (!baseUrl) {
+			throw new Error("openai-compat discovery requires a baseUrl");
+		}
+
+		const headers: Record<string, string> = { ...(providerConfig.headers ?? {}) };
+		const apiKey =
+			this.#customProviderApiKeys.get(providerConfig.provider) ??
+			(await this.#peekApiKeyForProvider(providerConfig.provider));
+		if (apiKey && apiKey !== DEFAULT_LOCAL_TOKEN && apiKey !== kNoAuth) {
+			headers.Authorization = `Bearer ${apiKey}`;
+		}
+
+		const modelsUrl = `${baseUrl}/models`;
+		const response = await fetch(modelsUrl, {
+			headers: { Accept: "application/json", ...headers },
+			signal: AbortSignal.timeout(3000),
+		});
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status} from ${modelsUrl}`);
+		}
+		const payload = (await response.json()) as { data?: Array<{ id: string }> };
+		const items = payload.data ?? [];
+		const discovered: Model<Api>[] = [];
+		for (const item of items) {
+			const id = item.id;
+			if (!id) continue;
+			discovered.push(
+				enrichModelThinking({
+					id,
+					name: id,
+					api: providerConfig.api,
+					provider: providerConfig.provider,
+					baseUrl,
+					reasoning: false,
+					input: ["text"],
+					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+					contextWindow: 128000,
+					maxTokens: 8192,
+					headers,
 				}),
 			);
 		}
