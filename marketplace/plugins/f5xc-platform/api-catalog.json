@@ -270,10 +270,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -288,13 +289,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -405,10 +407,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -516,10 +519,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -534,13 +538,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -718,10 +723,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -736,13 +742,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -853,10 +860,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -871,13 +879,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -1144,13 +1153,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -1227,10 +1237,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -1245,13 +1256,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -1422,10 +1434,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -1440,13 +1453,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -1579,10 +1593,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -1597,13 +1612,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -1803,7 +1819,7 @@
       "displayName": "Api Endpoints",
       "operations": [
         {
-          "name": "create_api_endpoint",
+          "name": "create_api_endpoint_api_endpoints",
           "description": "GET API Endpoints Stats for All Namespaces.",
           "method": "POST",
           "path": "/api/ml/data/namespaces/system/api_endpoints/all_ns_stats",
@@ -2022,10 +2038,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -2040,13 +2057,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -2175,17 +2193,18 @@
       "displayName": "Apms",
       "operations": [
         {
-          "name": "create_apm",
+          "name": "create_apm_apms",
           "description": "Create APM Service.",
           "method": "POST",
           "path": "/api/config/namespaces/{metadata.namespace}/apms",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -2200,13 +2219,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -2317,10 +2337,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -2335,13 +2356,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -2459,17 +2481,18 @@
       "displayName": "App Firewalls",
       "operations": [
         {
-          "name": "create_app_firewall",
+          "name": "create_app_firewall_app_firewalls",
           "description": "Create Application Firewall.",
           "method": "POST",
           "path": "/api/config/namespaces/{metadata.namespace}/app_firewalls",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -2484,13 +2507,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -2615,10 +2639,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -2633,13 +2658,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -2750,10 +2776,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -2768,13 +2795,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -2910,10 +2938,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -2928,13 +2957,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -3070,10 +3100,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -3088,13 +3119,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -3205,10 +3237,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -3223,13 +3256,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -3340,10 +3374,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -3358,13 +3393,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -3475,10 +3511,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -3493,13 +3530,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -3610,10 +3648,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -3628,13 +3667,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -3745,10 +3785,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -3763,13 +3804,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -3905,10 +3947,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -3923,13 +3966,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -4040,10 +4084,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -4058,13 +4103,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -4209,10 +4255,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -4227,13 +4274,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -4344,13 +4392,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -4436,10 +4485,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -4454,13 +4504,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -4616,10 +4667,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -4634,13 +4686,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -4851,10 +4904,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -4869,13 +4923,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -4986,10 +5041,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -5004,13 +5060,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -5121,10 +5178,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -5232,10 +5290,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -5250,13 +5309,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -5367,10 +5427,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -5385,13 +5446,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -5587,10 +5649,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -5605,13 +5668,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -5715,17 +5779,18 @@
       "displayName": "Child Tenants",
       "operations": [
         {
-          "name": "create_child_tenant",
+          "name": "create_child_tenant_child_tenants",
           "description": "Child Tenant.",
           "method": "POST",
           "path": "/api/web/namespaces/{metadata.namespace}/child_tenants",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -5740,13 +5805,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -5888,10 +5954,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -5906,13 +5973,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -6023,10 +6091,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -6041,13 +6110,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -6192,17 +6262,18 @@
       "displayName": "Cloud Elastic Ips",
       "operations": [
         {
-          "name": "create_cloud_elastic_ip",
+          "name": "create_cloud_elastic_ip_cloud_elastic_ips",
           "description": "Create Cloud Elastic IP.",
           "method": "POST",
           "path": "/api/config/namespaces/{metadata.namespace}/cloud_elastic_ips",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -6217,13 +6288,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -6352,13 +6424,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -6469,13 +6542,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -6561,10 +6635,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -6579,13 +6654,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -6696,10 +6772,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -6714,13 +6791,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -6831,10 +6909,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -6849,13 +6928,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -7022,10 +7102,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -7040,13 +7121,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -7157,10 +7239,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -7175,13 +7258,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -7348,10 +7432,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -7366,13 +7451,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -7652,17 +7738,18 @@
       "displayName": "Customer Supports",
       "operations": [
         {
-          "name": "create_customer_support",
+          "name": "create_customer_support_customer_supports",
           "description": "Create Customer Support.",
           "method": "POST",
           "path": "/api/web/namespaces/{metadata.namespace}/customer_supports",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -7704,7 +7791,7 @@
           ]
         },
         {
-          "name": "get_customer_support",
+          "name": "get_customer_support_customer_supports",
           "description": "GET Customer Support.",
           "method": "GET",
           "path": "/api/web/namespaces/{namespace}/customer_supports/{name}",
@@ -7776,10 +7863,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -7794,13 +7882,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -7945,13 +8034,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -8000,10 +8090,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -8018,13 +8109,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -8135,10 +8227,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -8153,13 +8246,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -8403,17 +8497,18 @@
       "displayName": "Discoverys",
       "operations": [
         {
-          "name": "create_discovery",
+          "name": "create_discovery_discoverys",
           "description": "Create Discovery.",
           "method": "POST",
           "path": "/api/config/namespaces/{metadata.namespace}/discoverys",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -8428,13 +8523,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -8504,7 +8600,7 @@
           }
         },
         {
-          "name": "get_discovery",
+          "name": "get_discovery_discoverys",
           "description": "GET Discovery.",
           "method": "GET",
           "path": "/api/config/namespaces/{namespace}/discoverys/{name}",
@@ -8698,10 +8794,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -8716,13 +8813,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -8833,10 +8931,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -8851,13 +8950,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -9002,10 +9102,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -9020,13 +9121,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -9280,10 +9382,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -9298,13 +9401,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -9415,10 +9519,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -9433,13 +9538,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -9714,17 +9820,18 @@
       "displayName": "External Connectors",
       "operations": [
         {
-          "name": "create_external_connector",
+          "name": "create_external_connector_external_connectors",
           "description": "Create external_connector configuration.",
           "method": "POST",
           "path": "/api/config/namespaces/{metadata.namespace}/external_connectors",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -9739,13 +9846,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -9856,10 +9964,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -9874,13 +9983,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -9991,10 +10101,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -10009,13 +10120,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -10167,10 +10279,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -10185,13 +10298,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -10352,10 +10466,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -10370,13 +10485,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -10594,10 +10710,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -10612,13 +10729,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -10729,10 +10847,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -10747,13 +10866,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -10864,10 +10984,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -10882,13 +11003,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -11164,10 +11286,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -11182,13 +11305,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -11369,10 +11493,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -11387,13 +11512,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -11613,10 +11739,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -11631,13 +11758,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -11748,10 +11876,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -11766,13 +11895,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -11883,10 +12013,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -11901,13 +12032,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -12018,10 +12150,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -12036,13 +12169,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -12153,10 +12287,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -12171,13 +12306,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -12382,10 +12518,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -12400,13 +12537,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -12570,10 +12708,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -12588,13 +12727,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -12705,10 +12845,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -12723,13 +12864,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -12871,10 +13013,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -12889,13 +13032,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -13006,10 +13150,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -13024,13 +13169,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -13141,10 +13287,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -13159,13 +13306,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -13307,10 +13455,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -13325,13 +13474,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -13442,10 +13592,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -13460,13 +13611,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -13930,17 +14082,18 @@
       "displayName": "Log Receivers",
       "operations": [
         {
-          "name": "create_log_receiver",
+          "name": "create_log_receiver_log_receivers",
           "description": "Create Log Receiver.",
           "method": "POST",
           "path": "/api/config/namespaces/{metadata.namespace}/log_receivers",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -13955,13 +14108,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -14089,10 +14243,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -14107,13 +14262,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -14281,10 +14437,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -14299,13 +14456,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -14588,13 +14746,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -14864,7 +15023,7 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -14915,10 +15074,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -14933,13 +15093,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -15118,10 +15279,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -15136,13 +15298,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -15253,10 +15416,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -15271,13 +15435,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -15388,10 +15553,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -15406,13 +15572,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -15523,10 +15690,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -15541,13 +15709,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -15726,10 +15895,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -15744,13 +15914,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -15861,10 +16032,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -15879,13 +16051,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -16030,17 +16203,18 @@
       "displayName": "Nfv Services",
       "operations": [
         {
-          "name": "create_nfv_service",
+          "name": "create_nfv_service_nfv_services",
           "description": "Create NFV Service.",
           "method": "POST",
           "path": "/api/config/namespaces/{metadata.namespace}/nfv_services",
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -16055,13 +16229,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -16418,10 +16593,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -16436,13 +16612,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -16805,13 +16982,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -16943,10 +17121,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -16961,13 +17140,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -17215,7 +17395,7 @@
       "displayName": "Payment Methods",
       "operations": [
         {
-          "name": "create_payment_method",
+          "name": "create_payment_method_payment_methods",
           "description": "Create payment method specification.",
           "method": "POST",
           "path": "/api/web/namespaces/{namespace}/billing/payment_methods",
@@ -17387,10 +17567,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -17405,13 +17586,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -17522,10 +17704,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -17540,13 +17723,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -17710,10 +17894,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -17728,13 +17913,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -17845,10 +18031,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -17863,13 +18050,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -17980,10 +18168,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -17998,13 +18187,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -18115,13 +18305,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -18232,10 +18423,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -18250,13 +18442,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -18398,10 +18591,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -18416,13 +18610,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -18533,10 +18728,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -18551,13 +18747,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -18768,13 +18965,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -18941,10 +19139,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -18959,13 +19158,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -19118,10 +19318,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -19136,13 +19337,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -19253,10 +19455,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -19271,13 +19474,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -19691,13 +19895,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -19768,10 +19973,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -19786,13 +19992,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -19903,10 +20110,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -19921,13 +20129,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -20038,10 +20247,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -20056,13 +20266,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -20173,13 +20384,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -20265,10 +20477,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -20283,13 +20496,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -20428,10 +20642,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -20446,13 +20661,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -20698,10 +20914,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -20716,13 +20933,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -20901,10 +21119,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -20919,13 +21138,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -21029,7 +21249,7 @@
       "displayName": "Services",
       "operations": [
         {
-          "name": "create_service",
+          "name": "create_service_services",
           "description": "GET Service API Endpoint PDF.",
           "method": "POST",
           "path": "/api/ml/data/namespaces/{namespace}/app_types/{app_type_name}/services/{service_name}/api_endpoint/pdf",
@@ -21250,10 +21470,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -21268,13 +21489,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -21523,10 +21745,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -21541,13 +21764,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -21658,13 +21882,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -21737,7 +21962,7 @@
           ]
         },
         {
-          "name": "create_site",
+          "name": "create_site_sites",
           "description": "Create Global Kube Config.",
           "method": "POST",
           "path": "/api/web/namespaces/system/sites/{site}/global-kubeconfigs",
@@ -21768,10 +21993,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -21786,13 +22012,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -22171,10 +22398,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -22189,13 +22417,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -22477,10 +22706,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -22495,13 +22725,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -22656,10 +22887,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -22674,13 +22906,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -22808,10 +23041,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -22826,13 +23060,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -23066,13 +23301,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -23169,13 +23405,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -23350,10 +23587,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -23368,13 +23606,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -23513,10 +23752,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -23531,13 +23771,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -23648,10 +23889,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -23666,13 +23908,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -23783,10 +24026,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -23801,13 +24045,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -24150,10 +24395,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -24168,13 +24414,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -24383,10 +24630,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -24401,13 +24649,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -24631,10 +24880,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -24649,13 +24899,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -24766,10 +25017,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -24784,13 +25036,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -24901,10 +25154,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -24919,13 +25173,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -25036,10 +25291,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -25054,13 +25310,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -25221,10 +25478,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -25239,13 +25497,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -25492,10 +25751,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -25510,13 +25770,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -25641,10 +25902,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -25659,13 +25921,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
@@ -25776,10 +26039,11 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             }
           ],
           "bodySchema": {
@@ -25794,13 +26058,14 @@
           "dangerLevel": "medium",
           "parameters": [
             {
-              "name": "metadata.namespace",
+              "name": "namespace",
               "in": "path",
               "required": true,
-              "type": "string"
+              "type": "string",
+              "default": "$F5XC_NAMESPACE"
             },
             {
-              "name": "metadata.name",
+              "name": "name",
               "in": "path",
               "required": true,
               "type": "string"
