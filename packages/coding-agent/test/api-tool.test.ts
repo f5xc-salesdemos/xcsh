@@ -154,6 +154,45 @@ describe("ApiDescribeTool", () => {
 		const text = (result.content[0] as { type: "text"; text: string }).text;
 		expect(text).toContain("Operation 'no_such_op' not found");
 	});
+
+	test("includes bodySchema in output for POST operations", async () => {
+		// Create a catalog with a POST operation that has bodySchema
+		const dir = await fs.mkdtemp(path.join(os.tmpdir(), "api-describe-body-"));
+		const catalog = {
+			service: "test-svc",
+			displayName: "Test",
+			version: "1.0.0",
+			auth: { type: "bearer", tokenSource: "T", baseUrlSource: "U" },
+			categories: [
+				{
+					name: "items",
+					displayName: "Items",
+					operations: [
+						{
+							name: "create_item",
+							description: "Create an item",
+							method: "POST",
+							path: "/api/items",
+							dangerLevel: "medium",
+							parameters: [],
+							bodySchema: { type: "object", properties: { name: { type: "string" } }, required: ["name"] },
+						},
+					],
+				},
+			],
+		};
+		await Bun.write(path.join(dir, "api-catalog.json"), JSON.stringify(catalog));
+		try {
+			const svc = new ApiCatalogService([dir]);
+			const tool = new ApiDescribeTool(svc);
+			const result = await tool.execute("id", { service: "test-svc", operation: "create_item" });
+			const text = (result.content[0] as { type: "text"; text: string }).text;
+			expect(text).toContain("bodySchema");
+			expect(text).toContain("name");
+		} finally {
+			await fs.rm(dir, { recursive: true });
+		}
+	});
 });
 
 describe("ApiCallTool", () => {

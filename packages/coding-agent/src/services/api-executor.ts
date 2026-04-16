@@ -131,9 +131,10 @@ export class ApiExecutor {
 		}
 
 		const url = this.resolveUrl(auth.baseUrl, op.path, pathParams, queryParams);
+		const cacheKey = `${JSON.stringify(auth.headers)}:${url}`;
 
 		if (op.method === "GET") {
-			const cached = this.#getCached(url);
+			const cached = this.#getCached(cacheKey);
 			if (cached !== undefined) {
 				logger.debug("ApiExecutor: cache hit", { url });
 				return { ok: true, data: cached };
@@ -145,7 +146,7 @@ export class ApiExecutor {
 			// For item-path writes (path ends in /{name}), strip the last segment so the
 			// invalidation also covers cached list responses for the same collection.
 			const prefix = /\/\{[^}]+\}$/.test(op.path) ? url.replace(/\/[^/?]+$/, "") : url.replace(/\?.*$/, "");
-			this.#invalidateByPrefix(prefix);
+			this.#invalidateByPrefix(`${JSON.stringify(auth.headers)}:${prefix}`);
 		}
 
 		const headers: Record<string, string> = { "Content-Type": "application/json", ...auth.headers };
@@ -182,7 +183,7 @@ export class ApiExecutor {
 		}
 
 		if (op.method === "GET") {
-			this.#setCache(url, data);
+			this.#setCache(cacheKey, data);
 		}
 
 		if (op.responseSchema) {

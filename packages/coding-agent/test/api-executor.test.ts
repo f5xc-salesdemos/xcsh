@@ -534,3 +534,33 @@ describe("ApiExecutor — response validation integration", () => {
 		}
 	});
 });
+
+describe("ApiExecutor — cache auth scoping", () => {
+	afterEach(() => {
+		globalThis.fetch = undefined as unknown as typeof fetch;
+	});
+
+	test("GET cache is scoped by auth context", async () => {
+		const getOp: ApiOperation = {
+			name: "list_items",
+			description: "List",
+			method: "GET",
+			path: "/api/items",
+			dangerLevel: "low",
+			parameters: [],
+		};
+		let callCount = 0;
+		globalThis.fetch = (async () => {
+			callCount++;
+			return new Response(JSON.stringify({ items: [callCount] }), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const executor = new ApiExecutor();
+		const auth1: ResolvedAuth = { headers: { Authorization: "Token-A" }, baseUrl: "https://api.example.com" };
+		const auth2: ResolvedAuth = { headers: { Authorization: "Token-B" }, baseUrl: "https://api.example.com" };
+
+		await executor.execute(auth1, getOp, {});
+		await executor.execute(auth2, getOp, {}); // different auth, must NOT use cache
+		expect(callCount).toBe(2);
+	});
+});

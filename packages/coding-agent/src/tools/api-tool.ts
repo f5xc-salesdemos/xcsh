@@ -169,6 +169,10 @@ export class ApiDescribeTool implements AgentTool<typeof describeSchema> {
 			parts.push(...op.bestPractices.map(b => `- ${b}`));
 		}
 
+		if (op.bodySchema) {
+			parts.push("", "**bodySchema (Request Body):**", "```json", JSON.stringify(op.bodySchema, null, 2), "```");
+		}
+
 		return { content: [{ type: "text", text: parts.join("\n") }] };
 	}
 }
