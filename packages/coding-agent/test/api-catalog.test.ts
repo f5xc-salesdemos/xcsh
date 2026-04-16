@@ -193,3 +193,110 @@ describe("ApiCatalogService", () => {
 		await fs.rm(tmpDir2, { recursive: true, force: true });
 	});
 });
+
+describe("ApiCatalogService — indexed lookups", () => {
+	let dir: string;
+
+	beforeEach(async () => {
+		dir = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-index-"));
+		const catalog = {
+			service: "test",
+			displayName: "Test",
+			version: "1.0.0",
+			auth: {
+				type: "bearer",
+				headerName: "Authorization",
+				headerTemplate: "Bearer {token}",
+				tokenSource: "TOKEN",
+				baseUrlSource: "BASE_URL",
+			},
+			categories: [
+				{
+					name: "widgets",
+					displayName: "Widgets",
+					operations: [
+						{
+							name: "list_widgets",
+							description: "List all widgets",
+							method: "GET",
+							path: "/widgets",
+							dangerLevel: "low",
+							parameters: [],
+						},
+						{
+							name: "get_widget",
+							description: "Get a widget by name",
+							method: "GET",
+							path: "/widgets/{name}",
+							dangerLevel: "low",
+							parameters: [],
+						},
+						{
+							name: "delete_widget",
+							description: "Remove a widget",
+							method: "DELETE",
+							path: "/widgets/{name}",
+							dangerLevel: "high",
+							parameters: [],
+						},
+					],
+				},
+				{
+					name: "gadgets",
+					displayName: "Gadgets",
+					operations: [
+						{
+							name: "list_gadgets",
+							description: "List all gadgets",
+							method: "GET",
+							path: "/gadgets",
+							dangerLevel: "low",
+							parameters: [],
+						},
+					],
+				},
+			],
+		};
+		await Bun.write(path.join(dir, "api-catalog.json"), JSON.stringify(catalog));
+	});
+
+	afterEach(async () => {
+		await fs.rm(dir, { recursive: true });
+	});
+
+	test("getOperation returns correct operation without linear scan", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const op = await svc.getOperation("test", "delete_widget");
+		expect(op).not.toBeNull();
+		expect(op?.method).toBe("DELETE");
+		expect(op?.dangerLevel).toBe("high");
+	});
+
+	test("getOperation returns null for unknown operation name", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const op = await svc.getOperation("test", "nonexistent_op");
+		expect(op).toBeNull();
+	});
+
+	test("getOperations with category filter uses category index", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const ops = await svc.getOperations("test", "gadgets");
+		expect(ops).toHaveLength(1);
+		expect(ops[0].name).toBe("list_gadgets");
+	});
+
+	test("search uses keyword index", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const results = await svc.search("test", "widget");
+		expect(results.length).toBeGreaterThanOrEqual(3);
+		expect(results.every(r => r.name.includes("widget") || r.description.toLowerCase().includes("widget"))).toBe(
+			true,
+		);
+	});
+
+	test("search returns empty for no match", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const results = await svc.search("test", "zzznomatch");
+		expect(results).toHaveLength(0);
+	});
+});

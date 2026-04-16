@@ -1,10 +1,17 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { isEnoent } from "@f5xc-salesdemos/pi-utils";
-import type { ApiCatalog, ApiCatalogMeta, ApiOperation } from "./api-types";
+import type { ApiCatalog, ApiCatalogMeta, ApiCategory, ApiOperation } from "./api-types";
+
+interface CatalogIndex {
+	operationsByName: Map<string, ApiOperation>;
+	categoriesByName: Map<string, ApiCategory>;
+	keywordIndex: Map<string, Set<string>>;
+}
 
 export class ApiCatalogService {
 	#catalogs = new Map<string, ApiCatalog>();
+	#indexes = new Map<string, CatalogIndex>();
 	#meta = new Map<string, ApiCatalogMeta>();
 	#searchPaths: string[];
 	#scanned = false;
@@ -24,26 +31,63 @@ export class ApiCatalogService {
 		const meta = this.#meta.get(service);
 		if (!meta) return null;
 		const catalog = await this.#load(meta.filePath);
-		if (catalog) this.#catalogs.set(service, catalog);
+		if (catalog) {
+			this.#catalogs.set(service, catalog);
+			this.#buildIndex(service, catalog);
+		}
 		return catalog;
 	}
 
 	async getOperations(service: string, category?: string): Promise<ApiOperation[]> {
 		const catalog = await this.getCatalog(service);
 		if (!catalog) return [];
-		const cats = category ? catalog.categories.filter(c => c.name === category) : catalog.categories;
-		return cats.flatMap(c => c.operations);
+		if (!category) return [...this.#indexes.get(service)!.operationsByName.values()];
+		const cat = this.#indexes.get(service)?.categoriesByName.get(category);
+		return cat ? [...cat.operations] : [];
 	}
 
 	async getOperation(service: string, operationName: string): Promise<ApiOperation | null> {
-		const ops = await this.getOperations(service);
-		return ops.find(o => o.name === operationName) ?? null;
+		await this.getCatalog(service);
+		return this.#indexes.get(service)?.operationsByName.get(operationName) ?? null;
 	}
 
 	async search(service: string, query: string): Promise<ApiOperation[]> {
-		const ops = await this.getOperations(service);
+		await this.getCatalog(service);
+		const index = this.#indexes.get(service);
+		if (!index) return [];
 		const q = query.toLowerCase();
-		return ops.filter(o => o.name.toLowerCase().includes(q) || o.description.toLowerCase().includes(q));
+		const matchingOpNames = new Set<string>();
+		for (const [keyword, opNames] of index.keywordIndex) {
+			if (keyword.includes(q)) {
+				for (const name of opNames) matchingOpNames.add(name);
+			}
+		}
+		return [...matchingOpNames].map(name => index.operationsByName.get(name)!).filter(Boolean);
+	}
+
+	#buildIndex(service: string, catalog: ApiCatalog): void {
+		const operationsByName = new Map<string, ApiOperation>();
+		const categoriesByName = new Map<string, ApiCategory>();
+		const keywordIndex = new Map<string, Set<string>>();
+
+		const addKeyword = (keyword: string, opName: string) => {
+			if (!keywordIndex.has(keyword)) keywordIndex.set(keyword, new Set());
+			keywordIndex.get(keyword)!.add(opName);
+		};
+
+		for (const category of catalog.categories) {
+			categoriesByName.set(category.name, category);
+			for (const op of category.operations) {
+				operationsByName.set(op.name, op);
+				for (const token of op.name.split("_")) addKeyword(token, op.name);
+				for (const word of op.description.toLowerCase().split(/\s+/)) {
+					if (word.length > 2) addKeyword(word, op.name);
+				}
+				addKeyword(category.name, op.name);
+			}
+		}
+
+		this.#indexes.set(service, { operationsByName, categoriesByName, keywordIndex });
 	}
 
 	async #scan(): Promise<void> {
@@ -64,6 +108,7 @@ export class ApiCatalogService {
 					categories: catalog.categories.map(c => c.name),
 				});
 				this.#catalogs.set(catalog.service, catalog);
+				this.#buildIndex(catalog.service, catalog);
 			}
 		}
 	}
