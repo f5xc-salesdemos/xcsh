@@ -5,7 +5,7 @@ import * as path from "node:path";
 
 const repoRoot = path.join(import.meta.dir, "..");
 const nativeDir = path.join(repoRoot, "packages", "natives", "native");
-const expectedAddons = [
+const ALL_ADDONS = [
 	"linux-x64-modern",
 	"linux-x64-baseline",
 	"linux-arm64",
@@ -15,6 +15,11 @@ const expectedAddons = [
 	"win32-x64-modern",
 	"win32-x64-baseline",
 ] as const;
+
+// CI passes PI_NATIVE_EXPECTED_ADDONS to limit verification to built variants
+const expectedAddons: readonly string[] = Bun.env.PI_NATIVE_EXPECTED_ADDONS
+	? Bun.env.PI_NATIVE_EXPECTED_ADDONS.split(" ").filter(Boolean)
+	: ALL_ADDONS;
 
 async function main(): Promise<void> {
 	const entries = await fs.readdir(nativeDir);

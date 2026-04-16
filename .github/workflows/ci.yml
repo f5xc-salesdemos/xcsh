@@ -180,6 +180,9 @@ jobs:
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
       - name: Install system deps
         run: |
           sudo apt-get update
