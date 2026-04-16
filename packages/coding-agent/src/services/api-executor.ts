@@ -13,7 +13,7 @@ export class ApiExecutor {
 		} else if (auth.type === "basic") {
 			const username = this.#requireEnv(auth.usernameSource!);
 			const password = this.#requireEnv(auth.passwordSource!);
-			headers["Authorization"] = `Basic ${btoa(`${username}:${password}`)}`;
+			headers.Authorization = `Basic ${btoa(`${username}:${password}`)}`;
 		} else if (auth.type === "custom") {
 			const value = this.#requireEnv(auth.headerValueSource!);
 			headers[auth.headerName!] = value;
@@ -116,7 +116,7 @@ export class ApiExecutor {
 
 	#requireEnv(name: string): string {
 		const value = process.env[name];
-		if (!value) throw new Error(`Missing required environment variable: ${name}`);
+		if (value === undefined) throw new Error(`Missing required environment variable: ${name}`);
 		return value;
 	}
 }
