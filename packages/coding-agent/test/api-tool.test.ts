@@ -1141,3 +1141,251 @@ describe("ApiBatchTool — Fix 3: abort signal propagation", () => {
 		expect(elapsed).toBeLessThan(180);
 	});
 });
+
+describe("ApiDiscoverTool — Fix 1: cap unfiltered results", () => {
+	let tmpDir: string;
+
+	// Build a catalog with 60 operations to exceed the 50-op cap
+	const LARGE_CATALOG = {
+		service: "large-svc",
+		displayName: "Large Service",
+		version: "1.0.0",
+		auth: {
+			type: "api_token",
+			headerName: "Authorization",
+			headerTemplate: "APIToken {token}",
+			tokenSource: "TEST_TOKEN",
+			baseUrlSource: "TEST_BASE_URL",
+		},
+		defaults: {},
+		categories: [
+			{
+				name: "items",
+				displayName: "Items",
+				operations: Array.from({ length: 60 }, (_, i) => ({
+					name: `op_${i + 1}`,
+					description: `Operation ${i + 1}`,
+					method: "GET",
+					path: `/api/op-${i + 1}`,
+					dangerLevel: "low",
+					parameters: [],
+				})),
+			},
+		],
+	};
+
+	beforeEach(async () => {
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-discover-cap-"));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(LARGE_CATALOG));
+	});
+
+	afterEach(async () => {
+		await fs.rm(tmpDir, { recursive: true, force: true });
+	});
+
+	test("truncates to 50 ops and appends guidance when unfiltered", async () => {
+		const catalog = new ApiCatalogService([tmpDir]);
+		const tool = new ApiDiscoverTool(catalog);
+		const result = await tool.execute("id1", { service: "large-svc" });
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		// Should contain op_1 through op_50 but not op_51
+		expect(text).toContain("op_50");
+		expect(text).not.toContain("op_51");
+		// Should include the truncation note
+		expect(text).toContain("10 more");
+		expect(text).toContain("category or search");
+	});
+
+	test("does not truncate when result is exactly 50 ops", async () => {
+		const FIFTY_CATALOG = {
+			...LARGE_CATALOG,
+			service: "fifty-svc",
+			categories: [
+				{
+					name: "items",
+					displayName: "Items",
+					operations: Array.from({ length: 50 }, (_, i) => ({
+						name: `op_${i + 1}`,
+						description: `Operation ${i + 1}`,
+						method: "GET",
+						path: `/api/op-${i + 1}`,
+						dangerLevel: "low",
+						parameters: [],
+					})),
+				},
+			],
+		};
+		const fiftyDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-discover-fifty-"));
+		await Bun.write(path.join(fiftyDir, "api-catalog.json"), JSON.stringify(FIFTY_CATALOG));
+
+		try {
+			const catalog = new ApiCatalogService([fiftyDir]);
+			const tool = new ApiDiscoverTool(catalog);
+			const result = await tool.execute("id1", { service: "fifty-svc" });
+			const text = (result.content[0] as { type: "text"; text: string }).text;
+			expect(text).toContain("op_50");
+			expect(text).not.toContain("more.");
+		} finally {
+			await fs.rm(fiftyDir, { recursive: true, force: true });
+		}
+	});
+});
+
+describe("ApiBatchTool — Fix 2: catch auth errors", () => {
+	let tmpDir: string;
+
+	const AUTH_CATALOG = {
+		service: "auth-svc",
+		displayName: "Auth Test Service",
+		version: "1.0.0",
+		auth: {
+			type: "api_token",
+			headerName: "Authorization",
+			headerTemplate: "APIToken {token}",
+			tokenSource: "MISSING_TOKEN_VAR",
+			baseUrlSource: "MISSING_BASE_URL_VAR",
+		},
+		defaults: {},
+		categories: [
+			{
+				name: "items",
+				displayName: "Items",
+				operations: [
+					{
+						name: "list_items",
+						description: "List items",
+						method: "GET",
+						path: "/api/items",
+						dangerLevel: "low",
+						parameters: [],
+					},
+				],
+			},
+		],
+	};
+
+	beforeEach(async () => {
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-batch-auth-"));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(AUTH_CATALOG));
+		// Ensure env vars are absent
+		delete process.env.MISSING_TOKEN_VAR;
+		delete process.env.MISSING_BASE_URL_VAR;
+	});
+
+	afterEach(async () => {
+		await fs.rm(tmpDir, { recursive: true, force: true });
+	});
+
+	test("returns auth error message instead of throwing when token env var is missing", async () => {
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const result = await tool.execute("id1", {
+			service: "auth-svc",
+			operations: [{ operation: "list_items" }],
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text.toLowerCase()).toContain("authentication error");
+	});
+});
+
+describe("ApiBatchTool — Fix 3: skip delay after last item", () => {
+	let tmpDir: string;
+	let origFetch: typeof fetch;
+
+	const DELAY_CATALOG = {
+		service: "delay-svc",
+		displayName: "Delay Test Service",
+		version: "1.0.0",
+		auth: {
+			type: "api_token",
+			headerName: "Authorization",
+			headerTemplate: "APIToken {token}",
+			tokenSource: "TEST_TOKEN",
+			baseUrlSource: "TEST_BASE_URL",
+		},
+		defaults: {},
+		categories: [
+			{
+				name: "items",
+				displayName: "Items",
+				operations: [
+					{
+						name: "op_a",
+						description: "Op A",
+						method: "GET",
+						path: "/a",
+						dangerLevel: "low",
+						parameters: [],
+					},
+					{
+						name: "op_b",
+						description: "Op B",
+						method: "GET",
+						path: "/b",
+						dangerLevel: "low",
+						parameters: [],
+					},
+				],
+			},
+		],
+	};
+
+	beforeEach(async () => {
+		origFetch = globalThis.fetch;
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-batch-delay-"));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(DELAY_CATALOG));
+		process.env.TEST_TOKEN = "delay-token";
+		process.env.TEST_BASE_URL = "https://api.example.com";
+	});
+
+	afterEach(async () => {
+		globalThis.fetch = origFetch;
+		await fs.rm(tmpDir, { recursive: true, force: true });
+		delete process.env.TEST_TOKEN;
+		delete process.env.TEST_BASE_URL;
+	});
+
+	test("single-op batch completes faster than 200ms (no trailing delay)", async () => {
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const start = performance.now();
+		await tool.execute("id1", {
+			service: "delay-svc",
+			operations: [{ operation: "op_a" }],
+		});
+		const elapsed = performance.now() - start;
+
+		// Without the fix this would take >=200ms; with the fix it should be much faster
+		expect(elapsed).toBeLessThan(150);
+	});
+
+	test("two-op batch applies exactly one inter-op delay", async () => {
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const start = performance.now();
+		await tool.execute("id1", {
+			service: "delay-svc",
+			operations: [{ operation: "op_a" }, { operation: "op_b" }],
+		});
+		const elapsed = performance.now() - start;
+
+		// One 200ms delay between op_a and op_b, but no delay after op_b
+		expect(elapsed).toBeGreaterThanOrEqual(180);
+		expect(elapsed).toBeLessThan(450); // not two delays
+	});
+});

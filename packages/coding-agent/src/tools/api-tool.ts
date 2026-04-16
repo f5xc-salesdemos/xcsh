@@ -95,7 +95,19 @@ export class ApiDiscoverTool implements AgentTool<typeof discoverSchema> {
 			};
 		}
 
-		const lines = ops.map(op => `- **${op.name}** [${op.method}] (${op.dangerLevel}) — ${op.description}`);
+		let filteredOps = ops;
+		let truncated = false;
+		let total = 0;
+		if (filteredOps.length > 50) {
+			total = filteredOps.length;
+			filteredOps = filteredOps.slice(0, 50);
+			truncated = true;
+		}
+
+		const lines = filteredOps.map(op => `- **${op.name}** [${op.method}] (${op.dangerLevel}) — ${op.description}`);
+		if (truncated) {
+			lines.push("", `... and ${total - 50} more. Use category or search to narrow results.`);
+		}
 		const header = `Operations for ${service}${category ? ` / ${category}` : ""}:\n\n`;
 		return { content: [{ type: "text", text: header + lines.join("\n") }] };
 	}
@@ -400,10 +412,23 @@ export class ApiBatchTool implements AgentTool<typeof batchSchema> {
 			return { content: [{ type: "text", text: `Failed to load catalog for '${service}'` }] };
 		}
 
-		const auth = this.#executor.resolveAuth(catalog.auth);
+		let auth: ResolvedAuth;
+		try {
+			auth = this.#executor.resolveAuth(catalog.auth);
+		} catch (err) {
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Authentication error: ${err instanceof Error ? err.message : String(err)}`,
+					},
+				],
+			};
+		}
 		const results: Array<{ operation: string; ok: boolean; data?: unknown; error?: string }> = [];
 
-		for (const item of operations) {
+		for (let i = 0; i < operations.length; i++) {
+			const item = operations[i];
 			// Fix 3a: Check abort signal at the start of each iteration.
 			if (signal?.aborted) break;
 			const op = await this.#catalog.getOperation(service, item.operation);
@@ -458,18 +483,20 @@ export class ApiBatchTool implements AgentTool<typeof batchSchema> {
 
 			if (!result.ok && mode === "strict") break;
 
-			// Fix 3b: Make the inter-operation delay abort-aware.
-			await new Promise<void>(resolve => {
-				const timer = setTimeout(resolve, 200);
-				signal?.addEventListener(
-					"abort",
-					() => {
-						clearTimeout(timer);
-						resolve();
-					},
-					{ once: true },
-				);
-			});
+			// Fix 3b: Only delay between operations, not after the last one.
+			if (i < operations.length - 1) {
+				await new Promise<void>(resolve => {
+					const timer = setTimeout(resolve, 200);
+					signal?.addEventListener(
+						"abort",
+						() => {
+							clearTimeout(timer);
+							resolve();
+						},
+						{ once: true },
+					);
+				});
+			}
 		}
 
 		const lines = results.map(r =>
