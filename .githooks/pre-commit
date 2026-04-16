@@ -3,4 +3,4 @@
 # Installed automatically via `bun install` (prepare script sets core.hooksPath).
 # To bypass in emergencies: git commit --no-verify
 
-npx lint-staged
+bunx lint-staged

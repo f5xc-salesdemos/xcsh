@@ -33,19 +33,8 @@ jobs:
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
-      - name: Cache Turbo artifacts
-        uses: actions/cache@v5
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
       - run: bun install --frozen-lockfile
-      - name: Type check changed packages
-        if: github.event_name == 'pull_request'
-        run: bun run ci:check:affected
-      - name: Type check full workspace
-        if: github.event_name != 'pull_request'
+      - name: Type check workspace
         run: bun run ci:check:full
 
   native:
@@ -191,13 +180,6 @@ jobs:
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
-      - name: Cache Turbo artifacts
-        uses: actions/cache@v5
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
       - name: Install system deps
         run: |
           sudo apt-get update
@@ -206,38 +188,8 @@ jobs:
           sudo ln -sf /usr/bin/convert /usr/local/bin/magick
       - run: bun install --frozen-lockfile
       - run: bun run build:native
-      - name: Test changed packages
-        if: github.event_name == 'pull_request'
-        run: |
-          set +e
-          timeout 300 bun run ci:test:affected 2>&1 | tee /tmp/test-output.log
-          EXIT=${PIPESTATUS[0]}
-          set -e
-          if [ $EXIT -eq 0 ]; then
-            exit 0
-          elif [ $EXIT -eq 124 ] && grep -qE '^\s+0 fail' /tmp/test-output.log; then
-            echo "::warning::Tests passed but turbo process hung (killed by timeout)"
-            exit 0
-          else
-            cat /tmp/test-output.log
-            exit $EXIT
-          fi
-      - name: Test full workspace
-        if: github.event_name != 'pull_request'
-        run: |
-          set +e
-          timeout 300 bun run ci:test:full 2>&1 | tee /tmp/test-output.log
-          EXIT=${PIPESTATUS[0]}
-          set -e
-          if [ $EXIT -eq 0 ]; then
-            exit 0
-          elif [ $EXIT -eq 124 ] && grep -qE '^\s+0 fail' /tmp/test-output.log; then
-            echo "::warning::Tests passed but turbo process hung (killed by timeout)"
-            exit 0
-          else
-            cat /tmp/test-output.log
-            exit $EXIT
-          fi
+      - name: Test workspace
+        run: bun run ci:test:full
       - name: CLI smoke test
         run: bun run ci:test:smoke
 

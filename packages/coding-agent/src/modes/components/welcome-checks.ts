@@ -25,6 +25,9 @@ export interface WelcomeCheckResult {
 	profile?: WelcomeProfileStatus;
 }
 
+/** Providers that don't store API keys (local inference servers) */
+const KEYLESS_PROVIDERS = new Set(["ollama", "llama.cpp", "lm-studio", "llamafile", "local"]);
+
 /**
  * Run blocking startup checks for the welcome screen.
  * Model check always runs. Profile check only runs if model is connected.
@@ -36,7 +39,8 @@ export async function runWelcomeChecks(
 	const provider = model?.provider ?? "unknown";
 
 	// Step 1: Check model provider credentials exist
-	if (!authStorage.hasAuth(provider)) {
+	// Keyless local providers (ollama, llama.cpp, lm-studio, etc.) don't store credentials
+	if (!authStorage.hasAuth(provider) && !KEYLESS_PROVIDERS.has(provider)) {
 		return { model: { state: "no_provider", provider } };
 	}
 
@@ -54,14 +58,30 @@ export async function runWelcomeChecks(
 async function validateModelConnection(model: Model | undefined, authStorage: AuthStorage): Promise<ModelStatus> {
 	const provider = model?.provider ?? "unknown";
 	try {
-		const apiKey = await authStorage.peekApiKey(provider);
-		if (!apiKey) {
+		const rawApiKey = await authStorage.peekApiKey(provider);
+		if (!rawApiKey) {
+			// Keyless providers skip validation
+			if (KEYLESS_PROVIDERS.has(provider)) {
+				return { state: "connected", provider, latencyMs: 0 };
+			}
 			return { state: "auth_error", provider };
 		}
 
 		const baseUrl = model?.baseUrl;
 		if (!baseUrl) {
 			return { state: "auth_error", provider };
+		}
+
+		// GitHub Copilot returns a structured JSON token {token, enterpriseUrl};
+		// extract the actual token for API validation
+		let apiKey = rawApiKey;
+		if (provider === "github-copilot" && rawApiKey.startsWith("{")) {
+			try {
+				const parsed = JSON.parse(rawApiKey);
+				apiKey = parsed.token ?? rawApiKey;
+			} catch {
+				// Not JSON — use as-is
+			}
 		}
 
 		const modelsUrl = `${baseUrl}/models`;

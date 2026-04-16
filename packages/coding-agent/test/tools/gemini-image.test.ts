@@ -70,6 +70,6 @@ describe("geminiImageTool", () => {
 
 		const result = await geminiImageTool.execute("call-1", { subject: "a cat" }, undefined, ctx);
 		expect(result.content[0].type).toBe("text");
-		expect(getHeaderValue(requestHeaders, "X-Title")).toBe("Oh-My-Pi");
+		expect(getHeaderValue(requestHeaders, "X-Title")).toBe("xcsh");
 	});
 });
