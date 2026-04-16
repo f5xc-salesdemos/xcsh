@@ -8,7 +8,8 @@ export class ApiExecutor {
 
 		if (auth.type === "api_token" || auth.type === "bearer") {
 			const token = this.#requireEnv(auth.tokenSource!);
-			const headerValue = (auth.headerTemplate ?? "{token}").replace("{token}", token);
+			const defaultTemplate = auth.type === "bearer" ? "Bearer {token}" : "{token}";
+			const headerValue = (auth.headerTemplate ?? defaultTemplate).replace("{token}", token);
 			headers[auth.headerName ?? "Authorization"] = headerValue;
 		} else if (auth.type === "basic") {
 			const username = this.#requireEnv(auth.usernameSource!);

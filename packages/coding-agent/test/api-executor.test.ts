@@ -70,6 +70,23 @@ describe("ApiExecutor.resolveAuth()", () => {
 		const executor = new ApiExecutor();
 		expect(() => executor.resolveAuth(TEST_AUTH)).toThrow("Missing required environment variable: TEST_BASE_URL");
 	});
+
+	test("bearer type defaults header to 'Bearer {token}'", () => {
+		process.env["TEST_API_TOKEN"] = "mytoken";
+		process.env["TEST_BASE_URL"] = "https://api.example.com";
+
+		const executor = new ApiExecutor();
+		const auth = executor.resolveAuth({
+			type: "bearer",
+			tokenSource: "TEST_API_TOKEN",
+			baseUrlSource: "TEST_BASE_URL",
+		});
+
+		expect(auth.headers["Authorization"]).toBe("Bearer mytoken");
+
+		delete process.env["TEST_API_TOKEN"];
+		delete process.env["TEST_BASE_URL"];
+	});
 });
 
 describe("ApiExecutor.resolveParams()", () => {
