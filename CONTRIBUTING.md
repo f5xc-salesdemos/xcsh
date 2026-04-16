@@ -129,10 +129,14 @@ The link steps resolve Bun `workspace:` protocol references. `build:ws` compiles
 Run immediately after setup, before writing any code:
 
 ```bash
-bun test 2>&1 | tee .worktree-test-baseline.txt
+bun test --max-concurrency 4 2>&1 | tee .worktree-test-baseline.txt
 ```
 
 This records pre-existing failures (e.g., missing ARM64 native modules). **Your work must never increase the failure count beyond this baseline.**
+
+> **OOM warning:** Never run the baseline capture without `--max-concurrency`.
+> The full suite (~3200 tests) at default concurrency (20) will exhaust RAM
+> and crash the container.
 
 ---
 
@@ -240,15 +244,37 @@ bun test --cwd packages/coding-agent --filter <name>  # scoped to package
 
 ### Resource-constrained environments
 
+Bun defaults to 20 concurrent tests, which can spike RAM past 10 GB and OOM-kill
+the container (no swap is configured). Always limit concurrency:
+
 ```bash
-bun test --max-concurrency 4    # safe for 4 GB containers
-bun test --max-concurrency 1    # sequential, minimal resources
+# Recommended defaults by available RAM
+bun test --max-concurrency 2    # <= 8 GB RAM (safe minimum)
+bun test --max-concurrency 4    # 8-16 GB RAM
+bun test --max-concurrency 8    # > 16 GB RAM
+
+# Low-memory mode: reduces GC pressure at the cost of throughput
+bun --smol test --max-concurrency 2
+
+# Sequential execution: lowest possible resource usage
+bun --smol test --max-concurrency 1
+
+# Bail on first failure to avoid wasting resources on a broken run
+bun test --max-concurrency 4 --bail 1
 ```
+
+**Rules for AI agents and CI:**
+- Never run `bun test` without `--max-concurrency`. The default of 20 will crash
+  containers with less than 16 GB RAM.
+- Prefer targeted tests (`--filter` or `--cwd`) over full-suite runs.
+- Use `--bail 1` during development to fail fast.
+- Use `--smol` when running the full suite in memory-constrained environments.
+- If a test run is killed (SIGKILL/OOM), reduce concurrency by half and retry.
 
 ### Comparing against baseline
 
 ```bash
-bun test 2>&1 | tee /tmp/current-test-results.txt
+bun test --max-concurrency 4 2>&1 | tee /tmp/current-test-results.txt
 
 BASELINE_FAILS=$(grep -o '[0-9]* fail' .worktree-test-baseline.txt | grep -o '[0-9]*' || echo 0)
 CURRENT_FAILS=$(grep -o '[0-9]* fail' /tmp/current-test-results.txt | grep -o '[0-9]*' || echo 0)
@@ -574,7 +600,7 @@ BRANCH="<type>/issue-<N>-<desc>"
 git worktree add ".worktrees/${BRANCH}" -b "${BRANCH}" origin/main
 cd ".worktrees/${BRANCH}"
 bun install && bun --cwd=packages/coding-agent link && bun --cwd=packages/ai link && bun run build:ws
-bun test 2>&1 | tee .worktree-test-baseline.txt
+bun test --max-concurrency 4 2>&1 | tee .worktree-test-baseline.txt
 
 # --- TDD Cycle ---
 bun test --cwd packages/<pkg> --filter <test>    # red
