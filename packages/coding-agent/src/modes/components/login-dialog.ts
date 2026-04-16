@@ -1,5 +1,5 @@
-import { getOAuthProviders } from "@oh-my-pi/pi-ai";
-import { Container, getKeybindings, Input, Spacer, Text, type TUI } from "@oh-my-pi/pi-tui";
+import { getOAuthProviders } from "@f5xc-salesdemos/pi-ai";
+import { Container, getKeybindings, Input, Spacer, Text, type TUI } from "@f5xc-salesdemos/pi-tui";
 import { theme } from "../../modes/theme/theme";
 import { openPath } from "../../utils/open";
 import { DynamicBorder } from "./dynamic-border";
@@ -73,7 +73,7 @@ export class LoginDialogComponent extends Container {
 	showAuth(url: string, instructions?: string): void {
 		this.#contentContainer.clear();
 		this.#contentContainer.addChild(new Spacer(1));
-		this.#contentContainer.addChild(new Text(theme.fg("accent", url), 1, 0));
+		this.#contentContainer.addChild(new Text(theme.fg("contentAccent", url), 1, 0));
 
 		const clickHint = process.platform === "darwin" ? "Cmd+click to open" : "Ctrl+click to open";
 		const hyperlink = `\x1b]8;;${url}\x07${clickHint}\x1b]8;;\x07`;

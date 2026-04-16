@@ -4,7 +4,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { type Agent, type AgentMessage, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
+import type { Agent, AgentMessage, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
 import {
 	type AssistantMessage,
 	type ImageContent,
@@ -12,10 +12,10 @@ import {
 	type Model,
 	modelsAreEqual,
 	type UsageReport,
-} from "@oh-my-pi/pi-ai";
-import type { Component, SlashCommand } from "@oh-my-pi/pi-tui";
-import { Container, Loader, Markdown, ProcessTerminal, Spacer, Text, TUI, visibleWidth } from "@oh-my-pi/pi-tui";
-import { APP_NAME, getProjectDir, hsvToRgb, isEnoent, logger, postmortem, prompt } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-ai";
+import type { Component, SlashCommand } from "@f5xc-salesdemos/pi-tui";
+import { Container, Loader, Markdown, ProcessTerminal, Spacer, Text, TUI, visibleWidth } from "@f5xc-salesdemos/pi-tui";
+import { getProjectDir, hsvToRgb, isEnoent, logger, postmortem, prompt } from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { KeybindingsManager } from "../config/keybindings";
 import { type Settings, settings } from "../config/settings";
@@ -28,30 +28,29 @@ import type {
 import type { CompactOptions } from "../extensibility/extensions/types";
 import { BUILTIN_SLASH_COMMANDS, loadSlashCommands } from "../extensibility/slash-commands";
 import { resolveLocalUrlToPath } from "../internal-urls";
-import { LSP_STARTUP_EVENT_CHANNEL, type LspStartupEvent } from "../lsp/startup-events";
 import { renameApprovedPlanFile } from "../plan-mode/approved-plan";
 import planModeApprovedPrompt from "../prompts/system/plan-mode-approved.md" with { type: "text" };
 import type { AgentSession, AgentSessionEvent } from "../session/agent-session";
 import { HistoryStorage } from "../session/history-storage";
 import type { SessionContext, SessionManager } from "../session/session-manager";
-import { getRecentSessions } from "../session/session-manager";
 import { STTController, type SttState } from "../stt";
-import type { ExitPlanModeDetails, LspStartupServerInfo } from "../tools";
+import type { ExitPlanModeDetails } from "../tools";
 import type { EventBus } from "../utils/event-bus";
 import { getEditorCommand, openInEditor } from "../utils/external-editor";
-import { getSessionAccentAnsi, getSessionAccentHexForTitle } from "../utils/session-color";
 import { popTerminalTitle, pushTerminalTitle, setSessionTerminalTitle } from "../utils/title-generator";
 import type { AssistantMessageComponent } from "./components/assistant-message";
 import type { BashExecutionComponent } from "./components/bash-execution";
 import { CustomEditor } from "./components/custom-editor";
 import { DynamicBorder } from "./components/dynamic-border";
+import { DisposableContainer, type GutterBlock } from "./components/gutter-block";
 import type { HookEditorComponent } from "./components/hook-editor";
 import type { HookInputComponent } from "./components/hook-input";
 import type { HookSelectorComponent } from "./components/hook-selector";
 import type { PythonExecutionComponent } from "./components/python-execution";
 import { StatusLineComponent } from "./components/status-line";
 import type { ToolExecutionHandle } from "./components/tool-execution";
-import { WelcomeComponent, type LspServerInfo as WelcomeLspServerInfo } from "./components/welcome";
+import { WelcomeComponent } from "./components/welcome";
+import { runWelcomeChecks } from "./components/welcome-checks";
 import { BtwController } from "./controllers/btw-controller";
 import { CommandController } from "./controllers/command-controller";
 import { EventController } from "./controllers/event-controller";
@@ -133,6 +132,7 @@ export class InteractiveMode implements InteractiveModeContext {
 	pythonComponent: PythonExecutionComponent | undefined = undefined;
 	isPythonMode = false;
 	streamingComponent: AssistantMessageComponent | undefined = undefined;
+	streamingAssistantGutter: GutterBlock<AssistantMessageComponent> | undefined = undefined;
 	streamingMessage: AssistantMessage | undefined = undefined;
 	loadingAnimation: Loader | undefined = undefined;
 	autoCompactionLoader: Loader | undefined = undefined;
@@ -167,7 +167,6 @@ export class InteractiveMode implements InteractiveModeContext {
 	#pendingModelSwitch: { model: Model; thinkingLevel?: ThinkingLevel } | undefined;
 	#planModeHasEntered = false;
 	#planReviewContainer: Container | undefined;
-	readonly lspServers: LspStartupServerInfo[] | undefined = undefined;
 	mcpManager?: import("../mcp").MCPManager;
 	readonly #toolUiContextSetter: (uiContext: ExtensionUIContext, hasUI: boolean) => void;
 
@@ -194,7 +193,6 @@ export class InteractiveMode implements InteractiveModeContext {
 		version: string,
 		changelogMarkdown: string | undefined = undefined,
 		setToolUIContext: (uiContext: ExtensionUIContext, hasUI: boolean) => void = () => {},
-		lspServers: LspStartupServerInfo[] | undefined = undefined,
 		mcpManager?: import("../mcp").MCPManager,
 		eventBus?: EventBus,
 	) {
@@ -206,13 +204,12 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#version = version;
 		this.#changelogMarkdown = changelogMarkdown;
 		this.#toolUiContextSetter = setToolUIContext;
-		this.lspServers = lspServers;
 		this.mcpManager = mcpManager;
 		this.#eventBus = eventBus;
 		if (eventBus) {
 			this.#eventBusUnsubscribers.push(
-				eventBus.on(LSP_STARTUP_EVENT_CHANNEL, data => {
-					this.#handleLspStartupEvent(data as LspStartupEvent);
+				eventBus.on("cwd:changed", () => {
+					this.ui.requestRender();
 				}),
 			);
 		}
@@ -220,7 +217,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.ui = new TUI(new ProcessTerminal(), settings.get("showHardwareCursor"));
 		this.ui.setClearOnShrink(settings.get("clearOnShrink"));
 		setMermaidRenderCallback(() => this.ui.requestRender());
-		this.chatContainer = new Container();
+		this.chatContainer = new DisposableContainer();
 		this.pendingMessagesContainer = new Container();
 		this.statusContainer = new Container();
 		this.todoContainer = new Container();
@@ -246,7 +243,6 @@ export class InteractiveMode implements InteractiveModeContext {
 			logger.warn("History storage unavailable", { error: String(error) });
 		}
 		this.hookWidgetContainerAbove = new Container();
-		this.hookWidgetContainerAbove.addChild(new Spacer(1));
 		this.hookWidgetContainerBelow = new Container();
 		this.editorContainer = new Container();
 		this.editorContainer.addChild(this.editor);
@@ -308,18 +304,9 @@ export class InteractiveMode implements InteractiveModeContext {
 			getProjectDir(),
 		);
 
-		// Get current model info for welcome screen
-		const modelName = this.session.model?.name ?? "Unknown";
-		const providerName = this.session.model?.provider ?? "Unknown";
-
-		// Get recent sessions
-		const recentSessions = await logger.time("InteractiveMode.init:recentSessions", () =>
-			getRecentSessions(this.sessionManager.getSessionDir()).then(sessions =>
-				sessions.map(s => ({
-					name: s.name,
-					timeAgo: s.timeAgo,
-				})),
-			),
+		// Run blocking welcome screen status checks (model + profile)
+		const welcomeResult = await logger.time("InteractiveMode.init:welcomeChecks", () =>
+			runWelcomeChecks(this.session.model, this.session.modelRegistry.authStorage),
 		);
 
 		const startupQuiet = settings.get("startup.quiet");
@@ -332,13 +319,7 @@ export class InteractiveMode implements InteractiveModeContext {
 
 		if (!startupQuiet) {
 			// Add welcome header
-			this.#welcomeComponent = new WelcomeComponent(
-				this.#version,
-				modelName,
-				providerName,
-				recentSessions,
-				this.#getWelcomeLspServers(),
-			);
+			this.#welcomeComponent = new WelcomeComponent(this.#version, welcomeResult.model, welcomeResult.profile);
 
 			// Setup UI layout
 			this.ui.addChild(new Spacer(1));
@@ -349,12 +330,10 @@ export class InteractiveMode implements InteractiveModeContext {
 			if (this.#changelogMarkdown) {
 				this.ui.addChild(new DynamicBorder());
 				if (settings.get("collapseChangelog")) {
-					const versionMatch = this.#changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
-					const latestVersion = versionMatch ? versionMatch[1] : this.#version;
-					const condensedText = `Updated to v${latestVersion}. Use ${theme.bold("/changelog")} to view full changelog.`;
+					const condensedText = `Updated to v${this.#version}. Use ${theme.bold("/changelog")} to view full changelog.`;
 					this.ui.addChild(new Text(condensedText, 1, 0));
 				} else {
-					this.ui.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 1, 0));
+					this.ui.addChild(new Text(theme.bold(theme.fg("contentAccent", "What's New")), 1, 0));
 					this.ui.addChild(new Spacer(1));
 					this.ui.addChild(new Markdown(this.#changelogMarkdown.trim(), 1, 0, getMarkdownTheme()));
 					this.ui.addChild(new Spacer(1));
@@ -391,17 +370,12 @@ export class InteractiveMode implements InteractiveModeContext {
 		await this.#loadTodoList();
 
 		// Start the UI
-		this.ui.start();
+		const clearScreen = settings.get("startup.clearScreen");
+		this.ui.start(clearScreen);
 		pushTerminalTitle();
-		setSessionTerminalTitle(
-			this.sessionManager.getSessionName(),
-			this.sessionManager.getCwd(),
-			this.sessionManager.titleSource,
-		);
-		this.updateEditorBorderColor();
+		setSessionTerminalTitle(this.sessionManager.getSessionName(), this.sessionManager.getCwd());
 		this.#syncEditorMaxHeight();
 		this.isInitialized = true;
-		this.ui.requestRender(true);
 
 		// Initialize hooks with TUI-based UI context
 		await this.initHooksAndCustomTools();
@@ -428,6 +402,11 @@ export class InteractiveMode implements InteractiveModeContext {
 
 		// Set up git branch watcher
 		this.statusLine.watchBranch(() => {
+			this.updateEditorTopBorder();
+			this.ui.requestRender();
+		});
+
+		this.statusLine.onStatusChanged(() => {
 			this.updateEditorTopBorder();
 			this.ui.requestRender();
 		});
@@ -537,14 +516,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		} else if (this.isPythonMode) {
 			this.editor.borderColor = theme.getPythonModeBorderColor();
 		} else {
-			const hex = getSessionAccentHexForTitle(this.sessionManager.getSessionName(), this.sessionManager.titleSource);
-			const ansi = getSessionAccentAnsi(hex);
-			if (ansi) {
-				this.editor.borderColor = (str: string) => `${ansi}${str}\x1b[39m`;
-			} else {
-				const level = this.session.thinkingLevel ?? ThinkingLevel.Off;
-				this.editor.borderColor = theme.getThinkingBorderColor(level);
-			}
+			this.editor.borderColor = (str: string) => theme.fg("border", str);
 		}
 		this.updateEditorTopBorder();
 		this.ui.requestRender();
@@ -568,7 +540,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			case "completed":
 				return theme.fg("success", `${prefix}${checkbox.checked} ${chalk.strikethrough(todo.content)}`);
 			case "in_progress": {
-				const main = theme.fg("accent", `${prefix}${checkbox.unchecked} ${todo.content}`);
+				const main = theme.fg("contentAccent", `${prefix}${checkbox.unchecked} ${todo.content}`);
 				if (!todo.details) return main;
 				const detailLines = todo.details.split("\n").map(line => theme.fg("dim", `${prefix}  ${line}`));
 				return [main, ...detailLines].join("\n");
@@ -597,12 +569,12 @@ export class InteractiveMode implements InteractiveModeContext {
 
 		const indent = "  ";
 		const hook = theme.tree.hook;
-		const lines = ["", indent + theme.bold(theme.fg("accent", "Todos"))];
+		const lines = ["", indent + theme.bold(theme.fg("contentAccent", "Todos"))];
 
 		if (!this.todoExpanded) {
 			const activePhase = this.#getActivePhase(phases);
 			if (!activePhase) return;
-			lines.push(`${indent}${theme.fg("accent", `${hook} ${activePhase.name}`)}`);
+			lines.push(`${indent}${theme.fg("contentAccent", `${hook} ${activePhase.name}`)}`);
 			const visibleTasks = activePhase.tasks.slice(0, 5);
 			visibleTasks.forEach((todo, index) => {
 				const prefix = `${indent}${index === 0 ? hook : " "} `;
@@ -617,7 +589,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		}
 
 		for (const phase of phases) {
-			lines.push(`${indent}${theme.fg("accent", `${hook} ${phase.name}`)}`);
+			lines.push(`${indent}${theme.fg("contentAccent", `${hook} ${phase.name}`)}`);
 			phase.tasks.forEach((todo, index) => {
 				const prefix = `${indent}${index === 0 ? hook : " "} `;
 				lines.push(this.#formatTodoLine(todo, prefix));
@@ -807,7 +779,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		planReviewContainer.clear();
 		planReviewContainer.addChild(new Spacer(1));
 		planReviewContainer.addChild(new DynamicBorder());
-		planReviewContainer.addChild(new Text(theme.bold(theme.fg("accent", "Plan Review")), 1, 1));
+		planReviewContainer.addChild(new Text(theme.bold(theme.fg("contentAccent", "Plan Review")), 1, 1));
 		planReviewContainer.addChild(new Spacer(1));
 		planReviewContainer.addChild(new Markdown(planContent, 1, 1, getMarkdownTheme()));
 		planReviewContainer.addChild(new DynamicBorder());
@@ -888,7 +860,8 @@ export class InteractiveMode implements InteractiveModeContext {
 			if (ttyHandle) {
 				await ttyHandle.close();
 			}
-			this.ui.start();
+			const clearScreen = settings.get("startup.clearScreen");
+			this.ui.start(clearScreen);
 			this.ui.requestRender(true);
 		}
 	}
@@ -1046,7 +1019,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		await this.session.dispose();
 
 		if (this.isInitialized) {
-			this.ui.requestRender(true);
+			this.ui.requestRender();
 		}
 
 		// Wait for any pending renders to complete
@@ -1059,12 +1032,10 @@ export class InteractiveMode implements InteractiveModeContext {
 		popTerminalTitle();
 		this.stop();
 
-		// Print resumption hint if this is a persisted session
-		const sessionId = this.sessionManager.getSessionId();
-		const sessionFile = this.sessionManager.getSessionFile();
-		if (sessionId && sessionFile) {
-			process.stderr.write(`\n${chalk.dim(`Resume this session with ${APP_NAME} --resume ${sessionId}`)}\n`);
-		}
+		// Transient prompt: erase the 2-line textarea frame and replace with green ❯
+		// After stop(), cursor is 1 line below frame (stop() writes \r\n).
+		// Move up 3 (2 frame lines + 1 blank), erase to end of screen, print prompt.
+		process.stderr.write(`\x1b[3A\x1b[0J\x1b[32m❯\x1b[0m\n`);
 
 		await postmortem.quit(0);
 	}
@@ -1113,54 +1084,12 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#uiHelpers.showWarning(message);
 	}
 
-	#handleLspStartupEvent(event: LspStartupEvent): void {
-		this.#updateWelcomeLspServers();
-
-		if (event.type === "failed") {
-			this.showWarning(`LSP startup failed: ${event.error}. It will retry lazily on write.`);
-			return;
-		}
-
-		const failedServers = event.servers.filter(server => server.status === "error");
-
-		if (failedServers.length === 1) {
-			const failedServer = failedServers[0];
-			const detail = failedServer.error ? `: ${failedServer.error}` : "";
-			this.showWarning(`LSP startup failed for ${failedServer.name}${detail}. It will retry lazily on write.`);
-			return;
-		}
-
-		if (failedServers.length > 1) {
-			const failedNames = failedServers.map(server => server.name).join(", ");
-			this.showWarning(`LSP startup failed for ${failedNames}. It will retry lazily on write.`);
-		}
-	}
-
-	#getWelcomeLspServers(): WelcomeLspServerInfo[] {
-		return (
-			this.lspServers?.map(server => ({
-				name: server.name,
-				status: server.status,
-				fileTypes: server.fileTypes,
-			})) ?? []
-		);
-	}
-
-	#updateWelcomeLspServers(): void {
-		if (!this.#welcomeComponent) {
-			return;
-		}
-
-		this.#welcomeComponent.setLspServers(this.#getWelcomeLspServers());
-		this.ui.requestRender();
-	}
-
 	ensureLoadingAnimation(): void {
 		if (!this.loadingAnimation) {
 			this.statusContainer.clear();
 			this.loadingAnimation = new Loader(
 				this.ui,
-				spinner => theme.fg("accent", spinner),
+				spinner => theme.fg("spinnerAccent", spinner),
 				text => theme.fg("muted", text),
 				this.#defaultWorkingMessage,
 				getSymbolTheme().spinnerFrames,
@@ -1312,10 +1241,6 @@ export class InteractiveMode implements InteractiveModeContext {
 
 	handleMoveCommand(targetPath: string): Promise<void> {
 		return this.#commandController.handleMoveCommand(targetPath);
-	}
-
-	handleRenameCommand(title: string): Promise<void> {
-		return this.#commandController.handleRenameCommand(title);
 	}
 
 	handleMemoryCommand(text: string): Promise<void> {

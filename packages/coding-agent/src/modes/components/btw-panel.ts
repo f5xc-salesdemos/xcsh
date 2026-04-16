@@ -1,4 +1,4 @@
-import { type Component, Container, Markdown, Spacer, Text, type TUI } from "@oh-my-pi/pi-tui";
+import { type Component, Container, Markdown, Spacer, Text, type TUI } from "@f5xc-salesdemos/pi-tui";
 import { replaceTabs } from "../../tools/render-utils";
 import { getMarkdownTheme, theme } from "../theme/theme";
 import { DynamicBorder } from "./dynamic-border";
@@ -66,7 +66,7 @@ export class BtwPanelComponent extends Container {
 		this.clear();
 		this.addChild(new DynamicBorder(str => theme.fg("dim", str)));
 		this.addChild(new Spacer(1));
-		this.addChild(new Text(theme.fg("accent", replaceTabs(this.#question)), 1, 0));
+		this.addChild(new Text(theme.fg("contentAccent", replaceTabs(this.#question)), 1, 0));
 		this.addChild(new Spacer(1));
 		this.addChild(this.#contentComponent());
 		this.addChild(new Spacer(1));

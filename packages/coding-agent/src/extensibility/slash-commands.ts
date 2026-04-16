@@ -1,5 +1,5 @@
-import type { AutocompleteItem } from "@oh-my-pi/pi-tui";
-import { parseFrontmatter, prompt } from "@oh-my-pi/pi-utils";
+import type { AutocompleteItem } from "@f5xc-salesdemos/pi-tui";
+import { parseFrontmatter, prompt } from "@f5xc-salesdemos/pi-utils";
 import { slashCommandCapability } from "../capability/slash-command";
 import { appendInlineArgsFallback, templateUsesInlineArgPlaceholders } from "../config/prompt-templates";
 import type { SlashCommand } from "../discovery";

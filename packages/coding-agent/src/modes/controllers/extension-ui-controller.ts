@@ -1,6 +1,6 @@
-import type { Component, OverlayHandle, TUI } from "@oh-my-pi/pi-tui";
-import { Container, Spacer, Text } from "@oh-my-pi/pi-tui";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { Component, OverlayHandle, TUI } from "@f5xc-salesdemos/pi-tui";
+import { Container, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import { KeybindingsManager } from "../../config/keybindings";
 import type {
 	ExtensionActions,
@@ -199,7 +199,7 @@ export class ExtensionUiController {
 
 				this.ctx.chatContainer.addChild(new Spacer(1));
 				this.ctx.chatContainer.addChild(
-					new Text(`${theme.fg("accent", `${theme.status.success} New session started`)}`, 1, 1),
+					new Text(`${theme.fg("contentAccent", `${theme.status.success} New session started`)}`, 1, 1),
 				);
 				await this.ctx.reloadTodos();
 				this.ctx.ui.requestRender();
@@ -318,7 +318,7 @@ export class ExtensionUiController {
 	}
 
 	#rebuildHookWidgets(): void {
-		this.#renderHookWidgetContainer(this.ctx.hookWidgetContainerAbove, this.#hookWidgetsAbove, true, true);
+		this.#renderHookWidgetContainer(this.ctx.hookWidgetContainerAbove, this.#hookWidgetsAbove, false, true);
 		this.#renderHookWidgetContainer(this.ctx.hookWidgetContainerBelow, this.#hookWidgetsBelow, false, false);
 		this.ctx.ui.requestRender();
 	}
@@ -472,7 +472,7 @@ export class ExtensionUiController {
 
 				this.ctx.chatContainer.addChild(new Spacer(1));
 				this.ctx.chatContainer.addChild(
-					new Text(`${theme.fg("accent", `${theme.status.success} New session started`)}`, 1, 1),
+					new Text(`${theme.fg("contentAccent", `${theme.status.success} New session started`)}`, 1, 1),
 				);
 				await this.ctx.reloadTodos();
 				this.ctx.ui.requestRender();

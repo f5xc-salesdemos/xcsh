@@ -14,7 +14,7 @@ import {
 	type TUI,
 	truncateToWidth,
 	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import { matchesAppExternalEditor, matchesSelectCancel } from "../../modes/utils/keybinding-matchers";
 import { CountdownTimer } from "./countdown-timer";
@@ -91,7 +91,9 @@ export class HookSelectorComponent extends Container {
 		this.addChild(new DynamicBorder());
 		this.addChild(new Spacer(1));
 
-		this.#titleComponent = new Markdown(title, 1, 0, getMarkdownTheme(), { color: t => theme.fg("accent", t) });
+		this.#titleComponent = new Markdown(title, 1, 0, getMarkdownTheme(), {
+			color: t => theme.fg("contentAccent", t),
+		});
 		this.addChild(this.#titleComponent);
 		this.addChild(new Spacer(1));
 
@@ -141,9 +143,9 @@ export class HookSelectorComponent extends Container {
 		for (let i = startIndex; i < endIndex; i++) {
 			const isSelected = i === this.#selectedIndex;
 			const label = isSelected
-				? renderInlineMarkdown(this.#options[i], mdTheme, t => theme.fg("accent", t))
+				? renderInlineMarkdown(this.#options[i], mdTheme, t => theme.fg("contentAccent", t))
 				: renderInlineMarkdown(this.#options[i], mdTheme, t => theme.fg("text", t));
-			const prefix = isSelected ? theme.fg("accent", `${theme.nav.cursor} `) : "  ";
+			const prefix = isSelected ? theme.fg("chromeAccent", `${theme.nav.cursor} `) : "  ";
 			lines.push(prefix + label);
 		}
 

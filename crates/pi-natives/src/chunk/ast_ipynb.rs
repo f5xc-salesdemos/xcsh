@@ -34,15 +34,15 @@ use crate::chunk::{
 
 /// Marker line prefix placed before every cell body in the virtual source.
 ///
-/// Format: `# %%% oh-my-pi cell_<N> [<type>]`
+/// Format: `# %%% xcsh cell_<N> [<type>]`
 ///
 /// The leading `#` makes the marker a valid comment in Python and most other
-/// code languages, and the `oh-my-pi` tag makes accidental collision with
+/// code languages, and the `xcsh` tag makes accidental collision with
 /// user content vanishingly unlikely. Markdown cells get the same marker —
 /// `#` in markdown is a heading, but the marker line itself is stripped
 /// before the markdown chunker parses the cell body (see
 /// [`build_cell_sub_tree`]).
-const MARKER_PREFIX: &str = "# %%% oh-my-pi cell_";
+const MARKER_PREFIX: &str = "# %%% xcsh cell_";
 
 /// Returns true if `line` is a cell marker; parses the cell index and type.
 fn parse_marker_line(line: &str) -> Option<(usize, &str)> {
@@ -830,9 +830,9 @@ mod tests {
 		assert!(vs.contains("def foo():"), "cell 1 body missing");
 		assert!(vs.contains("# Hello"), "cell 2 body missing");
 		assert!(vs.contains("class Bar:"), "cell 3 body missing");
-		assert!(vs.contains("# %%% oh-my-pi cell_1 [code]"), "cell_1 marker missing");
-		assert!(vs.contains("# %%% oh-my-pi cell_2 [markdown]"), "cell_2 marker missing");
-		assert!(vs.contains("# %%% oh-my-pi cell_3 [code]"), "cell_3 marker missing");
+		assert!(vs.contains("# %%% xcsh cell_1 [code]"), "cell_1 marker missing");
+		assert!(vs.contains("# %%% xcsh cell_2 [markdown]"), "cell_2 marker missing");
+		assert!(vs.contains("# %%% xcsh cell_3 [code]"), "cell_3 marker missing");
 	}
 
 	#[test]
@@ -893,7 +893,7 @@ mod tests {
 			ChunkStateInner::parse(json, "ipynb".to_string()).expect("ChunkState should parse ipynb");
 		assert_eq!(state.language(), "ipynb");
 		// Source is the virtual source, not the JSON
-		assert!(state.source().contains("# %%% oh-my-pi cell_1"));
+		assert!(state.source().contains("# %%% xcsh cell_1"));
 		// The notebook context is preserved for JSON round-trip
 		let ctx = state
 			.notebook

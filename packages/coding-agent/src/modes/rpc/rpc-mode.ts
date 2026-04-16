@@ -10,7 +10,7 @@
  * - Events: AgentSessionEvent objects streamed as they occur
  * - Extension UI: Extension UI requests are emitted, client responds with extension_ui_response
  */
-import { $env, readJsonl, Snowflake } from "@oh-my-pi/pi-utils";
+import { $env, readJsonl, Snowflake } from "@f5xc-salesdemos/pi-utils";
 import type {
 	ExtensionUIContext,
 	ExtensionUIDialogOptions,

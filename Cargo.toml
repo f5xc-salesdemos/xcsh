@@ -1,18 +1,20 @@
 [workspace]
 members = ["crates/*"]
-exclude = ["crates/brush-core-vendored", "crates/brush-builtins-vendored"]
+exclude = ["crates/brush-core-vendored", "crates/brush-builtins-vendored", "crates/tree-sitter-glimmer"]
 resolver = "3"
 
 [workspace.package]
-version = "14.1.2"
+version = "16.0.0"
 edition = "2024"
 license = "MIT"
 authors = ["Can Boluk"]
-repository = "https://github.com/can1357/oh-my-pi"
+repository = "https://github.com/f5xc-salesdemos/xcsh"
 
 [patch.crates-io]
 brush-core = { path = "crates/brush-core-vendored" }
 brush-builtins = { path = "crates/brush-builtins-vendored" }
+tree-sitter-glimmer = { path = "crates/tree-sitter-glimmer" }
+
 [profile.release]
 opt-level = 3
 lto = "fat"

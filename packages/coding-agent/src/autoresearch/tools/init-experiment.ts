@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import { Text } from "@oh-my-pi/pi-tui";
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import { Text } from "@f5xc-salesdemos/pi-tui";
 import { Type } from "@sinclair/typebox";
 import type { ToolDefinition } from "../../extensibility/extensions";
 import type { Theme } from "../../modes/theme/theme";
@@ -381,7 +381,7 @@ export function createInitExperimentTool(
 }
 
 function renderInitCall(name: string, theme: Theme): string {
-	return `${theme.fg("toolTitle", theme.bold("init_experiment"))} ${theme.fg("accent", truncateToWidth(replaceTabs(name), 100))}`;
+	return `${theme.fg("toolTitle", theme.bold("init_experiment"))} ${theme.fg("contentAccent", truncateToWidth(replaceTabs(name), 100))}`;
 }
 
 function collectLoggedRunNumbers(results: ExperimentState["results"]): Set<number> {

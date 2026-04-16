@@ -1,4 +1,4 @@
-import { logger } from "@oh-my-pi/pi-utils";
+import { logger, Snowflake } from "@f5xc-salesdemos/pi-utils";
 
 const DELIVERY_RETRY_BASE_MS = 500;
 const DELIVERY_RETRY_MAX_MS = 30_000;
@@ -48,7 +48,6 @@ export class AsyncJobManager {
 	readonly #jobs = new Map<string, AsyncJob>();
 	readonly #deliveries: AsyncJobDelivery[] = [];
 	readonly #suppressedDeliveries = new Set<string>();
-	readonly #watchedJobs = new Set<string>();
 	readonly #evictionTimers = new Map<string, NodeJS.Timeout>();
 	readonly #onJobComplete: AsyncJobManagerOptions["onJobComplete"];
 	readonly #maxRunningJobs: number;
@@ -185,25 +184,6 @@ export class AsyncJobManager {
 		return this.#deliveries.length > 0;
 	}
 
-	watchJobs(jobIds: string[]): number {
-		const uniqueJobIds = Array.from(new Set(jobIds.map(id => id.trim()).filter(id => id.length > 0)));
-		for (const jobId of uniqueJobIds) {
-			this.#watchedJobs.add(jobId);
-		}
-		return uniqueJobIds.length;
-	}
-
-	unwatchJobs(jobIds: string[]): number {
-		const uniqueJobIds = Array.from(new Set(jobIds.map(id => id.trim()).filter(id => id.length > 0)));
-		let removed = 0;
-		for (const jobId of uniqueJobIds) {
-			if (this.#watchedJobs.delete(jobId)) {
-				removed += 1;
-			}
-		}
-		return removed;
-	}
-
 	acknowledgeDeliveries(jobIds: string[]): number {
 		const uniqueJobIds = Array.from(new Set(jobIds.map(id => id.trim()).filter(id => id.length > 0)));
 		if (uniqueJobIds.length === 0) return 0;
@@ -216,7 +196,7 @@ export class AsyncJobManager {
 		this.#deliveries.splice(
 			0,
 			this.#deliveries.length,
-			...this.#deliveries.filter(delivery => !this.isDeliverySuppressed(delivery.jobId)),
+			...this.#deliveries.filter(delivery => !this.#suppressedDeliveries.has(delivery.jobId)),
 		);
 		return before - this.#deliveries.length;
 	}
@@ -274,21 +254,12 @@ export class AsyncJobManager {
 		this.#jobs.clear();
 		this.#deliveries.length = 0;
 		this.#suppressedDeliveries.clear();
-		this.#watchedJobs.clear();
 		return drained;
 	}
 
 	#resolveJobId(preferredId?: string): string {
-		preferredId = preferredId?.trim();
-		if (!preferredId) {
-			let candidate = 1;
-			while (true) {
-				const id = `bg_${candidate}`;
-				if (!this.#jobs.has(id)) {
-					return id;
-				}
-				candidate += 1;
-			}
+		if (!preferredId || preferredId.trim().length === 0) {
+			return `bg_${Snowflake.next()}`;
 		}
 
 		const base = preferredId.trim();
@@ -307,7 +278,6 @@ export class AsyncJobManager {
 		if (this.#retentionMs <= 0) {
 			this.#jobs.delete(jobId);
 			this.#suppressedDeliveries.delete(jobId);
-			this.#watchedJobs.delete(jobId);
 			return;
 		}
 		const existing = this.#evictionTimers.get(jobId);
@@ -318,7 +288,6 @@ export class AsyncJobManager {
 			this.#evictionTimers.delete(jobId);
 			this.#jobs.delete(jobId);
 			this.#suppressedDeliveries.delete(jobId);
-			this.#watchedJobs.delete(jobId);
 		}, this.#retentionMs);
 		timer.unref();
 		this.#evictionTimers.set(jobId, timer);
@@ -331,13 +300,12 @@ export class AsyncJobManager {
 		this.#evictionTimers.clear();
 	}
 
-	isDeliverySuppressed(jobId: string): boolean {
-		return this.#suppressedDeliveries.has(jobId) || this.#watchedJobs.has(jobId);
+	#isDeliverySuppressed(jobId: string): boolean {
+		return this.#suppressedDeliveries.has(jobId);
 	}
 
 	#enqueueDelivery(jobId: string, text: string): void {
-		// Skip delivery if already acknowledged
-		if (this.isDeliverySuppressed(jobId)) {
+		if (this.#isDeliverySuppressed(jobId)) {
 			return;
 		}
 		this.#deliveries.push({
@@ -369,7 +337,7 @@ export class AsyncJobManager {
 	async #runDeliveryLoop(): Promise<void> {
 		while (this.#deliveries.length > 0) {
 			const delivery = this.#deliveries[0];
-			if (this.isDeliverySuppressed(delivery.jobId)) {
+			if (this.#isDeliverySuppressed(delivery.jobId)) {
 				this.#deliveries.shift();
 				continue;
 			}
@@ -380,8 +348,7 @@ export class AsyncJobManager {
 			if (this.#deliveries[0] !== delivery) {
 				continue;
 			}
-			// Check again after sleep
-			if (this.isDeliverySuppressed(delivery.jobId)) {
+			if (this.#isDeliverySuppressed(delivery.jobId)) {
 				this.#deliveries.shift();
 				continue;
 			}
@@ -394,7 +361,7 @@ export class AsyncJobManager {
 				delivery.lastError = error instanceof Error ? error.message : String(error);
 				delivery.nextAttemptAt = Date.now() + this.#getRetryDelay(delivery.attempt);
 				this.#deliveries.shift();
-				if (!this.isDeliverySuppressed(delivery.jobId)) {
+				if (!this.#isDeliverySuppressed(delivery.jobId)) {
 					this.#deliveries.push(delivery);
 				}
 				logger.warn("Async job completion delivery failed", {

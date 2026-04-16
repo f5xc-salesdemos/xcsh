@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
 import {
 	disposeAllKernelSessions,
 	executePythonWithKernel,
@@ -7,16 +8,15 @@ import {
 	type PythonKernelExecutor,
 	resetPreludeDocsCache,
 	warmPythonEnvironment,
-} from "@oh-my-pi/pi-coding-agent/ipy/executor";
+} from "@f5xc-salesdemos/xcsh/ipy/executor";
 import {
 	type KernelExecuteOptions,
 	type KernelExecuteResult,
 	type KernelShutdownResult,
 	type PreludeHelper,
 	PythonKernel,
-} from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import { DEFAULT_MAX_BYTES } from "@oh-my-pi/pi-coding-agent/session/streaming-output";
-import { TempDir } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/xcsh/ipy/kernel";
+import { DEFAULT_MAX_BYTES } from "@f5xc-salesdemos/xcsh/session/streaming-output";
 
 class FakeKernel implements PythonKernelExecutor {
 	private result: KernelExecuteResult;

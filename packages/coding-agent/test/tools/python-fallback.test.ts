@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "bun:test";
-import { type SettingPath, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import * as pythonKernelModule from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import { createTools, type ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
+import { type SettingPath, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import * as pythonKernelModule from "@f5xc-salesdemos/xcsh/ipy/kernel";
+import { createTools, type ToolSession } from "@f5xc-salesdemos/xcsh/tools";
 
 function createTestSession(overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

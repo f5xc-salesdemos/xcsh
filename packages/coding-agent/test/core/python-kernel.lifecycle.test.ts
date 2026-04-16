@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import * as gatewayCoordinator from "@oh-my-pi/pi-coding-agent/ipy/gateway-coordinator";
-import { PythonKernel } from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import { hookFetch, TempDir } from "@oh-my-pi/pi-utils";
+import { hookFetch, TempDir } from "@f5xc-salesdemos/pi-utils";
+import * as gatewayCoordinator from "@f5xc-salesdemos/xcsh/ipy/gateway-coordinator";
+import { PythonKernel } from "@f5xc-salesdemos/xcsh/ipy/kernel";
 import type { Subprocess } from "bun";
 
 type SpawnOptions = Bun.SpawnOptions.SpawnOptions<
@@ -135,7 +135,7 @@ describe("PythonKernel gateway lifecycle", () => {
 	};
 
 	beforeEach(() => {
-		tempDir = TempDir.createSync("@omp-python-kernel-");
+		tempDir = TempDir.createSync("@xcsh-python-kernel-");
 		env = { fetchCalls: [], spawnCalls: [] };
 
 		Bun.env.BUN_ENV = "test";

@@ -1,5 +1,5 @@
-import { getOAuthProviders, type OAuthProviderInfo } from "@oh-my-pi/pi-ai";
-import { Container, matchesKey, Spacer, TruncatedText } from "@oh-my-pi/pi-tui";
+import { getOAuthProviders, type OAuthProviderInfo } from "@f5xc-salesdemos/pi-ai";
+import { Container, matchesKey, Spacer, TruncatedText } from "@f5xc-salesdemos/pi-tui";
 import { theme } from "../../modes/theme/theme";
 import { matchesSelectCancel } from "../../modes/utils/keybinding-matchers";
 import type { AuthStorage } from "../../session/auth-storage";
@@ -152,8 +152,8 @@ export class OAuthSelectorComponent extends Container {
 
 			let line = "";
 			if (isSelected) {
-				const prefix = theme.fg("accent", `${theme.nav.cursor} `);
-				const text = isAvailable ? theme.fg("accent", provider.name) : theme.fg("dim", provider.name);
+				const prefix = theme.fg("chromeAccent", `${theme.nav.cursor} `);
+				const text = isAvailable ? theme.fg("contentAccent", provider.name) : theme.fg("dim", provider.name);
 				line = prefix + text + statusIndicator;
 			} else {
 				const text = isAvailable ? `  ${provider.name}` : theme.fg("dim", `  ${provider.name}`);

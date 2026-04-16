@@ -1,4 +1,4 @@
-import { getProjectDir, logger } from "@oh-my-pi/pi-utils";
+import { getProjectDir, logger } from "@f5xc-salesdemos/pi-utils";
 import type { AutocompleteProvider, CombinedAutocompleteProvider } from "../autocomplete";
 import { BracketedPasteHandler } from "../bracketed-paste";
 import { getKeybindings, type KeybindingsManager } from "../keybindings";
@@ -421,7 +421,10 @@ export class Editor implements Component, Focusable {
 	getTopBorderAvailableWidth(terminalWidth: number): number {
 		const paddingX = this.#getEditorPaddingX();
 		const borderWidth = this.#getHorizontalChromeWidth(paddingX);
-		return Math.max(0, terminalWidth - borderWidth * 2);
+		// When status content is present: left corner loses 1 dash, frame is 1 char narrower (gutter)
+		const topLeftWidth = this.#topBorderContent ? Math.max(1, borderWidth - 1) : borderWidth;
+		const gutter = this.#topBorderContent ? 1 : 0;
+		return Math.max(0, terminalWidth - gutter - topLeftWidth - borderWidth);
 	}
 
 	/**
@@ -676,18 +679,22 @@ export class Editor implements Component, Focusable {
 	}
 
 	render(width: number): string[] {
+		// When powerline status bar is present, reserve 1-char trailing gutter to match zsh
+		const effectiveWidth = this.#topBorderContent ? width - 1 : width;
 		const paddingX = this.#getEditorPaddingX();
 		const borderVisible = this.#borderVisible;
-		const promptGutter = this.#getPromptGutter(width, paddingX);
-		const contentAreaWidth = this.#getContentWidth(width, paddingX);
-		const layoutWidth = this.#getLayoutWidth(width, paddingX);
+		const promptGutter = this.#getPromptGutter(effectiveWidth, paddingX);
+		const contentAreaWidth = this.#getContentWidth(effectiveWidth, paddingX);
+		const layoutWidth = this.#getLayoutWidth(effectiveWidth, paddingX);
 		this.#lastLayoutWidth = layoutWidth;
 
 		// Box-drawing characters for rounded corners
 		const box = this.#theme.symbols.boxRound;
 		const borderWidth = this.#getHorizontalChromeWidth(paddingX);
-		const topLeft = this.borderColor(`${box.topLeft}${box.horizontal.repeat(paddingX)}`);
-		const topRight = this.borderColor(`${box.horizontal.repeat(paddingX)}${box.topRight}`);
+		const topPad = this.#topBorderContent ? Math.max(0, paddingX - 1) : paddingX;
+		const topLeft = this.borderColor(`${box.topLeft}${box.horizontal.repeat(topPad)}`);
+		const topRightPad = this.#topBorderContent ? paddingX : paddingX;
+		const topRight = this.borderColor(`${box.horizontal.repeat(topRightPad)}${box.topRight}`);
 		const bottomLeft = this.borderColor(`${box.bottomLeft}${box.horizontal}${padding(Math.max(0, paddingX - 1))}`);
 		const horizontal = this.borderColor(box.horizontal);
 
@@ -700,8 +707,12 @@ export class Editor implements Component, Focusable {
 		const result: string[] = [];
 
 		if (borderVisible) {
-			// Render top border: ╭─ [status content] ────────────────╮
-			const topFillWidth = Math.max(0, width - borderWidth * 2);
+			// Render top border: ╭[status content]───────────────── ──╮
+			// When status content is present, topLeft has no padding (just ╭)
+			// but topRight still has paddingX dashes (──╮)
+			const topLeftWidth = this.#topBorderContent ? Math.max(1, borderWidth - 1) : borderWidth;
+			const topRightWidth = borderWidth;
+			const topFillWidth = Math.max(0, effectiveWidth - topLeftWidth - topRightWidth);
 			if (this.#topBorderContent) {
 				const { content, width: statusWidth } = this.#topBorderContent;
 				if (statusWidth <= topFillWidth) {
@@ -883,7 +894,7 @@ export class Editor implements Component, Focusable {
 
 		// Add autocomplete list if active
 		if (this.#autocompleteState && this.#autocompleteList) {
-			const autocompleteResult = this.#autocompleteList.render(width);
+			const autocompleteResult = this.#autocompleteList.render(effectiveWidth);
 			result.push(...autocompleteResult);
 		}
 

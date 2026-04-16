@@ -13,15 +13,8 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import {
-	getAgentDbPath,
-	getAgentDir,
-	getProjectDir,
-	isEnoent,
-	logger,
-	procmgr,
-	setDefaultTabWidth,
-} from "@oh-my-pi/pi-utils";
+import { setDefaultTabWidth } from "@f5xc-salesdemos/pi-natives";
+import { getAgentDbPath, getAgentDir, getProjectDir, isEnoent, logger, procmgr } from "@f5xc-salesdemos/pi-utils";
 import { YAML } from "bun";
 import { type Settings as SettingsCapabilityItem, settingsCapability } from "../capability/settings";
 import type { ModelRole } from "../config/model-registry";
@@ -326,7 +319,7 @@ export class Settings {
 
 	/**
 	 * Get the edit variant for a specific model.
-	 * Returns "patch", "replace", "hashline", "chunk", "vim", or null (use global default).
+	 * Returns "patch", "replace", "hashline", "chunk", or null (use global default).
 	 */
 	getEditVariantForModel(model: string | undefined): EditMode | null {
 		if (!model) return null;

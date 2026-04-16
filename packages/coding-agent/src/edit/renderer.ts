@@ -1,9 +1,9 @@
 /**
  * Edit tool renderer and LSP batching helpers.
  */
-import type { ToolCallContext } from "@oh-my-pi/pi-agent-core";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text, visibleWidth, wrapTextWithAnsi } from "@oh-my-pi/pi-tui";
+import type { ToolCallContext } from "@f5xc-salesdemos/pi-agent-core";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text, visibleWidth, wrapTextWithAnsi } from "@f5xc-salesdemos/pi-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { FileDiagnosticsResult } from "../lsp";
 import { renderDiff as renderDiffColored } from "../modes/components/diff";
@@ -181,14 +181,14 @@ function formatEditPathDisplay(
 	uiTheme: Theme,
 	options?: { rename?: string; firstChangedLine?: number },
 ): string {
-	let pathDisplay = rawPath ? uiTheme.fg("accent", shortenPath(rawPath)) : uiTheme.fg("toolOutput", "…");
+	let pathDisplay = rawPath ? uiTheme.fg("contentAccent", shortenPath(rawPath)) : uiTheme.fg("toolOutput", "…");
 
 	if (options?.firstChangedLine) {
 		pathDisplay += uiTheme.fg("warning", `:${options.firstChangedLine}`);
 	}
 
 	if (options?.rename) {
-		pathDisplay += ` ${uiTheme.fg("dim", "→")} ${uiTheme.fg("accent", shortenPath(options.rename))}`;
+		pathDisplay += ` ${uiTheme.fg("dim", "→")} ${uiTheme.fg("contentAccent", shortenPath(options.rename))}`;
 	}
 
 	return pathDisplay;

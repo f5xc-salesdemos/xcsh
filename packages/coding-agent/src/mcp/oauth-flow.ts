@@ -5,9 +5,9 @@
  * by providing authorization URL, token URL, and client credentials.
  */
 
-import type { OAuthController, OAuthCredentials } from "@oh-my-pi/pi-ai";
-import type { OAuthCallbackFlowOptions } from "@oh-my-pi/pi-ai/utils/oauth/callback-server";
-import { OAuthCallbackFlow } from "@oh-my-pi/pi-ai/utils/oauth/callback-server";
+import type { OAuthController, OAuthCredentials } from "@f5xc-salesdemos/pi-ai";
+import type { OAuthCallbackFlowOptions } from "@f5xc-salesdemos/pi-ai/utils/oauth/callback-server";
+import { OAuthCallbackFlow } from "@f5xc-salesdemos/pi-ai/utils/oauth/callback-server";
 
 const DEFAULT_PORT = 3000;
 const CALLBACK_PATH = "/callback";

@@ -16,7 +16,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
 import {
 	type Component,
 	Container,
@@ -30,8 +30,8 @@ import {
 	truncateToWidth,
 	visibleWidth,
 	wrapTextWithAnsi,
-} from "@oh-my-pi/pi-tui";
-import { isEnoent, prompt } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-tui";
+import { isEnoent, prompt } from "@f5xc-salesdemos/pi-utils";
 import { YAML } from "bun";
 import { getConfigDirs } from "../../config";
 import type { ModelRegistry } from "../../config/model-registry";
@@ -216,7 +216,7 @@ class AgentListPane implements Component {
 			let line = ` ${status} ${replaceTabs(agent.name)} ${source}${override}`;
 
 			if (selected) {
-				line = theme.bg("selectedBg", theme.bold(theme.fg("accent", line)));
+				line = theme.bg("selectedBg", theme.bold(theme.fg("chromeAccent", line)));
 			} else if (agent.disabled) {
 				line = theme.fg("dim", line);
 			}
@@ -253,7 +253,7 @@ class AgentInspectorPane implements Component {
 			? theme.fg("dim", `${theme.status.disabled} Disabled`)
 			: theme.fg("success", `${theme.status.enabled} Enabled`);
 
-		lines.push(theme.bold(theme.fg("accent", replaceTabs(this.agent.name))));
+		lines.push(theme.bold(theme.fg("contentAccent", replaceTabs(this.agent.name))));
 		lines.push("");
 		lines.push(`${theme.fg("muted", "Status:")} ${state}`);
 		lines.push(`${theme.fg("muted", "Source:")} ${SOURCE_LABEL[this.agent.source]}`);
@@ -791,7 +791,7 @@ export class AgentDashboard extends Container {
 	}
 
 	#renderCreateInput(): void {
-		this.addChild(new Text(theme.bold(theme.fg("accent", " Create New Agent")), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", " Create New Agent")), 0, 0));
 		this.addChild(new Spacer(1));
 		this.addChild(new Text(theme.fg("muted", "Describe what the new agent should do:"), 0, 0));
 		this.addChild(new Spacer(1));
@@ -802,7 +802,7 @@ export class AgentDashboard extends Container {
 		this.addChild(new Text(theme.fg("muted", `Scope: ${this.#createScope}`), 0, 0));
 		if (this.#createGenerating) {
 			this.addChild(new Spacer(1));
-			this.addChild(new Text(theme.fg("accent", "Generating agent specification..."), 0, 0));
+			this.addChild(new Text(theme.fg("contentAccent", "Generating agent specification..."), 0, 0));
 			if (this.#createStreamingText) {
 				this.addChild(new Spacer(1));
 				const maxPreview = Math.max(3, this.terminalHeight - 18);
@@ -834,7 +834,7 @@ export class AgentDashboard extends Container {
 		const spec = this.#createSpec;
 		if (!spec) return;
 
-		this.addChild(new Text(theme.bold(theme.fg("accent", " Review Generated Agent")), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", " Review Generated Agent")), 0, 0));
 		this.addChild(new Spacer(1));
 		this.addChild(new Text(theme.fg("muted", `Identifier: ${spec.identifier}`), 0, 0));
 		this.addChild(new Text(theme.fg("muted", `Scope: ${this.#createScope}`), 0, 0));
@@ -882,7 +882,7 @@ export class AgentDashboard extends Container {
 	#buildLayout(): void {
 		this.clear();
 		this.addChild(new DynamicBorder());
-		this.addChild(new Text(theme.bold(theme.fg("accent", " Agent Control Center")), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", " Agent Control Center")), 0, 0));
 		this.addChild(new Text(this.#renderTabBar(), 0, 0));
 		this.addChild(new Spacer(1));
 
@@ -911,7 +911,11 @@ export class AgentDashboard extends Container {
 			const suggestions = this.#getModelSuggestions(draft);
 
 			this.addChild(
-				new Text(theme.bold(theme.fg("accent", `Model override: ${replaceTabs(this.#editingAgentName)}`)), 0, 0),
+				new Text(
+					theme.bold(theme.fg("contentAccent", `Model override: ${replaceTabs(this.#editingAgentName)}`)),
+					0,
+					0,
+				),
 			);
 			this.addChild(new Spacer(1));
 			this.addChild(new Text(theme.fg("muted", "Enter model pattern (empty clears override)"), 0, 0));

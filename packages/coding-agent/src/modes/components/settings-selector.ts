@@ -1,5 +1,5 @@
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { Effort } from "@oh-my-pi/pi-ai";
+import type { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import type { Effort } from "@f5xc-salesdemos/pi-ai";
 import {
 	Container,
 	Input,
@@ -12,7 +12,7 @@ import {
 	type Tab,
 	TabBar,
 	Text,
-} from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { type SettingPath, settings } from "../../config/settings";
 import type {
 	SettingTab,
@@ -48,7 +48,7 @@ class TextInputSubmenu extends Container {
 	) {
 		super();
 
-		this.addChild(new Text(theme.bold(theme.fg("accent", label)), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", label)), 0, 0));
 		if (description) {
 			this.addChild(new Spacer(1));
 			this.addChild(new Text(theme.fg("muted", description), 0, 0));
@@ -96,7 +96,7 @@ class SelectSubmenu extends Container {
 		super();
 
 		// Title
-		this.addChild(new Text(theme.bold(theme.fg("accent", title)), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", title)), 0, 0));
 
 		// Description
 		if (description) {

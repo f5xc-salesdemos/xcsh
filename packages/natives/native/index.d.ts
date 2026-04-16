@@ -881,6 +881,11 @@ export interface HighlightColors {
   operator: string
   /** ANSI color for punctuation tokens. */
   punctuation: string
+  /**
+   * ANSI color for control flow keywords (if, else, for, while, return,
+   * import).
+   */
+  control?: string
   /** ANSI color for diff inserted lines. */
   inserted?: string
   /** ANSI color for diff deleted lines. */

@@ -1,6 +1,6 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { getAntigravityHeaders, getEnvApiKey, StringEnum } from "@oh-my-pi/pi-ai";
+import { getAntigravityHeaders, getEnvApiKey, StringEnum } from "@f5xc-salesdemos/pi-ai";
 import {
 	$env,
 	isEnoent,
@@ -10,7 +10,7 @@ import {
 	readSseJson,
 	Snowflake,
 	untilAborted,
-} from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { ModelRegistry } from "../config/model-registry";
 import type { CustomTool } from "../extensibility/custom-tools/types";
@@ -20,6 +20,9 @@ import { resolveReadPath } from "./path-utils";
 const DEFAULT_MODEL = "gemini-3-pro-image-preview";
 const DEFAULT_OPENROUTER_MODEL = "google/gemini-3-pro-image-preview";
 const DEFAULT_ANTIGRAVITY_MODEL = "gemini-3-pro-image";
+const DEFAULT_OPENAI_IMAGE_MODEL = "gpt-image-1";
+const DEFAULT_OPENAI_IMAGE_SIZE = "1536x1024";
+const DEFAULT_OPENAI_IMAGE_QUALITY = "high";
 const IMAGE_TIMEOUT = 3 * 60 * 1000; // 3 minutes
 const MAX_IMAGE_SIZE = 35 * 1024 * 1024;
 
@@ -27,7 +30,7 @@ const ANTIGRAVITY_ENDPOINT = "https://daily-cloudcode-pa.sandbox.googleapis.com"
 const IMAGE_SYSTEM_INSTRUCTION =
 	"You are an AI image generator. Generate images based on user descriptions. Focus on creating high-quality, visually appealing images that match the user's request.";
 
-type ImageProvider = "antigravity" | "gemini" | "openrouter";
+type ImageProvider = "antigravity" | "gemini" | "openrouter" | "openai";
 interface ImageApiKey {
 	provider: ImageProvider;
 	apiKey: string;
@@ -205,6 +208,21 @@ interface OpenRouterChoice {
 
 interface OpenRouterResponse {
 	choices?: OpenRouterChoice[];
+}
+
+interface OpenAIImageResponseData {
+	b64_json: string;
+	revised_prompt?: string | null;
+}
+
+interface OpenAIImageResponse {
+	created: number;
+	data: OpenAIImageResponseData[];
+	usage?: {
+		total_tokens: number;
+		input_tokens: number;
+		output_tokens: number;
+	};
 }
 
 interface AntigravityRequest {
@@ -396,9 +414,13 @@ async function findImageApiKey(modelRegistry?: ModelRegistry): Promise<ImageApiK
 		const openRouterKey = getEnvApiKey("openrouter");
 		if (openRouterKey) return { provider: "openrouter", apiKey: openRouterKey };
 		// Fall through to auto-detect if preferred provider key not found
+	} else if (preferredImageProvider === "openai") {
+		const openaiKey = getEnvApiKey("litellm") ?? getEnvApiKey("openai");
+		if (openaiKey) return { provider: "openai", apiKey: openaiKey };
+		// Fall through to auto-detect if preferred provider key not found
 	}
 
-	// Auto-detect: Antigravity takes priority, then OpenRouter, then Gemini
+	// Auto-detect: Antigravity takes priority, then OpenRouter, then OpenAI, then Gemini
 	if (modelRegistry) {
 		const antigravity = await findAntigravityCredentials(modelRegistry);
 		if (antigravity) return antigravity;
@@ -406,6 +428,9 @@ async function findImageApiKey(modelRegistry?: ModelRegistry): Promise<ImageApiK
 
 	const openRouterKey = getEnvApiKey("openrouter");
 	if (openRouterKey) return { provider: "openrouter", apiKey: openRouterKey };
+
+	const openaiKey = getEnvApiKey("litellm") ?? getEnvApiKey("openai");
+	if (openaiKey) return { provider: "openai", apiKey: openaiKey };
 
 	const geminiKey = getEnvApiKey("google");
 	if (geminiKey) return { provider: "gemini", apiKey: geminiKey };
@@ -469,7 +494,7 @@ function getExtensionForMime(mimeType: string): string {
 
 async function saveImageToTemp(image: InlineImageData): Promise<string> {
 	const ext = getExtensionForMime(image.mimeType);
-	const filename = `omp-image-${Snowflake.next()}.${ext}`;
+	const filename = `xcsh-image-${Snowflake.next()}.${ext}`;
 	const filepath = path.join(os.tmpdir(), filename);
 	await Bun.write(filepath, Buffer.from(image.data, "base64"));
 	return filepath;
@@ -614,7 +639,7 @@ export const geminiImageTool: CustomTool<typeof geminiImageSchema, GeminiImageTo
 			const apiKey = await findImageApiKey(ctx.modelRegistry);
 			if (!apiKey) {
 				throw new Error(
-					"No image API credentials found. Login with google-antigravity, or set OPENROUTER_API_KEY, GEMINI_API_KEY, or GOOGLE_API_KEY.",
+					"No image API credentials found. Set LITELLM_API_KEY, OPENAI_API_KEY, OPENROUTER_API_KEY, GEMINI_API_KEY, or GOOGLE_API_KEY.",
 				);
 			}
 
@@ -624,7 +649,9 @@ export const geminiImageTool: CustomTool<typeof geminiImageSchema, GeminiImageTo
 					? DEFAULT_ANTIGRAVITY_MODEL
 					: provider === "openrouter"
 						? DEFAULT_OPENROUTER_MODEL
-						: DEFAULT_MODEL;
+						: provider === "openai"
+							? DEFAULT_OPENAI_IMAGE_MODEL
+							: DEFAULT_MODEL;
 			const resolvedModel = provider === "openrouter" ? resolveOpenRouterModel(model) : model;
 			const cwd = ctx.sessionManager.getCwd();
 
@@ -783,6 +810,86 @@ export const geminiImageTool: CustomTool<typeof geminiImageSchema, GeminiImageTo
 						imagePaths,
 						images: inlineImages,
 						responseText,
+					},
+				};
+			}
+
+			if (provider === "openai") {
+				const openaiPrompt = assemblePrompt(params);
+				const size = params.image_size ?? ctx.settings?.get("providers.imageSize") ?? DEFAULT_OPENAI_IMAGE_SIZE;
+				const quality = ctx.settings?.get("providers.imageQuality") ?? DEFAULT_OPENAI_IMAGE_QUALITY;
+				const baseUrl = $env.LITELLM_BASE_URL ?? $env.OPENAI_BASE_URL ?? "https://api.openai.com";
+
+				const requestBody = {
+					model: DEFAULT_OPENAI_IMAGE_MODEL,
+					prompt: openaiPrompt,
+					n: 1,
+					size,
+					quality,
+				};
+
+				const response = await fetch(`${baseUrl}/openai/v1/images/generations`, {
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${apiKey.apiKey}`,
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(requestBody),
+					signal: requestSignal,
+				});
+
+				const rawText = await response.text();
+				if (!response.ok) {
+					let message = rawText;
+					try {
+						const parsed = JSON.parse(rawText) as { error?: { message?: string } };
+						message = parsed.error?.message ?? message;
+					} catch {
+						// Keep raw text.
+					}
+					throw new Error(`OpenAI image request failed (${response.status}): ${message}`);
+				}
+
+				const data = JSON.parse(rawText) as OpenAIImageResponse;
+				const b64 = data.data?.[0]?.b64_json;
+				if (!b64) {
+					return {
+						content: [{ type: "text", text: "No image data returned from OpenAI." }],
+						details: {
+							provider,
+							model: DEFAULT_OPENAI_IMAGE_MODEL,
+							imageCount: 0,
+							imagePaths: [],
+							images: [],
+						},
+					};
+				}
+
+				const image: InlineImageData = { data: b64, mimeType: "image/png" };
+				const imagePaths = await saveImagesToTemp([image]);
+				const revisedPrompt = data.data[0]?.revised_prompt ?? undefined;
+
+				return {
+					content: [
+						{
+							type: "text",
+							text: buildResponseSummary(provider, DEFAULT_OPENAI_IMAGE_MODEL, imagePaths, revisedPrompt),
+						},
+					],
+					details: {
+						provider,
+						model: DEFAULT_OPENAI_IMAGE_MODEL,
+						imageCount: 1,
+						imagePaths,
+						images: [image],
+						responseText: revisedPrompt,
+						usage: data.usage
+							? {
+									promptTokenCount: data.usage.input_tokens,
+									candidatesTokenCount: data.usage.output_tokens,
+									totalTokenCount: data.usage.total_tokens,
+								}
+							: undefined,
 					},
 				};
 			}

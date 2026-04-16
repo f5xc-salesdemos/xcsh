@@ -1,17 +1,16 @@
-import { afterEach, describe, expect, it, vi } from "bun:test";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import * as pythonExecutor from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { PythonTool } from "@oh-my-pi/pi-coding-agent/tools/python";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { describe, expect, it, vi } from "bun:test";
+import { TempDir } from "@f5xc-salesdemos/pi-utils";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import * as pythonExecutor from "@f5xc-salesdemos/xcsh/ipy/executor";
+import type { ToolSession } from "@f5xc-salesdemos/xcsh/tools";
+import { PythonTool } from "@f5xc-salesdemos/xcsh/tools/python";
 
-function createSession(cwd: string, kernelOwnerId?: string): ToolSession {
+function createSession(cwd: string): ToolSession {
 	return {
 		cwd,
 		hasUI: false,
 		getSessionFile: () => `${cwd}/session-file.jsonl`,
 		getSessionSpawns: () => "*",
-		getPythonKernelOwnerId: () => kernelOwnerId ?? null,
 		settings: Settings.isolated({
 			"lsp.formatOnWrite": true,
 			"bashInterceptor.enabled": true,
@@ -22,15 +21,9 @@ function createSession(cwd: string, kernelOwnerId?: string): ToolSession {
 }
 
 describe("python tool execution", () => {
-	afterEach(() => {
-		pythonExecutor.resetPreludeDocsCache();
-		vi.restoreAllMocks();
-	});
-
-	it("passes kernel owner and kernel options from settings and args", async () => {
+	it("passes kernel options from settings and args", async () => {
 		const tempDir = TempDir.createSync("@python-tool-");
-		vi.spyOn(pythonExecutor, "getPreludeDocs").mockReturnValue([]);
-		const warmupSpy = vi.spyOn(pythonExecutor, "warmPythonEnvironment").mockResolvedValue({ ok: true, docs: [] });
+		vi.spyOn(pythonExecutor, "warmPythonEnvironment").mockResolvedValue({ ok: true, docs: [] });
 		const executeSpy = vi.spyOn(pythonExecutor, "executePython").mockResolvedValue({
 			output: "ok",
 			exitCode: 0,
@@ -44,8 +37,7 @@ describe("python tool execution", () => {
 			stdinRequested: false,
 		});
 
-		const kernelOwnerId = "owner-123";
-		const tool = new PythonTool(createSession(tempDir.path(), kernelOwnerId));
+		const tool = new PythonTool(createSession(tempDir.path()));
 		const result = await tool.execute(
 			"call-id",
 			{ cells: [{ code: "print('hi')" }], timeout: 5, cwd: tempDir.path(), reset: true },
@@ -54,14 +46,6 @@ describe("python tool execution", () => {
 			undefined,
 		);
 
-		expect(warmupSpy).toHaveBeenCalledWith(
-			tempDir.path(),
-			`session:${tempDir.path()}/session-file.jsonl:cwd:${tempDir.path()}`,
-			true,
-			`${tempDir.path()}/session-file.jsonl`,
-			kernelOwnerId,
-			expect.any(AbortSignal),
-		);
 		expect(executeSpy).toHaveBeenCalledWith(
 			"print('hi')",
 			expect.objectContaining({
@@ -70,7 +54,6 @@ describe("python tool execution", () => {
 				signal: expect.any(AbortSignal),
 				sessionFile: `${tempDir.path()}/session-file.jsonl`,
 				sessionId: `session:${tempDir.path()}/session-file.jsonl:cwd:${tempDir.path()}`,
-				kernelOwnerId,
 				kernelMode: "per-call",
 				useSharedGateway: true,
 				reset: true,
@@ -79,6 +62,7 @@ describe("python tool execution", () => {
 		const text = result.content.find(item => item.type === "text")?.text;
 		expect(text).toBe("ok");
 
+		executeSpy.mockRestore();
 		tempDir.removeSync();
 	});
 });

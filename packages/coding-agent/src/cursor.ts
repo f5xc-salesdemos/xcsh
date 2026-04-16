@@ -6,14 +6,13 @@ import type {
 	AgentToolContext,
 	AgentToolResult,
 	AgentToolUpdateCallback,
-} from "@oh-my-pi/pi-agent-core";
+} from "@f5xc-salesdemos/pi-agent-core";
 import type {
 	CursorMcpCall,
 	CursorShellStreamCallbacks,
 	CursorExecHandlers as ICursorExecHandlers,
 	ToolResultMessage,
-} from "@oh-my-pi/pi-ai";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
+} from "@f5xc-salesdemos/pi-ai";
 import { resolveToCwd } from "./tools/path-utils";
 
 interface CursorExecBridgeOptions {
@@ -66,16 +65,12 @@ async function executeTool(
 
 	const onUpdate: AgentToolUpdateCallback<unknown> | undefined = options.emitEvent
 		? partialResult => {
-				const sanitizedResult: AgentToolResult<unknown> = {
-					content: partialResult.content.map(c => (c.type === "text" ? { ...c, text: sanitizeText(c.text) } : c)),
-					details: partialResult.details,
-				};
 				options.emitEvent?.({
 					type: "tool_execution_update",
 					toolCallId,
 					toolName,
 					args,
-					partialResult: sanitizedResult,
+					partialResult,
 				});
 			}
 		: undefined;
@@ -94,11 +89,7 @@ async function executeTool(
 		isError = true;
 	}
 
-	const sanitizedFinalResult: AgentToolResult<unknown> = {
-		content: result.content.map(c => (c.type === "text" ? { ...c, text: sanitizeText(c.text) } : c)),
-		details: result.details,
-	};
-	options.emitEvent?.({ type: "tool_execution_end", toolCallId, toolName, result: sanitizedFinalResult, isError });
+	options.emitEvent?.({ type: "tool_execution_end", toolCallId, toolName, result, isError });
 
 	return createToolResultMessage(toolCallId, toolName, result, isError);
 }
@@ -242,43 +233,21 @@ export class CursorExecHandlers implements ICursorExecHandlers {
 		let result: AgentToolResult<unknown>;
 		let isError = false;
 
-		let rawText = "";
-		let sanitizedRawText = "";
-		let streamedSanitizedText = "";
-		let canStreamSanitizedDelta = true;
+		// Track previously streamed text so we only forward deltas.
+		let streamedLen = 0;
 		const onUpdate: AgentToolUpdateCallback<unknown> = partialResult => {
-			const newRawText = partialResult.content.map(c => (c.type === "text" ? c.text : "")).join("");
-			if (newRawText === rawText) {
-				return;
-			}
-			rawText = newRawText;
-			sanitizedRawText = sanitizeText(newRawText);
-			const sanitizedPartialResult: AgentToolResult<unknown> = {
-				content: [{ type: "text" as const, text: sanitizedRawText }],
-				details: partialResult.details,
-			};
 			this.options.emitEvent?.({
 				type: "tool_execution_update",
 				toolCallId,
 				toolName,
 				args: toolArgs,
-				partialResult: sanitizedPartialResult,
+				partialResult,
 			});
-			if (!canStreamSanitizedDelta) {
-				return;
+			const text = partialResult.content.map(c => (c.type === "text" ? c.text : "")).join("");
+			if (text.length > streamedLen) {
+				callbacks.onStdout(text.slice(streamedLen));
+				streamedLen = text.length;
 			}
-			if (sanitizedRawText.startsWith(streamedSanitizedText)) {
-				const sanitizedDelta = sanitizedRawText.slice(streamedSanitizedText.length);
-				streamedSanitizedText = sanitizedRawText;
-				if (sanitizedDelta) {
-					callbacks.onStdout(sanitizedDelta);
-				}
-				return;
-			}
-			// Cursor's shell-stream callback is append-only. Once the sanitized snapshot
-			// stops being a prefix extension, we can no longer repair the stream safely.
-			// Keep emitting full snapshots via tool_execution_update, but stop stdout deltas.
-			canStreamSanitizedDelta = false;
 		};
 
 		try {
@@ -291,30 +260,12 @@ export class CursorExecHandlers implements ICursorExecHandlers {
 
 		// onUpdate may not fire for every chunk — flush any remaining output
 		// from the final result that wasn't already streamed.
-		const finalRawText = result.content.map(c => (c.type === "text" ? c.text : "")).join("");
-		if (finalRawText !== rawText) {
-			rawText = finalRawText;
-			sanitizedRawText = sanitizeText(finalRawText);
-		}
-		if (canStreamSanitizedDelta && sanitizedRawText.startsWith(streamedSanitizedText)) {
-			const finalDelta = sanitizedRawText.slice(streamedSanitizedText.length);
-			streamedSanitizedText = sanitizedRawText;
-			if (finalDelta) {
-				callbacks.onStdout(finalDelta);
-			}
+		const finalText = result.content.map(c => (c.type === "text" ? c.text : "")).join("");
+		if (finalText.length > streamedLen) {
+			callbacks.onStdout(finalText.slice(streamedLen));
 		}
 
-		const sanitizedFinalResult: AgentToolResult<unknown> = {
-			content: result.content.map(c => (c.type === "text" ? { ...c, text: sanitizeText(c.text) } : c)),
-			details: result.details,
-		};
-		this.options.emitEvent?.({
-			type: "tool_execution_end",
-			toolCallId,
-			toolName,
-			result: sanitizedFinalResult,
-			isError,
-		});
+		this.options.emitEvent?.({ type: "tool_execution_end", toolCallId, toolName, result, isError });
 		return createToolResultMessage(toolCallId, toolName, result, isError);
 	}
 
@@ -334,8 +285,16 @@ export class CursorExecHandlers implements ICursorExecHandlers {
 		if (!tool) {
 			const availableTools = Array.from(this.options.tools.keys()).filter(name => name.startsWith("mcp_"));
 			const message = formatMcpToolErrorMessage(toolName, availableTools);
-			const result = buildToolErrorResult(message);
-			return createToolResultMessage(toolCallId, toolName, result, true);
+			const toolResult: ToolResultMessage = {
+				role: "toolResult",
+				toolCallId,
+				toolName,
+				content: [{ type: "text", text: message }],
+				details: {},
+				isError: true,
+				timestamp: Date.now(),
+			};
+			return toolResult;
 		}
 
 		const args = Object.keys(call.args ?? {}).length > 0 ? call.args : decodeMcpArgs(call.rawArgs ?? {});

@@ -1,13 +1,13 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "bun:test";
-import { getBundledModel } from "@oh-my-pi/pi-ai";
-import { KeybindingsManager } from "@oh-my-pi/pi-coding-agent/config/keybindings";
-import type { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { ModelSelectorComponent } from "@oh-my-pi/pi-coding-agent/modes/components/model-selector";
-import { SessionSelectorComponent } from "@oh-my-pi/pi-coding-agent/modes/components/session-selector";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { SessionInfo } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { setKeybindings, type TUI } from "@oh-my-pi/pi-tui";
+import { getBundledModel } from "@f5xc-salesdemos/pi-ai";
+import { setKeybindings, type TUI } from "@f5xc-salesdemos/pi-tui";
+import { KeybindingsManager } from "@f5xc-salesdemos/xcsh/config/keybindings";
+import type { ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { ModelSelectorComponent } from "@f5xc-salesdemos/xcsh/modes/components/model-selector";
+import { SessionSelectorComponent } from "@f5xc-salesdemos/xcsh/modes/components/session-selector";
+import { initTheme } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
+import type { SessionInfo } from "@f5xc-salesdemos/xcsh/session/session-manager";
 
 beforeAll(() => {
 	initTheme();

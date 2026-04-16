@@ -9,8 +9,7 @@ import {
 	streamSimple,
 	type ToolResultMessage,
 	validateToolArguments,
-} from "@oh-my-pi/pi-ai";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
+} from "@f5xc-salesdemos/pi-ai";
 import type {
 	AgentContext,
 	AgentEvent,
@@ -583,12 +582,7 @@ async function executeToolCalls(
 						toolCallId: toolCall.id,
 						toolName: toolCall.name,
 						args: argsForExecution,
-						partialResult: {
-							...partialResult,
-							content: partialResult.content.map(c =>
-								c.type === "text" ? { ...c, text: sanitizeText(c.text) } : c,
-							),
-						},
+						partialResult,
 					});
 				},
 				toolContext,

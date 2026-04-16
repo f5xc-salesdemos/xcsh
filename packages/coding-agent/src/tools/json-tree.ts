@@ -1,7 +1,7 @@
 /**
  * JSON tree rendering utilities shared across tool renderers.
  */
-import { INTENT_FIELD } from "@oh-my-pi/pi-agent-core";
+import { INTENT_FIELD } from "@f5xc-salesdemos/pi-agent-core";
 import type { Theme } from "../modes/theme/theme";
 import { truncateToWidth } from "./render-utils";
 
@@ -43,6 +43,27 @@ export function formatScalar(value: unknown, maxLen: number): string {
 		return `{${keys.length} keys}`;
 	}
 	return String(value);
+}
+
+/**
+ * Color a formatted scalar value based on its JS type using syntax highlighting colors.
+ * Matches Claude Code / VS Code Dark+ JSON highlighting semantics.
+ */
+function colorScalar(value: unknown, formatted: string, theme: Theme): string {
+	if (value === null || value === undefined) return theme.fg("syntaxKeyword", formatted);
+	if (typeof value === "boolean") return theme.fg("syntaxKeyword", formatted);
+	if (typeof value === "number") return theme.fg("syntaxNumber", formatted);
+	if (typeof value === "string") return theme.fg("syntaxString", formatted);
+	return theme.fg("syntaxPunctuation", formatted);
+}
+
+/**
+ * Color a JSON key: object property names get syntax variable color,
+ * array indices (e.g. [0]) stay muted since they are display artifacts.
+ */
+function colorKey(key: string, theme: Theme): string {
+	if (/^\[\d+\]$/.test(key)) return theme.fg("muted", key);
+	return theme.fg("syntaxVariable", key);
 }
 
 /**
@@ -123,7 +144,7 @@ export function renderJsonTreeLines(
 
 		// Handle scalars
 		if (val === null || val === undefined || typeof val !== "object") {
-			const label = key ? theme.fg("muted", key) : theme.fg("muted", "value");
+			const label = key ? colorKey(key, theme) : theme.fg("muted", "value");
 
 			// Special handling for multiline strings
 			if (typeof val === "string" && val.includes("\n")) {
@@ -133,7 +154,7 @@ export function renderJsonTreeLines(
 
 				// First line with label
 				const firstLine = truncateToWidth(strLines[0], maxScalarLen);
-				pushLine(`${prefix}${iconScalar} ${label}: ${theme.fg("dim", `"${firstLine}`)}`);
+				pushLine(`${prefix}${iconScalar} ${label}: ${theme.fg("syntaxString", `"${firstLine}`)}`);
 
 				// Subsequent lines indented
 				for (let i = 1; i < maxStrLines; i++) {
@@ -142,33 +163,35 @@ export function renderJsonTreeLines(
 						break;
 					}
 					const line = truncateToWidth(strLines[i], maxScalarLen);
-					pushLine(`${continuePrefix}   ${theme.fg("dim", ` ${line}`)}`);
+					pushLine(`${continuePrefix}   ${theme.fg("syntaxString", ` ${line}`)}`);
 				}
 
 				// Show truncation and closing quote
 				if (strLines.length > maxStrLines) {
 					truncated = true;
-					pushLine(`${continuePrefix}   ${theme.fg("dim", ` …(${strLines.length - maxStrLines} more lines)"`)}`);
+					pushLine(
+						`${continuePrefix}   ${theme.fg("syntaxString", ` …(${strLines.length - maxStrLines} more lines)"`)}`,
+					);
 				} else {
 					// Add closing quote to last line - need to modify the last pushed line
 					const lastIdx = lines.length - 1;
-					lines[lastIdx] = `${lines[lastIdx]}${theme.fg("dim", '"')}`;
+					lines[lastIdx] = `${lines[lastIdx]}${theme.fg("syntaxString", '"')}`;
 				}
 				return;
 			}
 
 			const scalar = formatScalar(val, maxScalarLen);
-			pushLine(`${prefix}${iconScalar} ${label}: ${theme.fg("dim", scalar)}`);
+			pushLine(`${prefix}${iconScalar} ${label}: ${colorScalar(val, scalar, theme)}`);
 			return;
 		}
 
 		// Handle arrays
 		if (Array.isArray(val)) {
-			const header = key ? theme.fg("muted", key) : theme.fg("muted", "array");
+			const header = key ? colorKey(key, theme) : theme.fg("muted", "array");
 			pushLine(`${prefix}${iconArray} ${header}`);
 			if (val.length === 0) {
 				pushLine(
-					`${buildTreePrefix([...ancestors, !isLast], theme)}${theme.fg("dim", theme.tree.last)} ${theme.fg("dim", "[]")}`,
+					`${buildTreePrefix([...ancestors, !isLast], theme)}${theme.fg("dim", theme.tree.last)} ${theme.fg("syntaxPunctuation", "[]")}`,
 				);
 				return;
 			}
@@ -190,12 +213,12 @@ export function renderJsonTreeLines(
 		}
 
 		// Handle objects
-		const header = key ? theme.fg("muted", key) : theme.fg("muted", "object");
+		const header = key ? colorKey(key, theme) : theme.fg("muted", "object");
 		pushLine(`${prefix}${iconObject} ${header}`);
 		const entries = Object.entries(val as Record<string, unknown>);
 		if (entries.length === 0) {
 			pushLine(
-				`${buildTreePrefix([...ancestors, !isLast], theme)}${theme.fg("dim", theme.tree.last)} ${theme.fg("dim", "{}")}`,
+				`${buildTreePrefix([...ancestors, !isLast], theme)}${theme.fg("dim", theme.tree.last)} ${theme.fg("syntaxPunctuation", "{}")}`,
 			);
 			return;
 		}

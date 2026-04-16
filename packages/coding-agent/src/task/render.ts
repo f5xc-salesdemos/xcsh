@@ -5,9 +5,9 @@
  * task execution in the terminal UI.
  */
 import path from "node:path";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Container, Text } from "@oh-my-pi/pi-tui";
-import { formatNumber } from "@oh-my-pi/pi-utils";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Container, Text } from "@f5xc-salesdemos/pi-tui";
+import { formatNumber } from "@f5xc-salesdemos/pi-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import {
@@ -89,6 +89,19 @@ function formatJsonScalar(value: unknown, _theme: Theme): string {
 	return "";
 }
 
+function colorJsonScalar(value: unknown, formatted: string, theme: Theme): string {
+	if (value === null) return theme.fg("syntaxKeyword", formatted);
+	if (typeof value === "boolean") return theme.fg("syntaxKeyword", formatted);
+	if (typeof value === "number") return theme.fg("syntaxNumber", formatted);
+	if (typeof value === "string") return theme.fg("syntaxString", formatted);
+	return theme.fg("syntaxPunctuation", formatted);
+}
+
+function colorJsonKey(key: string, theme: Theme): string {
+	if (/^\[\d+\]$/.test(key)) return theme.fg("muted", key);
+	return theme.fg("syntaxVariable", key);
+}
+
 function formatTaskId(id: string): string {
 	const segments = id.split(".");
 	if (segments.length < 2) return id;
@@ -153,18 +166,18 @@ function renderJsonTreeLines(
 		const scalar = formatJsonScalar(val, theme);
 
 		if (scalar) {
-			const label = key ? theme.fg("muted", key) : theme.fg("muted", "value");
-			pushLine(`${prefix}${iconScalar} ${label}: ${theme.fg("dim", scalar)}`);
+			const label = key ? colorJsonKey(key, theme) : theme.fg("muted", "value");
+			pushLine(`${prefix}${iconScalar} ${label}: ${colorJsonScalar(val, scalar, theme)}`);
 			return;
 		}
 
 		if (Array.isArray(val)) {
-			const header = key ? theme.fg("muted", key) : theme.fg("muted", "array");
+			const header = key ? colorJsonKey(key, theme) : theme.fg("muted", "array");
 			pushLine(`${prefix}${iconArray} ${header}`);
 			if (val.length === 0) {
 				pushLine(
 					`${buildTreePrefix([...ancestors, !isLast], theme)}${theme.fg("dim", theme.tree.last)} ${theme.fg(
-						"dim",
+						"syntaxPunctuation",
 						"[]",
 					)}`,
 				);
@@ -191,13 +204,13 @@ function renderJsonTreeLines(
 		}
 
 		if (val && typeof val === "object") {
-			const header = key ? theme.fg("muted", key) : theme.fg("muted", "object");
+			const header = key ? colorJsonKey(key, theme) : theme.fg("muted", "object");
 			pushLine(`${prefix}${iconObject} ${header}`);
 			const entries = Object.entries(val as Record<string, unknown>);
 			if (entries.length === 0) {
 				pushLine(
 					`${buildTreePrefix([...ancestors, !isLast], theme)}${theme.fg("dim", theme.tree.last)} ${theme.fg(
-						"dim",
+						"syntaxPunctuation",
 						"{}",
 					)}`,
 				);
@@ -224,8 +237,8 @@ function renderJsonTreeLines(
 			return;
 		}
 
-		const label = key ? theme.fg("muted", key) : theme.fg("muted", "value");
-		pushLine(`${prefix}${iconScalar} ${label}: ${theme.fg("dim", String(val))}`);
+		const label = key ? colorJsonKey(key, theme) : theme.fg("muted", "value");
+		pushLine(`${prefix}${iconScalar} ${label}: ${colorJsonScalar(val, String(val), theme)}`);
 	};
 
 	const renderRoot = (val: unknown) => {
@@ -505,13 +518,13 @@ function renderAgentProgress(
 			? "success"
 			: progress.status === "failed" || progress.status === "aborted"
 				? "error"
-				: "accent";
+				: "contentAccent";
 
 	// Main status line: id: description [status] · stats · ⟨agent⟩
 	const description = progress.description?.trim();
 	const displayId = formatTaskId(progress.id);
 	const titlePart = description ? `${theme.bold(displayId)}: ${description}` : displayId;
-	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("accent", titlePart)}`;
+	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("contentAccent", titlePart)}`;
 
 	// Only show badge for non-running states (spinner already indicates running)
 	if (progress.status === "failed" || progress.status === "aborted") {
@@ -760,7 +773,7 @@ function renderAgentResult(result: SingleResult, isLast: boolean, expanded: bool
 	const description = result.description?.trim();
 	const displayId = formatTaskId(result.id);
 	const titlePart = description ? `${theme.bold(displayId)}: ${description}` : displayId;
-	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("accent", titlePart)} ${formatBadge(
+	let statusLine = `${prefix} ${theme.fg(iconColor, icon)} ${theme.fg("contentAccent", titlePart)} ${formatBadge(
 		statusText,
 		iconColor,
 		theme,

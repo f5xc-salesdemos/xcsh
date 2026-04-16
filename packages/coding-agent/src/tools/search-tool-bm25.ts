@@ -1,6 +1,11 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { type Component, Text } from "@oh-my-pi/pi-tui";
-import { prompt } from "@oh-my-pi/pi-utils";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { type Component, Text } from "@f5xc-salesdemos/pi-tui";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import {
@@ -121,7 +126,7 @@ function renderMatchLines(match: SearchToolBm25Match, theme: Theme): string[] {
 	metaParts.push(theme.fg("dim", `score ${match.score.toFixed(3)}`));
 	const metaSep = theme.fg("dim", theme.sep.dot);
 	const metaSuffix = metaParts.length > 0 ? ` ${metaParts.join(metaSep)}` : "";
-	const lines = [`${theme.fg("accent", truncateToWidth(safeLabel, MATCH_LABEL_LEN))}${metaSuffix}`];
+	const lines = [`${theme.fg("contentAccent", truncateToWidth(safeLabel, MATCH_LABEL_LEN))}${metaSuffix}`];
 	if (safeDescription) {
 		lines.push(theme.fg("muted", truncateToWidth(safeDescription, MATCH_DESCRIPTION_LEN)));
 	}

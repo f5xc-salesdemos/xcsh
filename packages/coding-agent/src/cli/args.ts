@@ -1,8 +1,8 @@
 /**
  * CLI argument parsing and help display
  */
-import { type Effort, THINKING_EFFORTS } from "@oh-my-pi/pi-ai";
-import { APP_NAME, CONFIG_DIR_NAME, logger } from "@oh-my-pi/pi-utils";
+import { type Effort, THINKING_EFFORTS } from "@f5xc-salesdemos/pi-ai";
+import { APP_NAME, CONFIG_DIR_NAME, logger } from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { parseEffort } from "../thinking";
 import { BUILTIN_TOOLS } from "../tools";
@@ -269,8 +269,8 @@ ${chalk.bold("Plugin Options:")}
   --plugin-dir <path>        Load plugin from directory (repeatable)
 
 ${chalk.bold("Useful Commands:")}
-  omp agents unpack           - Export bundled subagents to ~/.omp/agent/agents (default)
-  omp agents unpack --project - Export bundled subagents to ./.omp/agents`;
+  xcsh agents unpack           - Export bundled subagents to ~/.xcsh/agent/agents (default)
+  xcsh agents unpack --project - Export bundled subagents to ./.xcsh/agents`;
 }
 
 export function printHelp(): void {

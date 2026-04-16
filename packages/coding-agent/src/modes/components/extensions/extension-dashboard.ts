@@ -20,7 +20,7 @@ import {
 	Text,
 	truncateToWidth,
 	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { Settings } from "../../../config/settings";
 import { DynamicBorder } from "../../../modes/components/dynamic-border";
 import { theme } from "../../../modes/theme/theme";
@@ -105,7 +105,7 @@ export class ExtensionDashboard extends Container {
 		this.addChild(new DynamicBorder());
 
 		// Title
-		this.addChild(new Text(theme.bold(theme.fg("accent", " Extension Control Center")), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", " Extension Control Center")), 0, 0));
 
 		// Tab bar
 		this.addChild(new Text(this.#renderTabBar(), 0, 0));

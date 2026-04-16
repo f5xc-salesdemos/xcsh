@@ -7,9 +7,13 @@
  * - Grouped references and symbols
  * - Collapsible/expandable views
  */
-import type { RenderResultOptions } from "@oh-my-pi/pi-agent-core";
-import { type HighlightColors, highlightCode as nativeHighlightCode, supportsLanguage } from "@oh-my-pi/pi-natives";
-import { type Component, Text } from "@oh-my-pi/pi-tui";
+import type { RenderResultOptions } from "@f5xc-salesdemos/pi-agent-core";
+import {
+	type HighlightColors,
+	highlightCode as nativeHighlightCode,
+	supportsLanguage,
+} from "@f5xc-salesdemos/pi-natives";
+import { type Component, Text } from "@f5xc-salesdemos/pi-tui";
 import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
 import {
 	formatExpandHint,
@@ -217,7 +221,7 @@ function renderHover(
 	const afterCode = fullText.slice(fullText.indexOf("```", 3) + 3).trim();
 
 	const codeLines = highlightCode(code, lang, theme);
-	const icon = theme.styledSymbol("status.info", "accent");
+	const icon = theme.styledSymbol("status.info", "contentAccent");
 	const langLabel = lang ? theme.fg("mdCodeBlockBorder", ` ${lang}`) : "";
 
 	if (expanded) {
@@ -434,7 +438,7 @@ function renderReferences(refMatch: RegExpMatchArray, lines: string[], expanded:
 			const fileCont = isLastFile ? "   " : `${theme.tree.vertical}  `;
 
 			const fileMeta = `${locs.length} reference${locs.length !== 1 ? "s" : ""}`;
-			output += `\n ${theme.fg("dim", fileBranch)} ${theme.fg("accent", file)} ${theme.fg("dim", fileMeta)}`;
+			output += `\n ${theme.fg("dim", fileBranch)} ${theme.fg("contentAccent", file)} ${theme.fg("dim", fileMeta)}`;
 
 			if (maxLocsPerFile > 0) {
 				const locsToShow = locs.slice(0, maxLocsPerFile);
@@ -490,7 +494,7 @@ function renderReferences(refMatch: RegExpMatchArray, lines: string[], expanded:
  */
 function renderSymbols(symbolsMatch: RegExpMatchArray, lines: string[], expanded: boolean, theme: Theme): string[] {
 	const fileName = symbolsMatch[1];
-	const icon = theme.styledSymbol("status.info", "accent");
+	const icon = theme.styledSymbol("status.info", "contentAccent");
 
 	interface SymbolInfo {
 		name: string;
@@ -553,7 +557,7 @@ function renderSymbols(symbolsMatch: RegExpMatchArray, lines: string[], expanded
 			const isLast = isLastSibling(i);
 			const branch = isLast ? theme.tree.last : theme.tree.branch;
 			const detailPrefix = isLast ? "   " : `${theme.tree.vertical}  `;
-			output += `\n${prefix}${theme.fg("dim", branch)} ${theme.fg("accent", sym.icon)} ${theme.fg("accent", sym.name)}`;
+			output += `\n${prefix}${theme.fg("dim", branch)} ${theme.fg("contentAccent", sym.icon)} ${theme.fg("contentAccent", sym.name)}`;
 			output += `\n${prefix}${theme.fg("dim", detailPrefix)}${theme.fg("muted", `line ${sym.line}`)}`;
 		}
 		return output.split("\n");
@@ -568,7 +572,7 @@ function renderSymbols(symbolsMatch: RegExpMatchArray, lines: string[], expanded
 		const sym = topLevel[i];
 		const isLast = i === topLevel.length - 1 && topLevelCount <= 3;
 		const branch = isLast ? theme.tree.last : theme.tree.branch;
-		output += `\n ${theme.fg("dim", branch)} ${theme.fg("accent", sym.icon)} ${theme.fg("accent", sym.name)} ${theme.fg(
+		output += `\n ${theme.fg("dim", branch)} ${theme.fg("contentAccent", sym.icon)} ${theme.fg("contentAccent", sym.name)} ${theme.fg(
 			"muted",
 			`line ${sym.line}`,
 		)}`;
@@ -596,7 +600,7 @@ function renderGeneric(text: string, lines: string[], expanded: boolean, theme: 
 			? theme.styledSymbol("status.error", "error")
 			: hasSuccess && !hasError
 				? theme.styledSymbol("status.success", "success")
-				: theme.styledSymbol("status.info", "accent");
+				: theme.styledSymbol("status.info", "contentAccent");
 
 	if (expanded) {
 		let output = `${icon} ${theme.fg("dim", "Output")}`;
@@ -658,14 +662,14 @@ function parseDiagnosticLine(line: string): ParsedDiagnostic | null {
 	return { file, line: lineNum, col: colNum, severity: severity.toLowerCase(), message };
 }
 
-function severityToColor(severity: string): "error" | "warning" | "accent" | "dim" {
+function severityToColor(severity: string): "error" | "warning" | "contentAccent" | "dim" {
 	switch (severity) {
 		case "error":
 			return "error";
 		case "warning":
 			return "warning";
 		case "info":
-			return "accent";
+			return "contentAccent";
 		default:
 			return "dim";
 	}

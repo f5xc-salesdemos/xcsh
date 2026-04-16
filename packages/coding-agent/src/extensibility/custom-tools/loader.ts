@@ -5,8 +5,8 @@
  * to avoid import resolution issues with custom tools loaded from user directories.
  */
 import * as path from "node:path";
-import type { AgentToolResult } from "@oh-my-pi/pi-agent-core";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { AgentToolResult } from "@f5xc-salesdemos/pi-agent-core";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import * as typebox from "@sinclair/typebox";
 import { toolCapability } from "../../capability/tool";
 import { type CustomTool, loadCapability } from "../../discovery";
@@ -85,7 +85,7 @@ export class CustomToolLoader {
 	#seenNames: Set<string>;
 
 	constructor(
-		pi: typeof import("@oh-my-pi/pi-coding-agent"),
+		pi: typeof import("@f5xc-salesdemos/xcsh"),
 		cwd: string,
 		builtInToolNames: string[],
 		pushPendingAction?: (action: {
@@ -170,12 +170,7 @@ export async function loadCustomTools(
 		reject?(reason: string): Promise<AgentToolResult<unknown> | undefined>;
 	}) => void,
 ) {
-	const loader = new CustomToolLoader(
-		await import("@oh-my-pi/pi-coding-agent"),
-		cwd,
-		builtInToolNames,
-		pushPendingAction,
-	);
+	const loader = new CustomToolLoader(await import("@f5xc-salesdemos/xcsh"), cwd, builtInToolNames, pushPendingAction);
 	await loader.load(pathsWithSources);
 	return {
 		tools: loader.tools,
@@ -189,7 +184,7 @@ export async function loadCustomTools(
 /**
  * Discover and load tools from standard locations via capability system:
  * 1. User and project tools discovered by capability providers
- * 2. Installed plugins (~/.omp/plugins/node_modules/*)
+ * 2. Installed plugins (~/.xcsh/plugins/node_modules/*)
  * 3. Explicitly configured paths from settings or CLI
  *
  * @param configuredPaths - Explicit paths from settings.json and CLI --tool flags
@@ -229,7 +224,7 @@ export async function discoverAndLoadCustomTools(
 		});
 	}
 
-	// 2. Plugin tools: ~/.omp/plugins/node_modules/*/
+	// 2. Plugin tools: ~/.xcsh/plugins/node_modules/*/
 	for (const pluginPath of await getAllPluginToolPaths(cwd)) {
 		addPath(pluginPath, { provider: "plugin", providerName: "Plugin", level: "user" });
 	}

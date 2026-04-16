@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
 import type {
 	ImageContent,
 	Message,
@@ -10,8 +10,8 @@ import type {
 	ServiceTier,
 	TextContent,
 	Usage,
-} from "@oh-my-pi/pi-ai";
-import { getTerminalId } from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-ai";
+import { getTerminalId } from "@f5xc-salesdemos/pi-tui";
 import {
 	getBlobsDir,
 	getAgentDir as getDefaultAgentDir,
@@ -25,7 +25,7 @@ import {
 	resolveEquivalentPath,
 	Snowflake,
 	toError,
-} from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-utils";
 import { ArtifactManager } from "./artifacts";
 import {
 	type BlobPutResult,
@@ -2645,7 +2645,7 @@ export class SessionManager {
 	/**
 	 * Create a new session.
 	 * @param cwd Working directory (stored in session header)
-	 * @param sessionDir Optional session directory. If omitted, uses default (~/.omp/agent/sessions/<encoded-cwd>/).
+	 * @param sessionDir Optional session directory. If omitted, uses default (~/.xcsh/agent/sessions/<encoded-cwd>/).
 	 */
 	static create(cwd: string, sessionDir?: string, storage: SessionStorage = new FileSessionStorage()): SessionManager {
 		const dir = sessionDir ?? SessionManager.getDefaultSessionDir(cwd, undefined, storage);
@@ -2708,7 +2708,7 @@ export class SessionManager {
 	/**
 	 * Continue the most recent session, or create new if none.
 	 * @param cwd Working directory
-	 * @param sessionDir Optional session directory. If omitted, uses default (~/.omp/agent/sessions/<encoded-cwd>/).
+	 * @param sessionDir Optional session directory. If omitted, uses default (~/.xcsh/agent/sessions/<encoded-cwd>/).
 	 */
 	static async continueRecent(
 		cwd: string,
@@ -2741,7 +2741,7 @@ export class SessionManager {
 	/**
 	 * List all sessions.
 	 * @param cwd Working directory (used to compute default session directory)
-	 * @param sessionDir Optional session directory. If omitted, uses default (~/.omp/agent/sessions/<encoded-cwd>/).
+	 * @param sessionDir Optional session directory. If omitted, uses default (~/.xcsh/agent/sessions/<encoded-cwd>/).
 	 */
 	static async list(
 		cwd: string,

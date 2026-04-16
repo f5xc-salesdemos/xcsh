@@ -9,7 +9,7 @@ import {
 	Text,
 	truncateToWidth,
 	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { theme } from "../../modes/theme/theme";
 import { matchesAppInterrupt } from "../../modes/utils/keybinding-matchers";
 import type { SessionInfo } from "../../session/session-manager";
@@ -138,7 +138,7 @@ class SessionList implements Component {
 			// First line: cursor + title (or first message if no title)
 			const cursorSymbol = `${theme.nav.cursor} `;
 			const cursorWidth = visibleWidth(cursorSymbol);
-			const cursor = isSelected ? theme.fg("accent", cursorSymbol) : padding(cursorWidth);
+			const cursor = isSelected ? theme.fg("chromeAccent", cursorSymbol) : padding(cursorWidth);
 			const maxWidth = width - cursorWidth; // Account for cursor width
 
 			if (session.title) {

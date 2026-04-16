@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { agentLoop, agentLoopContinue, INTENT_FIELD } from "@oh-my-pi/pi-agent-core/agent-loop";
+import { agentLoop, agentLoopContinue, INTENT_FIELD } from "@f5xc-salesdemos/pi-agent-core/agent-loop";
 import type {
 	AgentContext,
 	AgentEvent,
@@ -8,9 +8,9 @@ import type {
 	AgentTool,
 	AgentToolContext,
 	ToolCallContext,
-} from "@oh-my-pi/pi-agent-core/types";
-import type { AssistantMessage, Context, Message, Model, ToolResultMessage, UserMessage } from "@oh-my-pi/pi-ai";
-import { AssistantMessageEventStream } from "@oh-my-pi/pi-ai/utils/event-stream";
+} from "@f5xc-salesdemos/pi-agent-core/types";
+import type { AssistantMessage, Context, Message, Model, ToolResultMessage, UserMessage } from "@f5xc-salesdemos/pi-ai";
+import { AssistantMessageEventStream } from "@f5xc-salesdemos/pi-ai/utils/event-stream";
 import { Type } from "@sinclair/typebox";
 
 // Mock stream for testing - uses actual AssistantMessageEventStream with throttling

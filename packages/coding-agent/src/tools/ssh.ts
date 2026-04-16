@@ -1,7 +1,12 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { prompt } from "@oh-my-pi/pi-utils";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { SSHHost } from "../capability/ssh";
 import { sshCapability } from "../capability/ssh";
@@ -162,17 +167,22 @@ export class SshTool implements AgentTool<typeof sshSchema, SSHToolDetails> {
 		const tailBuffer = new TailBuffer(DEFAULT_MAX_BYTES);
 		const { path: artifactPath, id: artifactId } = (await this.session.allocateOutputArtifact?.("ssh")) ?? {};
 
+		const obfuscator = this.session.obfuscator;
+		const maskSecrets = obfuscator?.hasSecrets() ? (t: string) => obfuscator.obfuscate(t) : undefined;
+
 		const result = await executeSSH(hostConfig, remoteCommand, {
 			timeout: timeoutMs,
 			signal,
 			compatEnabled: hostInfo.compatEnabled,
 			artifactPath,
 			artifactId,
+			maskSecrets,
 			onChunk: chunk => {
 				tailBuffer.append(chunk);
 				if (onUpdate) {
+					const preview = maskSecrets ? maskSecrets(tailBuffer.text()) : tailBuffer.text();
 					onUpdate({
-						content: [{ type: "text", text: tailBuffer.text() }],
+						content: [{ type: "text", text: preview }],
 						details: {},
 					});
 				}

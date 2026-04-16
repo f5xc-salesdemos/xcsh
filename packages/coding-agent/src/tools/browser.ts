@@ -1,10 +1,15 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import { $which, getPuppeteerDir, logger, prompt, Snowflake, untilAborted } from "@f5xc-salesdemos/pi-utils";
 import { Readability } from "@mozilla/readability";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import { $which, getPuppeteerDir, logger, prompt, Snowflake, untilAborted } from "@oh-my-pi/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type HTMLElement, parseHTML } from "linkedom";
 import type {
@@ -1491,7 +1496,7 @@ export class BrowserTool implements AgentTool<typeof browserSchema, BrowserToolD
 						const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -1);
 						dest = path.join(screenshotDir, `screenshot-${ts}.png`);
 					} else {
-						dest = path.join(os.tmpdir(), `omp-sshots-${Snowflake.next()}.png`);
+						dest = path.join(os.tmpdir(), `xcsh-sshots-${Snowflake.next()}.png`);
 					}
 					await fs.promises.mkdir(path.dirname(dest), { recursive: true });
 					// Full-res buffer when saving to a user-defined location; resized (API copy) for temp-only.

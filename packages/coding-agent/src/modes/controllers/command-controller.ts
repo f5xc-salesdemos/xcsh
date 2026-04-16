@@ -8,9 +8,9 @@ import {
 	type ToolCall,
 	type UsageLimit,
 	type UsageReport,
-} from "@oh-my-pi/pi-ai";
-import { Loader, Markdown, padding, Spacer, Text, visibleWidth } from "@oh-my-pi/pi-tui";
-import { formatDuration, Snowflake, setProjectDir } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-ai";
+import { Loader, Markdown, padding, Spacer, Text, visibleWidth } from "@f5xc-salesdemos/pi-tui";
+import { formatDuration, Snowflake, setProjectDir, setShellPwd } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import { reset as resetCapabilities } from "../../capability";
 import { clearClaudePluginRootsCache } from "../../discovery/helpers";
@@ -21,6 +21,7 @@ import { buildMemoryToolDeveloperInstructions, clearMemoryData, enqueueMemoryCon
 import { BashExecutionComponent } from "../../modes/components/bash-execution";
 import { BorderedLoader } from "../../modes/components/bordered-loader";
 import { DynamicBorder } from "../../modes/components/dynamic-border";
+import { createToolGutter } from "../../modes/components/gutter-block";
 import { PythonExecutionComponent } from "../../modes/components/python-execution";
 import { getMarkdownTheme, getSymbolTheme, theme } from "../../modes/theme/theme";
 import type { InteractiveModeContext } from "../../modes/types";
@@ -39,7 +40,7 @@ import { setSessionTerminalTitle } from "../../utils/title-generator";
 function showMarkdownPanel(ctx: InteractiveModeContext, title: string, markdown: string): void {
 	ctx.chatContainer.addChild(new Spacer(1));
 	ctx.chatContainer.addChild(new DynamicBorder());
-	ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", title)), 1, 0));
+	ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("contentAccent", title)), 1, 0));
 	ctx.chatContainer.addChild(new Spacer(1));
 	ctx.chatContainer.addChild(new Markdown(markdown.trim(), 1, 1, getMarkdownTheme()));
 	ctx.chatContainer.addChild(new DynamicBorder());
@@ -511,7 +512,7 @@ export class CommandController {
 
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(new DynamicBorder());
-		this.ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", title)), 1, 0));
+		this.ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("contentAccent", title)), 1, 0));
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(new Markdown(changelogMarkdown + hint, 1, 1, getMarkdownTheme()));
 		this.ctx.chatContainer.addChild(new DynamicBorder());
@@ -541,7 +542,9 @@ export class CommandController {
 			}
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(new DynamicBorder());
-			this.ctx.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "Memory Injection Payload")), 1, 0));
+			this.ctx.chatContainer.addChild(
+				new Text(theme.bold(theme.fg("contentAccent", "Memory Injection Payload")), 1, 0),
+			);
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(new Markdown(payload, 1, 1, getMarkdownTheme()));
 			this.ctx.chatContainer.addChild(new DynamicBorder());
@@ -609,7 +612,7 @@ export class CommandController {
 
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(
-			new Text(`${theme.fg("accent", `${theme.status.success} New session started`)}`, 1, 1),
+			new Text(`${theme.fg("contentAccent", `${theme.status.success} New session started`)}`, 1, 1),
 		);
 		await this.ctx.reloadTodos();
 		this.ctx.ui.requestRender();
@@ -639,7 +642,7 @@ export class CommandController {
 		const shortPath = sessionFile ? sessionFile.split("/").pop() : "new session";
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(
-			new Text(`${theme.fg("accent", `${theme.status.success} Session forked to ${shortPath}`)}`, 1, 1),
+			new Text(`${theme.fg("contentAccent", `${theme.status.success} Session forked to ${shortPath}`)}`, 1, 1),
 		);
 		this.ctx.ui.requestRender();
 	}
@@ -683,7 +686,7 @@ export class CommandController {
 
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(
-				new Text(`${theme.fg("accent", `${theme.status.success} Session moved to ${resolvedPath}`)}`, 1, 1),
+				new Text(`${theme.fg("contentAccent", `${theme.status.success} Session moved to ${resolvedPath}`)}`, 1, 1),
 			);
 			this.ctx.ui.requestRender();
 		} catch (err) {
@@ -711,12 +714,14 @@ export class CommandController {
 	async handleBashCommand(command: string, excludeFromContext = false): Promise<void> {
 		const isDeferred = this.ctx.session.isStreaming;
 		this.ctx.bashComponent = new BashExecutionComponent(command, this.ctx.ui, excludeFromContext);
+		let bashGutter: ReturnType<typeof createToolGutter> | undefined;
 
 		if (isDeferred) {
 			this.ctx.pendingMessagesContainer.addChild(this.ctx.bashComponent);
 			this.ctx.pendingBashComponents.push(this.ctx.bashComponent);
 		} else {
-			this.ctx.chatContainer.addChild(this.ctx.bashComponent);
+			bashGutter = createToolGutter(this.ctx.ui, this.ctx.bashComponent);
+			this.ctx.chatContainer.addChild(bashGutter);
 		}
 		this.ctx.ui.requestRender();
 
@@ -730,6 +735,13 @@ export class CommandController {
 				},
 				{ excludeFromContext },
 			);
+
+			// Update CWD if the shell changed directory (e.g. via cd)
+			if (result.newCwd && result.newCwd !== this.ctx.sessionManager.getCwd()) {
+				setShellPwd(result.newCwd);
+				this.ctx.statusLine.invalidate();
+				this.ctx.ui.requestRender();
+			}
 
 			if (this.ctx.bashComponent) {
 				const meta = outputMeta().truncationFromSummary(result, { direction: "tail" }).get();
@@ -745,6 +757,7 @@ export class CommandController {
 			this.ctx.showError(`Bash command failed: ${error instanceof Error ? error.message : "Unknown error"}`);
 		}
 
+		bashGutter?.setDone();
 		this.ctx.bashComponent = undefined;
 		this.ctx.ui.requestRender();
 	}
@@ -752,12 +765,14 @@ export class CommandController {
 	async handlePythonCommand(code: string, excludeFromContext = false): Promise<void> {
 		const isDeferred = this.ctx.session.isStreaming;
 		this.ctx.pythonComponent = new PythonExecutionComponent(code, this.ctx.ui, excludeFromContext);
+		let pythonGutter: ReturnType<typeof createToolGutter> | undefined;
 
 		if (isDeferred) {
 			this.ctx.pendingMessagesContainer.addChild(this.ctx.pythonComponent);
 			this.ctx.pendingPythonComponents.push(this.ctx.pythonComponent);
 		} else {
-			this.ctx.chatContainer.addChild(this.ctx.pythonComponent);
+			pythonGutter = createToolGutter(this.ctx.ui, this.ctx.pythonComponent);
+			this.ctx.chatContainer.addChild(pythonGutter);
 		}
 		this.ctx.ui.requestRender();
 
@@ -786,6 +801,7 @@ export class CommandController {
 			this.ctx.showError(`Python execution failed: ${error instanceof Error ? error.message : "Unknown error"}`);
 		}
 
+		pythonGutter?.setDone();
 		this.ctx.pythonComponent = undefined;
 		this.ctx.ui.requestRender();
 	}
@@ -833,7 +849,7 @@ export class CommandController {
 		const label = isAuto ? "Auto-compacting context... (esc to cancel)" : "Compacting context... (esc to cancel)";
 		const compactingLoader = new Loader(
 			this.ctx.ui,
-			spinner => theme.fg("accent", spinner),
+			spinner => theme.fg("spinnerAccent", spinner),
 			text => theme.fg("muted", text),
 			label,
 			getSymbolTheme().spinnerFrames,
@@ -896,7 +912,11 @@ export class CommandController {
 
 			this.ctx.chatContainer.addChild(new Spacer(1));
 			this.ctx.chatContainer.addChild(
-				new Text(`${theme.fg("accent", `${theme.status.success} New session started with handoff context`)}`, 1, 1),
+				new Text(
+					`${theme.fg("contentAccent", `${theme.status.success} New session started with handoff context`)}`,
+					1,
+					1,
+				),
 			);
 			if (result.savedPath) {
 				this.ctx.showStatus(`Handoff document saved to: ${result.savedPath}`);
@@ -1137,7 +1157,7 @@ function renderUsageReports(reports: UsageReport[], uiTheme: typeof theme, nowMs
 	const lines: string[] = [];
 	const latestFetchedAt = Math.max(...reports.map(report => report.fetchedAt ?? 0));
 	const headerSuffix = latestFetchedAt ? ` (${formatDuration(nowMs - latestFetchedAt)} ago)` : "";
-	lines.push(uiTheme.bold(uiTheme.fg("accent", `Usage${headerSuffix}`)));
+	lines.push(uiTheme.bold(uiTheme.fg("contentAccent", `Usage${headerSuffix}`)));
 	const grouped = new Map<string, UsageReport[]>();
 	for (const report of reports) {
 		const list = grouped.get(report.provider) ?? [];
@@ -1180,7 +1200,7 @@ function renderUsageReports(reports: UsageReport[], uiTheme: typeof theme, nowMs
 			}
 		}
 
-		lines.push(uiTheme.bold(uiTheme.fg("accent", providerName)));
+		lines.push(uiTheme.bold(uiTheme.fg("contentAccent", providerName)));
 
 		for (const group of limitGroups.values()) {
 			const entries = group.limits.map((limit, index) => ({

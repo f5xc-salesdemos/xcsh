@@ -13,9 +13,9 @@
  *   - Esc from picker -> close overlay
  *   - Enter on main session -> close overlay (jump back)
  */
-import type { AssistantMessage, ToolResultMessage } from "@oh-my-pi/pi-ai";
-import { Container, Markdown, matchesKey, type SelectItem, SelectList, Spacer, Text } from "@oh-my-pi/pi-tui";
-import { formatDuration, formatNumber, logger } from "@oh-my-pi/pi-utils";
+import type { AssistantMessage, ToolResultMessage } from "@f5xc-salesdemos/pi-ai";
+import { Container, Markdown, matchesKey, type SelectItem, SelectList, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
+import { formatDuration, formatNumber, logger } from "@f5xc-salesdemos/pi-utils";
 import type { KeyId } from "../../config/keybindings";
 import type { SessionMessageEntry } from "../../session/session-manager";
 import { parseSessionEntries } from "../../session/session-manager";
@@ -62,7 +62,7 @@ export class SessionObserverOverlayComponent extends Container {
 		this.children = [];
 
 		this.addChild(new DynamicBorder());
-		this.addChild(new Text(theme.bold(theme.fg("accent", "Session Observer")), 1, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", "Session Observer")), 1, 0));
 		this.addChild(new Spacer(1));
 
 		const items = this.#buildPickerItems();
@@ -153,7 +153,7 @@ export class SessionObserverOverlayComponent extends Container {
 		const statusColor = session.status === "active" ? "success" : session.status === "failed" ? "error" : "dim";
 		const statusText = theme.fg(statusColor, session.status);
 		const agentTag = session.agent ? theme.fg("dim", ` [${session.agent}]`) : "";
-		c.addChild(new Text(`${theme.bold(theme.fg("accent", session.label))}  ${statusText}${agentTag}`, 1, 0));
+		c.addChild(new Text(`${theme.bold(theme.fg("contentAccent", session.label))}  ${statusText}${agentTag}`, 1, 0));
 
 		if (session.description) {
 			c.addChild(new Text(theme.fg("muted", session.description), 1, 0));
@@ -321,7 +321,9 @@ export class SessionObserverOverlayComponent extends Container {
 
 		// Tool call header with intent
 		const intentStr = call.intent ? theme.fg("dim", ` ${truncateToWidth(call.intent, 50)}`) : "";
-		c.addChild(new Text(`${theme.fg("accent", "▸")} ${theme.bold(theme.fg("muted", call.name))}${intentStr}`, 1, 0));
+		c.addChild(
+			new Text(`${theme.fg("contentAccent", "▸")} ${theme.bold(theme.fg("muted", call.name))}${intentStr}`, 1, 0),
+		);
 
 		// Key arguments (skip very long ones, show summary)
 		const argEntries = Object.entries(call.arguments);

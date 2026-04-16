@@ -1,4 +1,4 @@
-import { CancellableLoader, Container, Spacer, Text, type TUI } from "@oh-my-pi/pi-tui";
+import { CancellableLoader, Container, Spacer, Text, type TUI } from "@f5xc-salesdemos/pi-tui";
 import type { Theme } from "../../modes/theme/theme";
 import { DynamicBorder } from "./dynamic-border";
 
@@ -12,7 +12,7 @@ export class BorderedLoader extends Container {
 		this.addChild(new DynamicBorder(borderColor));
 		this.#loader = new CancellableLoader(
 			tui,
-			s => theme.fg("accent", s),
+			s => theme.fg("spinnerAccent", s),
 			s => theme.fg("muted", s),
 			message,
 		);

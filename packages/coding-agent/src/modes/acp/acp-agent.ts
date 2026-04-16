@@ -37,8 +37,8 @@ import {
 	type SetSessionModeResponse,
 	type Usage,
 } from "@agentclientprotocol/sdk";
-import type { Model } from "@oh-my-pi/pi-ai";
-import { logger, VERSION } from "@oh-my-pi/pi-utils";
+import type { Model } from "@f5xc-salesdemos/pi-ai";
+import { logger, VERSION } from "@f5xc-salesdemos/pi-utils";
 import type { ExtensionUIContext } from "../../extensibility/extensions";
 import { loadSlashCommands } from "../../extensibility/slash-commands";
 import { MCPManager } from "../../mcp/manager";
@@ -160,7 +160,7 @@ export class AcpAgent implements Agent {
 		return {
 			protocolVersion: PROTOCOL_VERSION,
 			agentInfo: {
-				name: "oh-my-pi",
+				name: "xcsh",
 				title: "Oh My Pi",
 				version: VERSION,
 			},

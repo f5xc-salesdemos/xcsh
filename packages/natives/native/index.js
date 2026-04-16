@@ -10,10 +10,10 @@ const path = require("node:path");
 
 function getNativesDir() {
 	const xdgDataHome = process.env.XDG_DATA_HOME;
-	if (xdgDataHome && fs.existsSync(path.join(xdgDataHome, "omp"))) {
-		return path.join(xdgDataHome, "omp", "natives");
+	if (xdgDataHome && fs.existsSync(path.join(xdgDataHome, "xcsh"))) {
+		return path.join(xdgDataHome, "xcsh", "natives");
 	}
-	return path.join(os.homedir(), ".omp", "natives");
+	return path.join(os.homedir(), ".xcsh", "natives");
 }
 const packageJson = require("../package.json");
 let embeddedAddon = null;
@@ -26,9 +26,20 @@ const execDir = path.dirname(process.execPath);
 const versionedDir = path.join(getNativesDir(), packageVersion);
 const userDataDir =
 	process.platform === "win32"
-		? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "omp")
+		? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "xcsh")
 		: path.join(os.homedir(), ".local", "bin");
+// PI_COMPILED is replaced with `true` at compile time by bun build --define PI_COMPILED=true.
+// In non-compiled contexts the identifier is undefined, so wrap in try-catch.
+// The __filename checks are kept as a secondary heuristic but are unreliable
+// in Bun compiled binaries where __filename resolves to the original build path.
+let _piCompiledFlag = false;
+try {
+	_piCompiledFlag = !!PI_COMPILED;
+} catch {
+	// Not a compiled binary (PI_COMPILED is not defined)
+}
 const isCompiledBinary =
+	_piCompiledFlag ||
 	process.env.PI_COMPILED ||
 	__filename.includes("$bunfs") ||
 	__filename.includes("~BUN") ||
@@ -108,10 +119,35 @@ const selectedVariant = resolveCpuVariant(variantOverride);
 const addonFilenames = getAddonFilenames(platformTag, selectedVariant);
 const addonLabel = selectedVariant ? `${platformTag} (${selectedVariant})` : platformTag;
 
-const baseReleaseCandidates = addonFilenames.flatMap(filename => [
-	path.join(nativeDir, filename),
-	path.join(execDir, filename),
-]);
+// Map platform tags to platform package names (optionalDependencies)
+const PLATFORM_PACKAGE_MAP = {
+	"linux-x64": "@f5xc-salesdemos/pi-natives-linux-x64-gnu",
+	"linux-arm64": "@f5xc-salesdemos/pi-natives-linux-arm64-gnu",
+	"darwin-x64": "@f5xc-salesdemos/pi-natives-darwin-x64",
+	"darwin-arm64": "@f5xc-salesdemos/pi-natives-darwin-arm64",
+	"win32-x64": "@f5xc-salesdemos/pi-natives-win32-x64-msvc",
+};
+
+function resolvePlatformPackageCandidates() {
+	const pkgName = PLATFORM_PACKAGE_MAP[platformTag];
+	if (!pkgName) return [];
+	try {
+		const pkgJsonPath = require_.resolve(`${pkgName}/package.json`);
+		const pkgDir = path.dirname(pkgJsonPath);
+		return addonFilenames.map(filename => path.join(pkgDir, filename));
+	} catch {
+		return [];
+	}
+}
+
+const platformPackageCandidates = resolvePlatformPackageCandidates();
+const baseReleaseCandidates = [
+	...platformPackageCandidates,
+	...addonFilenames.flatMap(filename => [
+		path.join(nativeDir, filename),
+		path.join(execDir, filename),
+	]),
+];
 const compiledCandidates = addonFilenames.flatMap(filename => [
 	path.join(versionedDir, filename),
 	path.join(userDataDir, filename),
@@ -210,7 +246,7 @@ function loadNative() {
 		const expectedPaths = addonFilenames.map(filename => `  ${path.join(versionedDir, filename)}`).join("\n");
 		const downloadHints = addonFilenames
 			.map(filename => {
-				const downloadUrl = `https://github.com/can1357/oh-my-pi/releases/latest/download/${filename}`;
+				const downloadUrl = `https://github.com/f5xc-salesdemos/xcsh/releases/latest/download/${filename}`;
 				const targetPath = path.join(versionedDir, filename);
 				return `  curl -fsSL "${downloadUrl}" -o "${targetPath}"`;
 			})
@@ -219,8 +255,10 @@ function loadNative() {
 			`The compiled binary should extract one of:\n${expectedPaths}\n\n` +
 			`If missing, delete ${versionedDir} and re-run, or download manually:\n${downloadHints}`;
 	} else {
+		const platformPkg = PLATFORM_PACKAGE_MAP[platformTag] || `@f5xc-salesdemos/pi-natives-${platformTag}`;
 		helpMessage =
-			"If installed via npm/bun, try reinstalling: bun install @oh-my-pi/pi-natives\n" +
+			`If installed via npm/bun, ensure the platform package is present:\n` +
+			`  npm install ${platformPkg}\n` +
 			"If developing locally, build with: bun --cwd=packages/natives run build\n" +
 			"Optional x64 variants: TARGET_VARIANT=baseline|modern bun --cwd=packages/natives run build";
 	}

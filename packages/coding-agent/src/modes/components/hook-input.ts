@@ -1,7 +1,7 @@
 /**
  * Simple text input component for hooks.
  */
-import { Container, Input, Markdown, matchesKey, Spacer, Text, type TUI } from "@oh-my-pi/pi-tui";
+import { Container, Input, Markdown, matchesKey, Spacer, Text, type TUI } from "@f5xc-salesdemos/pi-tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import { matchesAppInterrupt } from "../../modes/utils/keybinding-matchers";
 import { CountdownTimer } from "./countdown-timer";
@@ -37,7 +37,9 @@ export class HookInputComponent extends Container {
 		this.addChild(new DynamicBorder());
 		this.addChild(new Spacer(1));
 
-		this.#titleComponent = new Markdown(title, 1, 0, getMarkdownTheme(), { color: t => theme.fg("accent", t) });
+		this.#titleComponent = new Markdown(title, 1, 0, getMarkdownTheme(), {
+			color: t => theme.fg("contentAccent", t),
+		});
 		this.addChild(this.#titleComponent);
 		this.addChild(new Spacer(1));
 

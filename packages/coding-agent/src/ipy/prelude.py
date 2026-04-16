@@ -1,7 +1,7 @@
 from __future__ import annotations
 # OMP IPython prelude helpers
-if "__omp_prelude_loaded__" not in globals():
-    __omp_prelude_loaded__ = True
+if "__xcsh_prelude_loaded__" not in globals():
+    __xcsh_prelude_loaded__ = True
     from pathlib import Path
     import os, re, json, shutil, subprocess, inspect
     from datetime import datetime
@@ -9,12 +9,12 @@ if "__omp_prelude_loaded__" not in globals():
 
     def _emit_status(op: str, **data):
         """Emit structured status event for TUI rendering."""
-        display({"application/x-omp-status": {"op": op, **data}}, raw=True)
+        display({"application/x-xcsh-status": {"op": op, **data}}, raw=True)
 
     def _category(cat: str):
         """Decorator to tag a prelude function with its category."""
         def decorator(fn):
-            fn._omp_category = cat
+            fn._xcsh_category = cat
             return fn
         return decorator
 
@@ -831,11 +831,11 @@ if "__omp_prelude_loaded__" not in globals():
         
         return current
 
-    def __omp_prelude_docs__() -> list[dict[str, str]]:
-        """Return prelude helper docs for templating. Discovers functions by _omp_category attribute."""
+    def __xcsh_prelude_docs__() -> list[dict[str, str]]:
+        """Return prelude helper docs for templating. Discovers functions by _xcsh_category attribute."""
         helpers: list[dict[str, str]] = []
         for name, obj in globals().items():
-            if not callable(obj) or not hasattr(obj, "_omp_category"):
+            if not callable(obj) or not hasattr(obj, "_xcsh_category"):
                 continue
             signature = str(inspect.signature(obj))
             doc = inspect.getdoc(obj) or ""
@@ -844,6 +844,6 @@ if "__omp_prelude_loaded__" not in globals():
                 "name": name,
                 "signature": signature,
                 "docstring": docline,
-                "category": obj._omp_category,
+                "category": obj._xcsh_category,
             })
         return sorted(helpers, key=lambda h: (h["category"], h["name"]))

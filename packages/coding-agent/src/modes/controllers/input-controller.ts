@@ -1,9 +1,10 @@
 import * as fs from "node:fs/promises";
-import { type AgentMessage, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
-import type { AutocompleteProvider, SlashCommand } from "@oh-my-pi/pi-tui";
-import { $env } from "@oh-my-pi/pi-utils";
+import { type AgentMessage, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
+import type { AutocompleteProvider, SlashCommand } from "@f5xc-salesdemos/pi-tui";
+import { $env } from "@f5xc-salesdemos/pi-utils";
 import { settings } from "../../config/settings";
+import { createStreamingAssistantGutter } from "../../modes/components/gutter-block";
 import { createPromptActionAutocompleteProvider } from "../../modes/prompt-action-autocomplete";
 import { theme } from "../../modes/theme/theme";
 import type { InteractiveModeContext } from "../../modes/types";
@@ -632,7 +633,7 @@ export class InputController {
 			this.ctx.statusLine.invalidate();
 			this.ctx.updateEditorBorderColor();
 			const roleLabel = result.role === "default" ? "default" : result.role;
-			const roleLabelStyled = theme.bold(theme.fg("accent", roleLabel));
+			const roleLabelStyled = theme.bold(theme.fg("contentAccent", roleLabel));
 			const thinkingStr =
 				result.model.thinking && result.thinkingLevel !== ThinkingLevel.Off
 					? ` (thinking: ${result.thinkingLevel})`
@@ -642,7 +643,7 @@ export class InputController {
 			const cycleLabel = cycleOrder
 				.map(role => {
 					if (role === result.role) {
-						return theme.bold(theme.fg("accent", role));
+						return theme.bold(theme.fg("contentAccent", role));
 					}
 					return theme.fg("muted", role);
 				})
@@ -679,11 +680,18 @@ export class InputController {
 		this.ctx.chatContainer.clear();
 		this.ctx.rebuildChatFromMessages();
 
-		// If streaming, re-add the streaming component with updated visibility and re-render
+		// If streaming, recreate a fresh gutter (the old one was disposed by clear())
 		if (this.ctx.streamingComponent && this.ctx.streamingMessage) {
 			this.ctx.streamingComponent.setHideThinkingBlock(this.ctx.hideThinkingBlock);
 			this.ctx.streamingComponent.updateContent(this.ctx.streamingMessage);
-			this.ctx.chatContainer.addChild(this.ctx.streamingComponent);
+			const newGutter = createStreamingAssistantGutter(this.ctx.ui, this.ctx.streamingComponent);
+			// Restore thinking mode if the message has thinking content
+			const hasThinking = this.ctx.streamingMessage.content.some(c => c.type === "thinking" && c.thinking.trim());
+			if (hasThinking) {
+				newGutter.setThinkingMode();
+			}
+			this.ctx.streamingAssistantGutter = newGutter;
+			this.ctx.chatContainer.addChild(newGutter);
 		}
 
 		this.ctx.showStatus(`Thinking blocks: ${this.ctx.hideThinkingBlock ? "hidden" : "visible"}`);
@@ -726,7 +734,7 @@ export class InputController {
 				? [ttyHandle.fd, ttyHandle.fd, ttyHandle.fd]
 				: ["inherit", "inherit", "inherit"];
 
-			const result = await openInEditor(editorCmd, currentText, { extension: ".omp.md", stdio });
+			const result = await openInEditor(editorCmd, currentText, { extension: ".xcsh.md", stdio });
 			if (result !== null) {
 				this.ctx.editor.setText(result);
 			}

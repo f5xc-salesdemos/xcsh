@@ -1,4 +1,4 @@
-import type { TabBarTheme } from "@oh-my-pi/pi-tui";
+import type { TabBarTheme } from "@f5xc-salesdemos/pi-tui";
 import { theme } from "./theme/theme";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -20,7 +20,7 @@ export function sanitizeStatusText(text: string): string {
 /** Shared tab bar theme used by model-selector and settings-selector. */
 export function getTabBarTheme(): TabBarTheme {
 	return {
-		label: (text: string) => theme.bold(theme.fg("accent", text)),
+		label: (text: string) => theme.bold(theme.fg("contentAccent", text)),
 		activeTab: (text: string) => theme.bold(theme.bg("selectedBg", theme.fg("text", text))),
 		inactiveTab: (text: string) => theme.fg("muted", text),
 		hint: (text: string) => theme.fg("dim", text),

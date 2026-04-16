@@ -1,5 +1,5 @@
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import { renderStatusLine } from "../tui";
@@ -36,7 +36,7 @@ export const inspectImageToolRenderer = {
 		if (!question) {
 			return new Text(header, 0, 0);
 		}
-		const questionLine = ` ${uiTheme.fg("dim", uiTheme.tree.last)} ${uiTheme.fg("dim", "Question:")} ${uiTheme.fg("accent", truncateToWidth(replaceTabs(question), INSPECT_QUESTION_PREVIEW_WIDTH))}`;
+		const questionLine = ` ${uiTheme.fg("dim", uiTheme.tree.last)} ${uiTheme.fg("dim", "Question:")} ${uiTheme.fg("contentAccent", truncateToWidth(replaceTabs(question), INSPECT_QUESTION_PREVIEW_WIDTH))}`;
 		return new Text(`${header}\n${questionLine}`, 0, 0);
 	},
 
@@ -65,7 +65,7 @@ export const inspectImageToolRenderer = {
 		const question = args?.question?.trim();
 		if (question) {
 			lines.push(
-				` ${uiTheme.fg("dim", uiTheme.tree.branch)} ${uiTheme.fg("dim", "Question:")} ${uiTheme.fg("accent", truncateToWidth(replaceTabs(question), INSPECT_QUESTION_PREVIEW_WIDTH))}`,
+				` ${uiTheme.fg("dim", uiTheme.tree.branch)} ${uiTheme.fg("dim", "Question:")} ${uiTheme.fg("contentAccent", truncateToWidth(replaceTabs(question), INSPECT_QUESTION_PREVIEW_WIDTH))}`,
 			);
 		}
 

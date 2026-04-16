@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { resetPreludeDocsCache, warmPythonEnvironment } from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import { getPythonToolDescription, PythonTool } from "@oh-my-pi/pi-coding-agent/tools/python";
-import { $which, getProjectDir } from "@oh-my-pi/pi-utils";
+import { $which, getProjectDir } from "@f5xc-salesdemos/pi-utils";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { resetPreludeDocsCache, warmPythonEnvironment } from "@f5xc-salesdemos/xcsh/ipy/executor";
+import { getPythonToolDescription, PythonTool } from "@f5xc-salesdemos/xcsh/tools/python";
 
 const resolvePythonPath = (): string | null => {
 	const venvPath = Bun.env.VIRTUAL_ENV;
@@ -60,7 +60,7 @@ describe.skipIf(!shouldRun)("PYTHON_PRELUDE integration", () => {
 		const code = `
 	helpers = ${JSON.stringify(helpers)}
 	missing = [name for name in helpers if name not in globals() or not callable(globals()[name])]
-	docs = __omp_prelude_docs__()
+	docs = __xcsh_prelude_docs__()
 	doc_names = [d.get("name") for d in docs]
 	doc_categories = [d.get("category") for d in docs]
 	print("HELPERS_OK=" + ("1" if not missing else "0"))

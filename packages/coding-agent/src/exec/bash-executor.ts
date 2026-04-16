@@ -4,7 +4,7 @@
  * Uses brush-core via native bindings for shell execution.
  */
 import * as fs from "node:fs/promises";
-import { executeShell, Shell } from "@oh-my-pi/pi-natives";
+import { executeShell, Shell } from "@f5xc-salesdemos/pi-natives";
 import { Settings } from "../config/settings";
 import { OutputSink } from "../session/streaming-output";
 import { getOrCreateSnapshot } from "../utils/shell-snapshot";
@@ -22,6 +22,8 @@ export interface BashExecutorOptions {
 	/** Artifact path/id for full output storage */
 	artifactPath?: string;
 	artifactId?: string;
+	/** Mask sensitive values (e.g. env var secrets) in output. */
+	maskSecrets?: (text: string) => string;
 }
 
 export interface BashResult {
@@ -34,12 +36,22 @@ export interface BashResult {
 	outputLines: number;
 	outputBytes: number;
 	artifactId?: string;
+	/** Actual working directory after the command ran (persistent shell only). */
+	newCwd?: string;
 }
 
 const HARD_TIMEOUT_GRACE_MS = 5_000;
 
 const shellSessions = new Map<string, Shell>();
 const brokenShellSessions = new Set<string>();
+
+/** Clear cached shell sessions so bun can exit cleanly after tests. */
+export function _resetShellSessionsForTest(): void {
+	shellSessions.clear();
+	brokenShellSessions.clear();
+	// Force GC so native Shell handles close immediately via Rust Drop
+	if (typeof Bun !== "undefined") Bun.gc(true);
+}
 
 async function resolveShellCwd(cwd: string | undefined): Promise<string | undefined> {
 	if (!cwd) return undefined;
@@ -58,11 +70,26 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 	const { shell, env: shellEnv, prefix } = settings.getShellConfig();
 	const snapshotPath = shell.includes("bash") ? await getOrCreateSnapshot(shell, shellEnv) : null;
 	const commandCwd = await resolveShellCwd(options?.cwd);
-	const commandEnv = options?.env ? { ...NON_INTERACTIVE_ENV, ...options.env } : NON_INTERACTIVE_ENV;
+	const rawBashEnv = (settings.get("bash.environment") ?? {}) as Record<string, unknown>;
+	const bashEnvironment: Record<string, string> = {};
+	for (const [k, v] of Object.entries(rawBashEnv)) {
+		if (typeof v === "string") bashEnvironment[k] = v;
+		else if (v != null) bashEnvironment[k] = String(v);
+	}
+	const hasBashEnv = Object.keys(bashEnvironment).length > 0;
+	const commandEnv = options?.env
+		? { ...NON_INTERACTIVE_ENV, ...bashEnvironment, ...options.env }
+		: hasBashEnv
+			? { ...NON_INTERACTIVE_ENV, ...bashEnvironment }
+			: NON_INTERACTIVE_ENV;
 
 	// Apply command prefix if configured
 	const prefixedCommand = prefix ? `${prefix} ${command}` : command;
-	const finalCommand = prefixedCommand;
+
+	// CWD capture sentinels — used to detect directory changes from cd commands.
+	// Only appended for persistent shell sessions (one-shot shells don't persist CWD).
+	const CWD_SENTINEL_START = "__XCSH_CWD__:";
+	const CWD_SENTINEL_END = ":__XCSH_CWD_END__";
 
 	// Create output sink for truncation and artifact handling
 	const sink = new OutputSink({
@@ -72,6 +99,7 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 		// Throttle the streaming preview callback to avoid saturating the
 		// event loop when commands produce massive output (e.g. seq 1 50M).
 		chunkThrottleMs: options?.onChunk ? 50 : 0,
+		maskSecrets: options?.maskSecrets,
 	});
 
 	// sink.push() is synchronous — buffer management, counters, and onChunk
@@ -100,6 +128,11 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 		shellSession = new Shell({ sessionEnv: shellEnv, snapshotPath: snapshotPath ?? undefined });
 		shellSessions.set(sessionKey, shellSession);
 	}
+
+	// Append CWD sentinel only for persistent shell sessions
+	const finalCommand = shellSession
+		? `${prefixedCommand}\nprintf '${CWD_SENTINEL_START}%s${CWD_SENTINEL_END}\\n' "$PWD"`
+		: prefixedCommand;
 	const userSignal = options?.signal;
 	const runAbortController = new AbortController();
 	const abortCurrentExecution = () => {
@@ -204,11 +237,35 @@ export async function executeBash(command: string, options?: BashExecutorOptions
 			};
 		}
 
+		// Parse CWD sentinel from output, strip it from the displayed result.
+		const dumpResult = await sink.dump();
+		let newCwd: string | undefined;
+		if (shellSession) {
+			const sentinelIdx = dumpResult.output.lastIndexOf(CWD_SENTINEL_START);
+			if (sentinelIdx !== -1) {
+				const endIdx = dumpResult.output.indexOf(CWD_SENTINEL_END, sentinelIdx);
+				if (endIdx !== -1) {
+					const captured = dumpResult.output.slice(sentinelIdx + CWD_SENTINEL_START.length, endIdx).trim();
+					if (captured) newCwd = captured;
+					// Strip the sentinel from displayed output (from sentinel start to end of its line)
+					const afterLine = dumpResult.output.indexOf("\n", endIdx + CWD_SENTINEL_END.length);
+					const stripEnd = afterLine === -1 ? dumpResult.output.length : afterLine + 1;
+					const strippedBytes = stripEnd - sentinelIdx;
+					dumpResult.output = dumpResult.output.slice(0, sentinelIdx) + dumpResult.output.slice(stripEnd);
+					dumpResult.totalBytes = Math.max(0, dumpResult.totalBytes - strippedBytes);
+					dumpResult.totalLines = Math.max(0, dumpResult.totalLines - 1);
+					dumpResult.outputBytes = dumpResult.output.length;
+					dumpResult.outputLines = Math.max(0, dumpResult.outputLines - 1);
+				}
+			}
+		}
+
 		// Normal completion
 		return {
 			exitCode: winner.result.exitCode,
 			cancelled: false,
-			...(await sink.dump()),
+			newCwd,
+			...dumpResult,
 		};
 	} catch (err) {
 		resetSession = true;

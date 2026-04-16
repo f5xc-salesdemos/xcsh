@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message } from "@oh-my-pi/pi-ai";
-import { Spacer, Text, TruncatedText } from "@oh-my-pi/pi-tui";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import type { AssistantMessage, ImageContent, Message } from "@f5xc-salesdemos/pi-ai";
+import { Spacer, Text, TruncatedText } from "@f5xc-salesdemos/pi-tui";
 import { settings } from "../../config/settings";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
 import { BashExecutionComponent } from "../../modes/components/bash-execution";
@@ -8,6 +8,12 @@ import { BranchSummaryMessageComponent } from "../../modes/components/branch-sum
 import { CompactionSummaryMessageComponent } from "../../modes/components/compaction-summary-message";
 import { CustomMessageComponent } from "../../modes/components/custom-message";
 import { DynamicBorder } from "../../modes/components/dynamic-border";
+import {
+	createSystemGutter,
+	createTextGutter,
+	createToolGutter,
+	GutterBlock,
+} from "../../modes/components/gutter-block";
 import { PythonExecutionComponent } from "../../modes/components/python-execution";
 import { ReadToolGroupComponent } from "../../modes/components/read-tool-group";
 import { SkillMessageComponent } from "../../modes/components/skill-message";
@@ -80,7 +86,9 @@ export class UiHelpers {
 				component.setComplete(message.exitCode, message.cancelled, {
 					truncation: message.meta?.truncation,
 				});
-				this.ctx.chatContainer.addChild(component);
+				const gutter = createToolGutter(this.ctx.ui, component);
+				gutter.setDone();
+				this.ctx.chatContainer.addChild(gutter);
 				break;
 			}
 			case "pythonExecution": {
@@ -91,7 +99,9 @@ export class UiHelpers {
 				component.setComplete(message.exitCode, message.cancelled, {
 					truncation: message.meta?.truncation,
 				});
-				this.ctx.chatContainer.addChild(component);
+				const gutter = createToolGutter(this.ctx.ui, component);
+				gutter.setDone();
+				this.ctx.chatContainer.addChild(gutter);
 				break;
 			}
 			case "hookMessage":
@@ -113,25 +123,25 @@ export class UiHelpers {
 						const line = [
 							theme.fg("success", `${theme.status.success} Background job completed`),
 							theme.fg("dim", typeLabel),
-							theme.fg("accent", jobId),
+							theme.fg("contentAccent", jobId),
 							duration ? theme.fg("dim", `(${duration})`) : undefined,
 						]
 							.filter(Boolean)
 							.join(" ");
-						this.ctx.chatContainer.addChild(new Text(line, 1, 0));
+						this.ctx.chatContainer.addChild(createSystemGutter(this.ctx.ui, new Text(line, 1, 0)));
 						break;
 					}
 					if (message.customType === SKILL_PROMPT_MESSAGE_TYPE) {
 						const component = new SkillMessageComponent(message as CustomMessage<SkillPromptDetails>);
 						component.setExpanded(this.ctx.toolOutputExpanded);
-						this.ctx.chatContainer.addChild(component);
+						this.ctx.chatContainer.addChild(createTextGutter(this.ctx.ui, component));
 						break;
 					}
 					const renderer = this.ctx.session.extensionRunner?.getMessageRenderer(message.customType);
 					// Both HookMessage and CustomMessage have the same structure, cast for compatibility
 					const component = new CustomMessageComponent(message as CustomMessage<unknown>, renderer);
 					component.setExpanded(this.ctx.toolOutputExpanded);
-					this.ctx.chatContainer.addChild(component);
+					this.ctx.chatContainer.addChild(createTextGutter(this.ctx.ui, component));
 				}
 				break;
 			}
@@ -139,14 +149,14 @@ export class UiHelpers {
 				this.ctx.chatContainer.addChild(new Spacer(1));
 				const component = new CompactionSummaryMessageComponent(message);
 				component.setExpanded(this.ctx.toolOutputExpanded);
-				this.ctx.chatContainer.addChild(component);
+				this.ctx.chatContainer.addChild(createSystemGutter(this.ctx.ui, component));
 				break;
 			}
 			case "branchSummary": {
 				this.ctx.chatContainer.addChild(new Spacer(1));
 				const component = new BranchSummaryMessageComponent(message);
 				component.setExpanded(this.ctx.toolOutputExpanded);
-				this.ctx.chatContainer.addChild(component);
+				this.ctx.chatContainer.addChild(createSystemGutter(this.ctx.ui, component));
 				break;
 			}
 			case "fileMention": {
@@ -164,10 +174,10 @@ export class UiHelpers {
 								: `(${file.lineCount} lines)`;
 					}
 					const text = `${theme.fg("dim", `${theme.tree.last} `)}${theme.fg("muted", "Read")} ${theme.fg(
-						"accent",
+						"chromeAccent",
 						file.path,
 					)} ${theme.fg("dim", suffix)}`;
-					this.ctx.chatContainer.addChild(new Text(text, 0, 0));
+					this.ctx.chatContainer.addChild(createTextGutter(this.ctx.ui, new Text(text, 0, 0)));
 				}
 				break;
 			}
@@ -186,7 +196,7 @@ export class UiHelpers {
 			}
 			case "assistant": {
 				const assistantComponent = new AssistantMessageComponent(message, this.ctx.hideThinkingBlock);
-				this.ctx.chatContainer.addChild(assistantComponent);
+				this.ctx.chatContainer.addChild(createTextGutter(this.ctx.ui, assistantComponent));
 				break;
 			}
 			case "toolResult": {
@@ -220,6 +230,7 @@ export class UiHelpers {
 		let readGroup: ReadToolGroupComponent | null = null;
 		const readToolCallArgs = new Map<string, Record<string, unknown>>();
 		const readToolCallAssistantComponents = new Map<string, AssistantMessageComponent>();
+		const toolGutters = new Map<string, ReturnType<typeof createToolGutter>>();
 		const deferredMessages: AgentMessage[] = [];
 		for (const message of sessionContext.messages) {
 			// Defer compaction summaries so they render at the bottom (visible after scroll)
@@ -231,7 +242,8 @@ export class UiHelpers {
 			if (message.role === "assistant") {
 				this.ctx.addMessageToChat(message);
 				const lastChild = this.ctx.chatContainer.children[this.ctx.chatContainer.children.length - 1];
-				const assistantComponent = lastChild instanceof AssistantMessageComponent ? lastChild : undefined;
+				const unwrapped = lastChild instanceof GutterBlock ? lastChild.child : lastChild;
+				const assistantComponent = unwrapped instanceof AssistantMessageComponent ? unwrapped : undefined;
 				if (assistantComponent) {
 					assistantComponent.setUsageInfo(message.usage);
 				}
@@ -259,7 +271,9 @@ export class UiHelpers {
 							if (!readGroup) {
 								readGroup = new ReadToolGroupComponent();
 								readGroup.setExpanded(this.ctx.toolOutputExpanded);
-								this.ctx.chatContainer.addChild(readGroup);
+								const readGutter = createToolGutter(this.ctx.ui, readGroup);
+								readGutter.setDone();
+								this.ctx.chatContainer.addChild(readGutter);
 							}
 							readGroup.updateArgs(content.arguments, content.id);
 							readGroup.updateResult(
@@ -300,7 +314,8 @@ export class UiHelpers {
 						content.id,
 					);
 					component.setExpanded(this.ctx.toolOutputExpanded);
-					this.ctx.chatContainer.addChild(component);
+					const toolGutter = createToolGutter(this.ctx.ui, component);
+					this.ctx.chatContainer.addChild(toolGutter);
 
 					if (hasErrorStop && errorMessage) {
 						component.updateResult(
@@ -308,8 +323,11 @@ export class UiHelpers {
 							false,
 							content.id,
 						);
+						toolGutter.setDone();
 					} else {
+						// Tool result hasn't arrived yet — keep gutter active until completion
 						this.ctx.pendingTools.set(content.id, component);
+						toolGutters.set(content.id, toolGutter);
 					}
 				}
 			} else if (message.role === "toolResult") {
@@ -332,7 +350,9 @@ export class UiHelpers {
 						if (!readGroup) {
 							readGroup = new ReadToolGroupComponent();
 							readGroup.setExpanded(this.ctx.toolOutputExpanded);
-							this.ctx.chatContainer.addChild(readGroup);
+							const readGutter = createToolGutter(this.ctx.ui, readGroup);
+							readGutter.setDone();
+							this.ctx.chatContainer.addChild(readGutter);
 						}
 						const args = readToolCallArgs.get(message.toolCallId);
 						if (args) {
@@ -343,6 +363,8 @@ export class UiHelpers {
 					}
 					component.updateResult(message, false, message.toolCallId);
 					this.ctx.pendingTools.delete(message.toolCallId);
+					toolGutters.get(message.toolCallId)?.setDone();
+					toolGutters.delete(message.toolCallId);
 					readToolCallArgs.delete(message.toolCallId);
 					readToolCallAssistantComponents.delete(message.toolCallId);
 					continue;
@@ -353,6 +375,8 @@ export class UiHelpers {
 				if (component) {
 					component.updateResult(message, false, message.toolCallId);
 					this.ctx.pendingTools.delete(message.toolCallId);
+					toolGutters.get(message.toolCallId)?.setDone();
+					toolGutters.delete(message.toolCallId);
 				}
 			} else {
 				// All other messages use standard rendering
@@ -366,6 +390,11 @@ export class UiHelpers {
 		}
 
 		this.ctx.pendingTools.clear();
+		// Mark any remaining tool gutters as done (tools without results in history)
+		for (const gutter of toolGutters.values()) {
+			gutter.setDone();
+		}
+		toolGutters.clear();
 		this.ctx.ui.requestRender();
 	}
 
@@ -435,7 +464,7 @@ export class UiHelpers {
 				theme.bold(theme.fg("warning", "Update Available")) +
 					"\n" +
 					theme.fg("muted", `New version ${newVersion} is available. Run: `) +
-					theme.fg("accent", "omp update"),
+					theme.fg("contentAccent", "xcsh update"),
 				1,
 				0,
 			),
@@ -585,16 +614,22 @@ export class UiHelpers {
 		}
 	}
 
-	/** Move pending bash components from pending area to chat */
+	/** Move pending bash components from pending area to chat.
+	 *  These commands have already completed (handleBashCommand/handlePythonCommand await execution)
+	 *  so the gutter is immediately set to done. */
 	flushPendingBashComponents(): void {
 		for (const component of this.ctx.pendingBashComponents) {
 			this.ctx.pendingMessagesContainer.removeChild(component);
-			this.ctx.chatContainer.addChild(component);
+			const gutter = createToolGutter(this.ctx.ui, component);
+			gutter.setDone();
+			this.ctx.chatContainer.addChild(gutter);
 		}
 		this.ctx.pendingBashComponents = [];
 		for (const component of this.ctx.pendingPythonComponents) {
 			this.ctx.pendingMessagesContainer.removeChild(component);
-			this.ctx.chatContainer.addChild(component);
+			const gutter = createToolGutter(this.ctx.ui, component);
+			gutter.setDone();
+			this.ctx.chatContainer.addChild(gutter);
 		}
 		this.ctx.pendingPythonComponents = [];
 	}

@@ -10,7 +10,7 @@
 import { Database, type Statement } from "bun:sqlite";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { getAgentDbPath, logger } from "@oh-my-pi/pi-utils";
+import { getAgentDbPath, logger } from "@f5xc-salesdemos/pi-utils";
 import { getEnvApiKey } from "./stream";
 import type { Provider } from "./types";
 import type {
@@ -875,8 +875,8 @@ export class AuthStorage {
 				return;
 			}
 			case "litellm": {
-				const apiKey = await loginLiteLLM(ctrl);
-				await saveApiKeyCredential(apiKey);
+				const result = await loginLiteLLM(ctrl);
+				await saveApiKeyCredential(result.apiKey);
 				return;
 			}
 			case "moonshot": {

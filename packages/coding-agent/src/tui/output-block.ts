@@ -1,7 +1,7 @@
 /**
  * Bordered output container with optional header and sections.
  */
-import { ImageProtocol, padding, TERMINAL, visibleWidth, wrapTextWithAnsi } from "@oh-my-pi/pi-tui";
+import { ImageProtocol, padding, TERMINAL, visibleWidth, wrapTextWithAnsi } from "@f5xc-salesdemos/pi-tui";
 import type { Theme } from "../modes/theme/theme";
 import { getSixelLineMask } from "../utils/sixel";
 import type { State } from "./types";
@@ -24,13 +24,13 @@ export function renderOutputBlock(options: OutputBlockOptions, theme: Theme): st
 	const cap = h.repeat(3);
 	const lineWidth = Math.max(0, width);
 	// Border colors: running/pending use accent, success uses dim (gray), error/warning keep their colors
-	const borderColor: "error" | "warning" | "accent" | "dim" =
+	const borderColor: "error" | "warning" | "spinnerAccent" | "dim" =
 		state === "error"
 			? "error"
 			: state === "warning"
 				? "warning"
 				: state === "running" || state === "pending"
-					? "accent"
+					? "spinnerAccent"
 					: "dim";
 	const border = (text: string) => theme.fg(borderColor, text);
 	const bgFn = (() => {

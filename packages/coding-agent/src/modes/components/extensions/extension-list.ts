@@ -12,7 +12,7 @@ import {
 	padding,
 	truncateToWidth,
 	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { isProviderEnabled } from "../../../discovery";
 import { theme } from "../../../modes/theme/theme";
 import { applyFilter } from "./state-manager";
@@ -117,7 +117,7 @@ export class ExtensionList implements Component {
 		// Search bar
 		const searchPrefix = theme.fg("muted", "Search: ");
 		const searchText = this.#searchQuery || (this.#focused ? "" : theme.fg("dim", "type to filter"));
-		const cursor = this.#focused ? theme.fg("accent", "_") : "";
+		const cursor = this.#focused ? theme.fg("chromeAccent", "_") : "";
 		lines.push(searchPrefix + searchText + cursor);
 		lines.push("");
 
@@ -167,7 +167,7 @@ export class ExtensionList implements Component {
 		let line = `${checkbox} ${icon} ${label}  ${badge}`;
 
 		if (isSelected) {
-			line = theme.bold(theme.fg("accent", line));
+			line = theme.bold(theme.fg("contentAccent", line));
 			line = theme.bg("selectedBg", line);
 		} else if (!item.enabled) {
 			line = theme.fg("dim", line);
@@ -181,7 +181,7 @@ export class ExtensionList implements Component {
 		let line = `${item.icon} ${item.label} ${countBadge}`;
 
 		if (isSelected) {
-			line = theme.bold(theme.fg("accent", line));
+			line = theme.bold(theme.fg("contentAccent", line));
 			line = theme.bg("selectedBg", line);
 		} else {
 			line = theme.fg("muted", line);
@@ -205,7 +205,7 @@ export class ExtensionList implements Component {
 		let line = `   ${stateIcon} `;
 
 		if (isSelected && !masterDisabled) {
-			name = theme.bold(theme.fg("accent", name));
+			name = theme.bold(theme.fg("contentAccent", name));
 		} else if (effectivelyDisabled) {
 			name = theme.fg("dim", name);
 		} else if (ext.state === "shadowed") {

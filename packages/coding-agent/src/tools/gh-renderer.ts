@@ -1,4 +1,4 @@
-import { type Component, padding, Text, truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
+import { type Component, padding, Text, truncateToWidth, visibleWidth } from "@f5xc-salesdemos/pi-tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme, ThemeColor } from "../modes/theme/theme";
 import { renderStatusLine } from "../tui";
@@ -70,7 +70,7 @@ function getRunMeta(run: GhRunWatchRunDetails): string[] {
 }
 
 function formatRunLine(run: GhRunWatchRunDetails, theme: Theme): string {
-	const title = theme.fg("accent", getRunLabel(run));
+	const title = theme.fg("contentAccent", getRunLabel(run));
 	const metaParts = getRunMeta(run);
 	const meta = metaParts.map((part, index) =>
 		index === metaParts.length - 1 ? theme.fg("muted", part) : theme.fg("text", part),
@@ -261,17 +261,17 @@ export const ghRunWatchToolRenderer = {
 
 		if (runId) {
 			// "⠋ GitHub Run Watch  run #12345"
-			const title = uiTheme.fg("accent", "GitHub Run Watch");
+			const title = uiTheme.fg("contentAccent", "GitHub Run Watch");
 			const meta = uiTheme.fg("muted", `#${runId}`);
 			lines.push(`${icon} ${title}  ${meta}`);
 		} else if (branch) {
 			// "⠋ GitHub Run Watch  feature-branch"
-			const title = uiTheme.fg("accent", "GitHub Run Watch");
+			const title = uiTheme.fg("contentAccent", "GitHub Run Watch");
 			const meta = uiTheme.fg("text", branch);
 			lines.push(`${icon} ${title}  ${meta}`);
 		} else {
 			// "⠋ GitHub Run Watch  current HEAD"
-			const title = uiTheme.fg("accent", "GitHub Run Watch");
+			const title = uiTheme.fg("contentAccent", "GitHub Run Watch");
 			const meta = uiTheme.fg("muted", "current HEAD");
 			lines.push(`${icon} ${title}  ${meta}`);
 		}

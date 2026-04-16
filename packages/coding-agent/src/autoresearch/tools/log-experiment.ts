@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import { Text } from "@oh-my-pi/pi-tui";
-import { logger } from "@oh-my-pi/pi-utils";
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import { Type } from "@sinclair/typebox";
 import type { ToolDefinition } from "../../extensibility/extensions";
 import type { Theme } from "../../modes/theme/theme";
@@ -767,7 +767,7 @@ function renderSummary(details: LogDetails, theme: Theme): string {
 	const { experiment, state } = details;
 	const color = experiment.status === "keep" ? "success" : experiment.status === "discard" ? "warning" : "error";
 	let summary = `${theme.fg(color, experiment.status.toUpperCase())} ${theme.fg("muted", truncateToWidth(replaceTabs(experiment.description), 100))}`;
-	summary += ` ${theme.fg("accent", `${state.metricName}=${formatNum(experiment.metric, state.metricUnit)}`)}`;
+	summary += ` ${theme.fg("contentAccent", `${state.metricName}=${formatNum(experiment.metric, state.metricUnit)}`)}`;
 	if (state.bestMetric !== null) {
 		summary += ` ${theme.fg("dim", `baseline ${formatNum(state.bestMetric, state.metricUnit)}`)}`;
 	}

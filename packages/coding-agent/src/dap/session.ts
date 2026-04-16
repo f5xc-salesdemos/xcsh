@@ -1,6 +1,5 @@
 import * as path from "node:path";
-import * as timers from "node:timers/promises";
-import { logger, ptree, untilAborted } from "@oh-my-pi/pi-utils";
+import { logger, ptree } from "@f5xc-salesdemos/pi-utils";
 import { NON_INTERACTIVE_ENV } from "../exec/non-interactive-env";
 import { DapClient } from "./client";
 import type {
@@ -155,10 +154,27 @@ function buildSummary(session: DapSession): DapSessionSummary {
 	};
 }
 
+async function raceAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+	if (!signal) return promise;
+	if (signal.aborted) {
+		throw signal.reason instanceof Error ? signal.reason : new Error("Operation aborted");
+	}
+	const { promise: abortPromise, reject } = Promise.withResolvers<never>();
+	const onAbort = () => {
+		reject(signal.reason instanceof Error ? signal.reason : new Error("Operation aborted"));
+	};
+	signal.addEventListener("abort", onAbort, { once: true });
+	try {
+		return await Promise.race([promise, abortPromise]);
+	} finally {
+		signal.removeEventListener("abort", onAbort);
+	}
+}
+
 export class DapSessionManager {
 	#sessions = new Map<string, DapSession>();
 	#activeSessionId: string | null = null;
-	#cleanupLoopPromise?: Promise<void>;
+	#cleanupTimer?: NodeJS.Timeout;
 	#nextId = 0;
 
 	constructor() {
@@ -219,7 +235,7 @@ export class DapSessionManager {
 			// Try to capture initial stopped state (e.g. stopOnEntry).
 			// Timeout is acceptable — the program may simply be running.
 			try {
-				await untilAborted(signal, initialStopPromise);
+				await raceAbort(initialStopPromise, signal);
 				if (session.status === "stopped") {
 					await this.#fetchTopFrame(session, signal, Math.min(timeoutMs, STOP_CAPTURE_TIMEOUT_MS));
 				}
@@ -267,7 +283,7 @@ export class DapSessionManager {
 			await this.#completeConfigurationHandshake(session, signal, timeoutMs);
 			await attachPromise;
 			try {
-				await untilAborted(signal, initialStopPromise);
+				await raceAbort(initialStopPromise, signal);
 				if (session.status === "stopped") {
 					await this.#fetchTopFrame(session, signal, Math.min(timeoutMs, STOP_CAPTURE_TIMEOUT_MS));
 				}
@@ -680,9 +696,9 @@ export class DapSessionManager {
 		// between the request and here. Wait for it, but tolerate timeout if the
 		// session already transitioned.
 		try {
-			await untilAborted(
-				signal,
+			await raceAbort(
 				session.client.waitForEvent<DapStoppedEventBody>("stopped", undefined, signal, timeoutMs),
+				signal,
 			);
 		} catch {
 			// Timeout or abort — report current state regardless
@@ -817,16 +833,16 @@ export class DapSessionManager {
 		session.lastUsedAt = Date.now();
 		if (session.status !== "terminated") {
 			if (session.capabilities?.supportsTerminateRequest) {
-				await untilAborted(
-					signal,
+				await raceAbort(
 					session.client.sendRequest("terminate", undefined, signal, timeoutMs).catch(() => undefined),
+					signal,
 				);
 			}
-			await untilAborted(
-				signal,
+			await raceAbort(
 				session.client
 					.sendRequest("disconnect", { terminateDebuggee: true }, signal, timeoutMs)
 					.catch(() => undefined),
+				signal,
 			);
 		}
 		session.status = "terminated";
@@ -836,30 +852,22 @@ export class DapSessionManager {
 	}
 
 	#startCleanupTimer(): void {
-		if (this.#cleanupLoopPromise) return;
-		this.#cleanupLoopPromise = this.#runCleanupLoop();
+		if (this.#cleanupTimer) return;
+		this.#cleanupTimer = setInterval(() => {
+			void this.#cleanupIdleSessions();
+		}, CLEANUP_INTERVAL_MS);
+		this.#cleanupTimer.unref?.();
 	}
 
-	async #runCleanupLoop(): Promise<void> {
-		for await (const _ of timers.setInterval(CLEANUP_INTERVAL_MS, null, { ref: false })) {
-			try {
-				this.#cleanupIdleSessions();
-			} catch (error) {
-				logger.error("DAP idle session cleanup failed", { error: toErrorMessage(error) });
-			}
-		}
-	}
-
-	#cleanupIdleSessions(): void {
-		if (this.#sessions.size === 0) return;
+	async #cleanupIdleSessions(): Promise<void> {
 		const now = Date.now();
-		for (const session of this.#sessions.values()) {
+		for (const session of Array.from(this.#sessions.values())) {
 			if (
 				session.status === "terminated" ||
 				now - session.lastUsedAt > IDLE_TIMEOUT_MS ||
 				!session.client.isAlive()
 			) {
-				this.#disposeSession(session);
+				await this.#disposeSession(session);
 			}
 		}
 	}
@@ -967,7 +975,7 @@ export class DapSessionManager {
 
 	#buildInitializeArguments(adapter: DapResolvedAdapter): DapInitializeArguments {
 		return {
-			clientID: "omp",
+			clientID: "xcsh",
 			clientName: "Oh My Pi",
 			adapterID: adapter.name,
 			locale: "en-US",
@@ -998,7 +1006,7 @@ export class DapSessionManager {
 		// Wait for the initialized event if we haven't seen it yet.
 		if (!session.initializedSeen) {
 			try {
-				await untilAborted(signal, session.client.waitForEvent("initialized", undefined, signal, timeoutMs));
+				await raceAbort(session.client.waitForEvent("initialized", undefined, signal, timeoutMs), signal);
 			} catch {
 				// Adapter may not send initialized (e.g. it already terminated).
 				// Proceed anyway — the launch/attach response will surface any real error.
@@ -1092,7 +1100,7 @@ export class DapSessionManager {
 		timeoutMs: number = 30_000,
 	): Promise<DapContinueOutcome> {
 		try {
-			await untilAborted(signal, outcomePromise);
+			await raceAbort(outcomePromise, signal);
 			if (session.status === "stopped") {
 				await this.#fetchTopFrame(session, signal, Math.min(timeoutMs, 5_000));
 			}
@@ -1235,12 +1243,12 @@ export class DapSessionManager {
 		return session;
 	}
 
-	#disposeSession(session: DapSession) {
+	async #disposeSession(session: DapSession): Promise<void> {
 		if (this.#activeSessionId === session.id) {
 			this.#activeSessionId = null;
 		}
 		this.#sessions.delete(session.id);
-		void session.client.dispose().catch(() => {});
+		await session.client.dispose().catch(() => {});
 	}
 }
 

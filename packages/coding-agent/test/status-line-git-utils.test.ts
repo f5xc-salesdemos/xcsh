@@ -5,23 +5,23 @@ import {
 	isSamePrCacheContext,
 	parseDefaultBranch,
 	parseGitHubRepo,
-} from "@oh-my-pi/pi-coding-agent/modes/components/status-line/git-utils";
+} from "@f5xc-salesdemos/xcsh/modes/components/status-line/git-utils";
 
 describe("parseGitHubRepo", () => {
 	test("parses HTTPS URL", () => {
-		expect(parseGitHubRepo("https://github.com/can1357/oh-my-pi.git")).toBe("can1357/oh-my-pi");
+		expect(parseGitHubRepo("https://github.com/f5xc-salesdemos/xcsh.git")).toBe("f5xc-salesdemos/xcsh");
 	});
 
 	test("parses HTTPS URL without .git suffix", () => {
-		expect(parseGitHubRepo("https://github.com/can1357/oh-my-pi")).toBe("can1357/oh-my-pi");
+		expect(parseGitHubRepo("https://github.com/f5xc-salesdemos/xcsh")).toBe("f5xc-salesdemos/xcsh");
 	});
 
 	test("parses SSH scp-style URL", () => {
-		expect(parseGitHubRepo("git@github.com:loftiskg/oh-my-pi.git")).toBe("loftiskg/oh-my-pi");
+		expect(parseGitHubRepo("git@github.com:loftiskg/xcsh.git")).toBe("loftiskg/xcsh");
 	});
 
 	test("parses SSH scp-style URL without .git suffix", () => {
-		expect(parseGitHubRepo("git@github.com:loftiskg/oh-my-pi")).toBe("loftiskg/oh-my-pi");
+		expect(parseGitHubRepo("git@github.com:loftiskg/xcsh")).toBe("loftiskg/xcsh");
 	});
 
 	test("parses ssh:// protocol URL", () => {

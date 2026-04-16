@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { discoverAndLoadExtensions, loadExtensions } from "@oh-my-pi/pi-coding-agent/extensibility/extensions/loader";
-import { getProjectAgentDir, TempDir } from "@oh-my-pi/pi-utils";
+import { getProjectAgentDir, TempDir } from "@f5xc-salesdemos/pi-utils";
+import { discoverAndLoadExtensions, loadExtensions } from "@f5xc-salesdemos/xcsh/extensibility/extensions/loader";
 import { filterUserExtensionErrors, filterUserExtensions } from "./utils/filter-user-extensions";
 
 describe("extensions discovery", () => {
@@ -327,7 +327,7 @@ describe("extensions discovery", () => {
 				name: "pi-extension-with-deps",
 				version: "1.0.0",
 				type: "module",
-				omp: { extensions: ["./index.ts"] },
+				xcsh: { extensions: ["./index.ts"] },
 			}),
 		);
 

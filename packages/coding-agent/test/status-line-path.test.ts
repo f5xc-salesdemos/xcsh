@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { getProjectDir, setProjectDir } from "@oh-my-pi/pi-utils";
+import { getProjectDir, setProjectDir } from "@f5xc-salesdemos/pi-utils";
 import type { SegmentContext } from "../src/modes/components/status-line/segments";
 import { renderSegment } from "../src/modes/components/status-line/segments";
 
@@ -63,9 +63,9 @@ describe("status line path segment", () => {
 		const projectsRoot = path.join(os.homedir(), "Projects");
 		fs.mkdirSync(projectsRoot, { recursive: true });
 
-		const realProjectDir = fs.mkdtempSync(path.join(projectsRoot, "omp-status-line-"));
+		const realProjectDir = fs.mkdtempSync(path.join(projectsRoot, "xcsh-status-line-"));
 		const nestedDir = path.join(realProjectDir, "nested");
-		const aliasRoot = fs.mkdtempSync(path.join(os.tmpdir(), "omp-status-line-alias-"));
+		const aliasRoot = fs.mkdtempSync(path.join(os.tmpdir(), "xcsh-status-line-alias-"));
 		const homeAlias = path.join(aliasRoot, "home-link");
 
 		try {

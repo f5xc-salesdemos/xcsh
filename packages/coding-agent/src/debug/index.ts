@@ -5,9 +5,9 @@
  */
 import * as fs from "node:fs/promises";
 import * as url from "node:url";
-import { getWorkProfile } from "@oh-my-pi/pi-natives";
-import { Container, Loader, type SelectItem, SelectList, Spacer, Text } from "@oh-my-pi/pi-tui";
-import { getSessionsDir } from "@oh-my-pi/pi-utils";
+import { getWorkProfile } from "@f5xc-salesdemos/pi-natives";
+import { Container, Loader, type SelectItem, SelectList, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
+import { getSessionsDir } from "@f5xc-salesdemos/pi-utils";
 import { DynamicBorder } from "../modes/components/dynamic-border";
 import { getSelectListTheme, getSymbolTheme, theme } from "../modes/theme/theme";
 import type { InteractiveModeContext } from "../modes/types";
@@ -54,7 +54,7 @@ export class DebugSelectorComponent extends Container {
 
 		// Title
 		this.addChild(new DynamicBorder());
-		this.addChild(new Text(theme.bold(theme.fg("accent", "Debug Tools")), 1, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", "Debug Tools")), 1, 0));
 		this.addChild(new Spacer(1));
 
 		// Select list
@@ -121,7 +121,9 @@ export class DebugSelectorComponent extends Container {
 
 		// Show message and wait for keypress
 		this.ctx.chatContainer.addChild(new Spacer(1));
-		this.ctx.chatContainer.addChild(new Text(theme.fg("accent", `${theme.status.info} CPU profiling started`), 1, 0));
+		this.ctx.chatContainer.addChild(
+			new Text(theme.fg("contentAccent", `${theme.status.info} CPU profiling started`), 1, 0),
+		);
 		this.ctx.chatContainer.addChild(new Spacer(1));
 		this.ctx.chatContainer.addChild(
 			new Text(theme.fg("muted", "Reproduce the performance issue, then press Enter to stop profiling."), 1, 0),
@@ -150,7 +152,7 @@ export class DebugSelectorComponent extends Container {
 		// Stop profiling and create report
 		const loader = new Loader(
 			this.ctx.ui,
-			spinner => theme.fg("accent", spinner),
+			spinner => theme.fg("spinnerAccent", spinner),
 			text => theme.fg("muted", text),
 			"Generating report...",
 			getSymbolTheme().spinnerFrames,
@@ -215,7 +217,7 @@ export class DebugSelectorComponent extends Container {
 	async #handleDumpReport(): Promise<void> {
 		const loader = new Loader(
 			this.ctx.ui,
-			spinner => theme.fg("accent", spinner),
+			spinner => theme.fg("spinnerAccent", spinner),
 			text => theme.fg("muted", text),
 			"Creating report bundle...",
 			getSymbolTheme().spinnerFrames,
@@ -250,7 +252,7 @@ export class DebugSelectorComponent extends Container {
 	async #handleMemoryReport(): Promise<void> {
 		const loader = new Loader(
 			this.ctx.ui,
-			spinner => theme.fg("accent", spinner),
+			spinner => theme.fg("spinnerAccent", spinner),
 			text => theme.fg("muted", text),
 			"Generating heap snapshot...",
 			getSymbolTheme().spinnerFrames,
@@ -386,7 +388,7 @@ export class DebugSelectorComponent extends Container {
 		// Clear cache
 		const loader = new Loader(
 			this.ctx.ui,
-			spinner => theme.fg("accent", spinner),
+			spinner => theme.fg("spinnerAccent", spinner),
 			text => theme.fg("muted", text),
 			"Clearing artifact cache...",
 			getSymbolTheme().spinnerFrames,

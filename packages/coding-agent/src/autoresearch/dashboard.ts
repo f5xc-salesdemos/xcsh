@@ -1,4 +1,4 @@
-import { matchesKey, replaceTabs, Text, truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
+import { matchesKey, replaceTabs, Text, truncateToWidth, visibleWidth } from "@f5xc-salesdemos/pi-tui";
 import type { Theme } from "../modes/theme/theme";
 import { formatElapsed, formatNum, isBetter } from "./helpers";
 import { currentResults, findBaselineMetric, findBaselineRunNumber, findBaselineSecondary } from "./state";
@@ -123,7 +123,7 @@ export function createDashboardController(): DashboardController {
 }
 
 function renderRunningOnly(runtime: AutoresearchRuntime, state: ExperimentState, theme: Theme): string {
-	const parts = [theme.fg("accent", "autoresearch"), theme.fg("warning", " running...")];
+	const parts = [theme.fg("contentAccent", "autoresearch"), theme.fg("warning", " running...")];
 	if (state.name) {
 		parts.push(theme.fg("dim", ` | ${replaceTabs(state.name)}`));
 	}
@@ -148,13 +148,16 @@ function renderExpandedHeader(runtime: AutoresearchRuntime, width: number, theme
 	const label = state.name ? ` autoresearch: ${replaceTabs(state.name)} ` : " autoresearch ";
 	const hint = theme.fg("dim", ` ctrl+x collapse  ctrl+shift+x overlay${status ? `  ${status}` : ""} `);
 	const fillWidth = Math.max(0, width - visibleWidth(label) - visibleWidth(hint));
-	return truncateToWidth(theme.fg("accent", label) + theme.fg("borderMuted", "-".repeat(fillWidth)) + hint, width);
+	return truncateToWidth(
+		theme.fg("contentAccent", label) + theme.fg("borderMuted", "-".repeat(fillWidth)) + hint,
+		width,
+	);
 }
 
 function renderCollapsedLine(runtime: AutoresearchRuntime, state: ExperimentState, theme: Theme): string {
 	if (runtime.lastRunSummary) {
 		const parts = [
-			theme.fg("accent", "autoresearch"),
+			theme.fg("contentAccent", "autoresearch"),
 			theme.fg("warning", ` pending run #${runtime.lastRunSummary.runNumber}`),
 			theme.fg("dim", runtime.lastRunSummary.passed ? " pass" : " fail"),
 		];
@@ -174,7 +177,7 @@ function renderCollapsedLine(runtime: AutoresearchRuntime, state: ExperimentStat
 	}
 	if (state.results.length === 0) {
 		const modeStatus = runtime.autoresearchMode ? "baseline pending" : "mode off";
-		const parts = [theme.fg("accent", "autoresearch"), theme.fg("warning", ` ${modeStatus}`)];
+		const parts = [theme.fg("contentAccent", "autoresearch"), theme.fg("warning", ` ${modeStatus}`)];
 		if (state.name) {
 			parts.push(theme.fg("dim", ` | ${replaceTabs(state.name)}`));
 		}
@@ -190,7 +193,7 @@ function renderCollapsedLine(runtime: AutoresearchRuntime, state: ExperimentStat
 	const best = findBestResult(state);
 	const archivedRuns = Math.max(0, state.results.length - current.length);
 	const parts = [
-		theme.fg("accent", "autoresearch"),
+		theme.fg("contentAccent", "autoresearch"),
 		theme.fg("muted", ` ${current.length} runs`),
 		theme.fg("success", ` ${kept} kept`),
 	];
@@ -356,7 +359,7 @@ function renderResultRow(
 	const statusColor = result.status === "keep" ? "success" : result.status === "discard" ? "warning" : "error";
 	const line =
 		`${theme.fg("dim", String(runNumber).padEnd(4))}` +
-		`${theme.fg("accent", (result.commit || "-").padEnd(10))}` +
+		`${theme.fg("contentAccent", (result.commit || "-").padEnd(10))}` +
 		`${theme.fg(statusColor, formatNum(result.metric, state.metricUnit).padEnd(12))}` +
 		`${secondary}` +
 		`${theme.fg(statusColor, result.status.padEnd(14))}` +

@@ -2,10 +2,10 @@ import { describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { adaptSchemaForStrict } from "@oh-my-pi/pi-ai/utils/schema";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { ToolChoiceQueue } from "@oh-my-pi/pi-coding-agent/session/tool-choice-queue";
-import { createTools, type ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
+import { adaptSchemaForStrict } from "@f5xc-salesdemos/pi-ai/utils/schema";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { ToolChoiceQueue } from "@f5xc-salesdemos/xcsh/session/tool-choice-queue";
+import { createTools, type ToolSession } from "@f5xc-salesdemos/xcsh/tools";
 
 function createTestSession(cwd = "/tmp/test", overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

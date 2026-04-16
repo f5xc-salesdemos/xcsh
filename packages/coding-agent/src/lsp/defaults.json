@@ -115,7 +115,7 @@
 			"jsconfig.json"
 		],
 		"initOptions": {
-			"hostInfo": "omp-coding-agent",
+			"hostInfo": "xcsh-coding-agent",
 			"preferences": {
 				"includeInlayParameterNameHints": "all",
 				"includeInlayVariableTypeHints": true,
@@ -857,7 +857,8 @@
 		"rootMarkers": [
 			".marksman.toml",
 			".git"
-		]
+		],
+		"warmupTimeoutMs": 15000
 	},
 	"texlab": {
 		"command": "texlab",

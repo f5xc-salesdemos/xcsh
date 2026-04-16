@@ -4,8 +4,8 @@
  * Tree-based rendering with collapsed/expanded states for web search results.
  */
 
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text, visibleWidth, wrapTextWithAnsi } from "@oh-my-pi/pi-tui";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text, visibleWidth, wrapTextWithAnsi } from "@f5xc-salesdemos/pi-tui";
 import type { RenderResultOptions } from "../../extensibility/custom-tools/types";
 import type { Theme } from "../../modes/theme/theme";
 import {
@@ -201,7 +201,7 @@ export function renderSearchResult(
 						const metaSep = theme.fg("dim", theme.sep.dot);
 						const metaSuffix = metaParts.length > 0 ? ` ${metaParts.join(metaSep)}` : "";
 						const srcLines: string[] = [
-							truncateToWidth(`${theme.fg("accent", title)}${metaSuffix}`, MAX_SNIPPET_LINE_LEN),
+							truncateToWidth(`${theme.fg("contentAccent", title)}${metaSuffix}`, MAX_SNIPPET_LINE_LEN),
 						];
 						const snippetText = typeof src.snippet === "string" ? src.snippet : "";
 						if (snippetText.trim()) {

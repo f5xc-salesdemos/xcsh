@@ -3,9 +3,9 @@
  *
  * Tree-based rendering with collapsed/expanded states for Exa search results.
  */
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import {
@@ -164,7 +164,7 @@ export function renderExaResult(
 		const domain = res.url ? getDomain(res.url) : "";
 		const domainPart = domain ? uiTheme.fg("dim", ` (${domain})`) : "";
 
-		text += `\n ${uiTheme.fg("dim", branch)} ${uiTheme.fg("accent", title)}${domainPart}`;
+		text += `\n ${uiTheme.fg("dim", branch)} ${uiTheme.fg("contentAccent", title)}${domainPart}`;
 
 		if (res.url) {
 			text += `\n ${uiTheme.fg("dim", cont)} ${uiTheme.fg("dim", uiTheme.tree.hook)} ${uiTheme.fg(
@@ -206,7 +206,7 @@ export function renderExaResult(
 
 		if (res.highlights?.length) {
 			text += `\n ${uiTheme.fg("dim", cont)} ${uiTheme.fg("dim", uiTheme.tree.hook)} ${uiTheme.fg(
-				"accent",
+				"contentAccent",
 				"Highlights",
 			)}`;
 			const maxHighlights = Math.min(res.highlights.length, 3);
@@ -235,7 +235,7 @@ export function renderExaCall(args: Record<string, unknown>, toolName: string, u
 	const query = typeof args.query === "string" ? truncateToWidth(args.query, 80) : "?";
 	const numResults = typeof args.num_results === "number" ? args.num_results : undefined;
 
-	let text = `${uiTheme.fg("toolTitle", toolLabel)} ${uiTheme.fg("accent", query)}`;
+	let text = `${uiTheme.fg("toolTitle", toolLabel)} ${uiTheme.fg("contentAccent", query)}`;
 	if (numResults !== undefined) {
 		text += ` ${uiTheme.fg("muted", `results:${numResults}`)}`;
 	}

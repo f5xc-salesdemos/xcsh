@@ -8,7 +8,7 @@
  * - Shift+J/K: Reorder segment within column
  * - Live preview shown in the actual status line above
  */
-import { Container, matchesKey, padding } from "@oh-my-pi/pi-tui";
+import { Container, matchesKey, padding } from "@f5xc-salesdemos/pi-tui";
 import type { StatusLineSegmentId } from "../../config/settings-schema";
 import { theme } from "../../modes/theme/theme";
 import { matchesAppInterrupt } from "../../modes/utils/keybinding-matchers";
@@ -16,6 +16,7 @@ import { ALL_SEGMENT_IDS } from "./status-line/segments";
 
 // Segment display names and short descriptions
 const SEGMENT_INFO: Record<StatusLineSegmentId, { label: string; short: string }> = {
+	os_icon: { label: "OS Icon", short: "platform icon" },
 	pi: { label: "Pi", short: "π icon" },
 	model: { label: "Model", short: "model name" },
 	plan_mode: { label: "Plan Mode", short: "plan status" },
@@ -36,7 +37,7 @@ const SEGMENT_INFO: Record<StatusLineSegmentId, { label: string; short: string }
 	hostname: { label: "Host", short: "hostname" },
 	cache_read: { label: "Cache ↓", short: "cache read" },
 	cache_write: { label: "Cache ↑", short: "cache write" },
-	session_name: { label: "Session Name", short: "named session" },
+	profile_f5xc: { label: "F5 XC Profile", short: "F5 XC tenant" },
 };
 
 type Column = "left" | "right" | "disabled";
@@ -258,7 +259,7 @@ export class StatusLineSegmentEditorComponent extends Container {
 		const lines: string[] = [];
 
 		// Title with live preview indicator
-		lines.push(theme.bold(theme.fg("accent", "Configure Status Line Segments")));
+		lines.push(theme.bold(theme.fg("contentAccent", "Configure Status Line Segments")));
 		lines.push(theme.fg("dim", "Live preview shown in status line above"));
 		lines.push("");
 
@@ -289,15 +290,15 @@ export class StatusLineSegmentEditorComponent extends Container {
 		const activeMarker = theme.nav.back;
 		const leftHeader =
 			this.#focusColumn === "left"
-				? theme.bold(theme.fg("accent", `${activeMarker} LEFT`))
+				? theme.bold(theme.fg("contentAccent", `${activeMarker} LEFT`))
 				: theme.fg("muted", "  LEFT");
 		const rightHeader =
 			this.#focusColumn === "right"
-				? theme.bold(theme.fg("accent", `${activeMarker} RIGHT`))
+				? theme.bold(theme.fg("contentAccent", `${activeMarker} RIGHT`))
 				: theme.fg("muted", "  RIGHT");
 		const disabledHeader =
 			this.#focusColumn === "disabled"
-				? theme.bold(theme.fg("accent", `${activeMarker} AVAILABLE`))
+				? theme.bold(theme.fg("contentAccent", `${activeMarker} AVAILABLE`))
 				: theme.fg("muted", "  AVAILABLE");
 
 		lines.push(`${leftHeader.padEnd(colWidth + 8)}${rightHeader.padEnd(colWidth + 8)}${disabledHeader}`);

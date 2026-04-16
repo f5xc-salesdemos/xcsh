@@ -9,7 +9,7 @@ import {
 	Text,
 	truncateToWidth,
 	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { theme } from "../../modes/theme/theme";
 import { matchesAppInterrupt } from "../../modes/utils/keybinding-matchers";
 import type { HistoryEntry, HistoryStorage } from "../../session/history-storage";
@@ -53,7 +53,7 @@ class HistoryResultsList implements Component {
 
 			const cursorSymbol = `${theme.nav.cursor} `;
 			const cursorWidth = visibleWidth(cursorSymbol);
-			const cursor = isSelected ? theme.fg("accent", cursorSymbol) : padding(cursorWidth);
+			const cursor = isSelected ? theme.fg("chromeAccent", cursorSymbol) : padding(cursorWidth);
 			const maxWidth = width - cursorWidth;
 
 			const normalized = entry.prompt.replace(/\s+/g, " ").trim();

@@ -6,7 +6,7 @@
  * - Default (hook): Enter inserts newline, Ctrl+Enter submits, bordered popup
  * - Prompt-style (ask): Enter submits, Shift+Enter inserts newline, legacy ask chrome
  */
-import { Container, Editor, matchesKey, Spacer, Text, type TUI } from "@oh-my-pi/pi-tui";
+import { Container, Editor, matchesKey, Spacer, Text, type TUI } from "@f5xc-salesdemos/pi-tui";
 import { getEditorTheme, theme } from "../../modes/theme/theme";
 import { matchesAppExternalEditor, matchesAppInterrupt } from "../../modes/utils/keybinding-matchers";
 import { getEditorCommand, openInEditor } from "../../utils/external-editor";
@@ -43,7 +43,7 @@ export class HookEditorComponent extends Container {
 		this.addChild(new Spacer(1));
 
 		// Title
-		this.addChild(new Text(theme.fg("accent", title), 1, 0));
+		this.addChild(new Text(theme.fg("contentAccent", title), 1, 0));
 		this.addChild(new Spacer(1));
 
 		// Editor

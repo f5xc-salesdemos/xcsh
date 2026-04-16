@@ -1,10 +1,11 @@
 /**
  * Extension runner - executes extensions and manages their lifecycle.
  */
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { ImageContent, Model } from "@oh-my-pi/pi-ai";
-import type { KeyId } from "@oh-my-pi/pi-tui";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { AgentMessage } from "@f5xc-salesdemos/pi-agent-core";
+import type { ImageContent, Model } from "@f5xc-salesdemos/pi-ai";
+import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
+import type { KeyId } from "@f5xc-salesdemos/pi-tui";
+import { logger } from "@f5xc-salesdemos/pi-utils";
 import type { ModelRegistry } from "../../config/model-registry";
 import { type Theme, theme } from "../../modes/theme/theme";
 import type { SessionManager } from "../../session/session-manager";
@@ -160,6 +161,7 @@ export class ExtensionRunner {
 	#uiContext: ExtensionUIContext;
 	#errorListeners: Set<ExtensionErrorListener> = new Set();
 	#getModel: () => Model | undefined = () => undefined;
+	#getSearchDbFn: () => SearchDb | undefined = () => undefined;
 	#isIdleFn: () => boolean = () => true;
 	#waitForIdleFn: () => Promise<void> = async () => {};
 	#abortFn: () => void = () => {};
@@ -202,11 +204,10 @@ export class ExtensionRunner {
 		this.runtime.setModel = actions.setModel;
 		this.runtime.getThinkingLevel = actions.getThinkingLevel;
 		this.runtime.setThinkingLevel = actions.setThinkingLevel;
-		this.runtime.getSessionName = actions.getSessionName;
-		this.runtime.setSessionName = actions.setSessionName;
 
 		// Context actions (required)
 		this.#getModel = contextActions.getModel;
+		this.#getSearchDbFn = contextActions.getSearchDb ?? (() => undefined);
 		this.#isIdleFn = contextActions.isIdle;
 		this.#abortFn = contextActions.abort;
 		this.#hasPendingMessagesFn = contextActions.hasPendingMessages;
@@ -382,6 +383,7 @@ export class ExtensionRunner {
 
 	createContext(): ExtensionContext {
 		const getModel = this.#getModel;
+		const getSearchDb = this.#getSearchDbFn;
 		return {
 			ui: this.#uiContext,
 			getContextUsage: () => this.#getContextUsageFn(),
@@ -392,6 +394,9 @@ export class ExtensionRunner {
 			modelRegistry: this.modelRegistry,
 			get model() {
 				return getModel();
+			},
+			get searchDb() {
+				return getSearchDb();
 			},
 			isIdle: () => this.#isIdleFn(),
 			abort: () => this.#abortFn(),

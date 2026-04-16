@@ -1,14 +1,14 @@
 {
 	"type": "module",
 	"private": true,
-	"name": "@oh-my-pi/typescript-edit-benchmark",
+	"name": "@f5xc-salesdemos/typescript-edit-benchmark",
 	"version": "0.0.1",
 	"description": "Edit benchmark suite using TypeScript source code mutations",
 	"author": "Can Boluk",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/can1357/oh-my-pi.git",
+		"url": "git+https://github.com/f5xc-salesdemos/xcsh.git",
 		"directory": "packages/typescript-edit-benchmark"
 	},
 	"main": "./src/index.ts",
@@ -26,23 +26,23 @@
 		"start": "bun run src/index.ts"
 	},
 	"dependencies": {
-		"@babel/generator": "catalog:",
-		"@babel/parser": "catalog:",
-		"@babel/traverse": "catalog:",
-		"@babel/types": "catalog:",
-		"@oh-my-pi/pi-agent-core": "catalog:",
-		"@oh-my-pi/pi-coding-agent": "catalog:",
-		"@oh-my-pi/pi-utils": "catalog:",
-		"diff": "catalog:",
-		"prettier": "catalog:",
-		"regexp-tree": "catalog:",
-		"@oh-my-pi/pi-ai": "catalog:",
-		"@oh-my-pi/pi-tui": "catalog:"
+		"@babel/generator": "^7.29",
+		"@babel/parser": "^7.29",
+		"@babel/traverse": "^7.29",
+		"@babel/types": "^7.29",
+		"@f5xc-salesdemos/pi-agent-core": "workspace:*",
+		"@f5xc-salesdemos/xcsh": "workspace:*",
+		"@f5xc-salesdemos/pi-utils": "workspace:*",
+		"diff": "^8.0",
+		"prettier": "^3.8",
+		"regexp-tree": "^0.1",
+		"@f5xc-salesdemos/pi-ai": "workspace:*",
+		"@f5xc-salesdemos/pi-tui": "workspace:*"
 	},
 	"devDependencies": {
-		"@types/babel__generator": "catalog:",
-		"@types/babel__traverse": "catalog:",
-		"@types/bun": "catalog:"
+		"@types/babel__generator": "^7.27",
+		"@types/babel__traverse": "^7.28",
+		"@types/bun": "^1.3"
 	},
 	"engines": {
 		"bun": ">=1.3.7"

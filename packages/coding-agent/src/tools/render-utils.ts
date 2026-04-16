@@ -6,15 +6,15 @@
  */
 import * as os from "node:os";
 import * as path from "node:path";
-import type { Ellipsis } from "@oh-my-pi/pi-natives";
-import { replaceTabs, truncateToWidth } from "@oh-my-pi/pi-tui";
-import { pluralize } from "@oh-my-pi/pi-utils";
+import type { Ellipsis } from "@f5xc-salesdemos/pi-natives";
+import { replaceTabs, truncateToWidth } from "@f5xc-salesdemos/pi-tui";
+import { pluralize } from "@f5xc-salesdemos/pi-utils";
 import { settings } from "../config/settings";
 import type { Theme } from "../modes/theme/theme";
 import { formatDimensionNote, type ResizedImage } from "../utils/image-resize";
 
-export { Ellipsis } from "@oh-my-pi/pi-natives";
-export { replaceTabs, truncateToWidth, wrapTextWithAnsi } from "@oh-my-pi/pi-tui";
+export { Ellipsis } from "@f5xc-salesdemos/pi-natives";
+export { replaceTabs, truncateToWidth } from "@f5xc-salesdemos/pi-tui";
 
 // =============================================================================
 // Standardized Display Constants
@@ -106,7 +106,7 @@ export function getDomain(url: string): string {
 // Formatting Utilities
 // =============================================================================
 
-export { formatAge, formatBytes, formatCount, formatDuration, pluralize } from "@oh-my-pi/pi-utils";
+export { formatAge, formatBytes, formatCount, formatDuration, pluralize } from "@f5xc-salesdemos/pi-utils";
 
 // =============================================================================
 // Theme Helper Utilities
@@ -125,7 +125,7 @@ export function formatStatusIcon(status: ToolUIStatus, theme: Theme, spinnerFram
 		case "warning":
 			return theme.styledSymbol("status.warning", "warning");
 		case "info":
-			return theme.styledSymbol("status.info", "accent");
+			return theme.styledSymbol("status.info", "chromeAccent");
 		case "pending":
 			return theme.styledSymbol("status.pending", "muted");
 		case "running":
@@ -133,7 +133,7 @@ export function formatStatusIcon(status: ToolUIStatus, theme: Theme, spinnerFram
 				const frames = theme.spinnerFrames;
 				return frames[spinnerFrame % frames.length];
 			}
-			return theme.styledSymbol("status.running", "accent");
+			return theme.styledSymbol("status.running", "spinnerAccent");
 		case "aborted":
 			return theme.styledSymbol("status.aborted", "error");
 	}
@@ -185,7 +185,15 @@ export function formatEmptyMessage(message: string, theme: Theme): string {
 // =============================================================================
 
 export type ToolUIStatus = "success" | "error" | "warning" | "info" | "pending" | "running" | "aborted";
-export type ToolUIColor = "success" | "error" | "warning" | "accent" | "muted";
+export type ToolUIColor =
+	| "success"
+	| "error"
+	| "warning"
+	| "accent"
+	| "chromeAccent"
+	| "spinnerAccent"
+	| "contentAccent"
+	| "muted";
 
 export interface ToolUITitleOptions {
 	bold?: boolean;
@@ -310,7 +318,7 @@ export function formatDiagnostics(
 		const fileBranch = isLastFileNode ? theme.tree.last : theme.tree.branch;
 
 		const fileIcon = theme.fg("muted", getLangIcon(filePath));
-		output += `\n ${theme.fg("dim", fileBranch)} ${fileIcon} ${theme.fg("accent", filePath)}`;
+		output += `\n ${theme.fg("dim", fileBranch)} ${fileIcon} ${theme.fg("contentAccent", filePath)}`;
 
 		for (let di = 0; di < diagnostics.length && diagsShown < maxDiags; di++) {
 			const d = diagnostics[di];

@@ -1,4 +1,4 @@
-import { logger, ptree } from "@oh-my-pi/pi-utils";
+import { logger, ptree } from "@f5xc-salesdemos/pi-utils";
 import { OutputSink } from "../session/streaming-output";
 import { buildRemoteCommand, ensureConnection, ensureHostInfo, type SSHConnectionTarget } from "./connection-manager";
 import { hasSshfs, mountRemote } from "./sshfs-mount";
@@ -17,6 +17,8 @@ export interface SSHExecutorOptions {
 	/** Artifact path/id for full output storage */
 	artifactPath?: string;
 	artifactId?: string;
+	/** Mask sensitive values in output. */
+	maskSecrets?: (text: string) => string;
 }
 
 export interface SSHResult {
@@ -87,6 +89,7 @@ export async function executeSSH(
 		onChunk: options?.onChunk,
 		artifactPath: options?.artifactPath,
 		artifactId: options?.artifactId,
+		maskSecrets: options?.maskSecrets,
 	});
 
 	const streams = [child.stdout.pipeTo(sink.createInput())];

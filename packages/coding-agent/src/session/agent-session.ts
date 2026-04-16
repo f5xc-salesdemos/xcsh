@@ -24,7 +24,7 @@ import {
 	type AgentState,
 	type AgentTool,
 	ThinkingLevel,
-} from "@oh-my-pi/pi-agent-core";
+} from "@f5xc-salesdemos/pi-agent-core";
 import type {
 	AssistantMessage,
 	Effort,
@@ -40,7 +40,7 @@ import type {
 	ToolChoice,
 	Usage,
 	UsageReport,
-} from "@oh-my-pi/pi-ai";
+} from "@f5xc-salesdemos/pi-ai";
 import {
 	calculateRateLimitBackoffMs,
 	getSupportedEfforts,
@@ -48,23 +48,14 @@ import {
 	isUsageLimitError,
 	modelsAreEqual,
 	parseRateLimitReason,
-} from "@oh-my-pi/pi-ai";
-import { killTree, MacOSPowerAssertion } from "@oh-my-pi/pi-natives";
-import {
-	abortableSleep,
-	getAgentDbPath,
-	isEnoent,
-	logger,
-	prompt,
-	Snowflake,
-	setNativeKillTree,
-} from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-ai";
+import { killTree, MacOSPowerAssertion, type SearchDb } from "@f5xc-salesdemos/pi-natives";
+import { abortableSleep, getAgentDbPath, isEnoent, logger, prompt, setNativeKillTree } from "@f5xc-salesdemos/pi-utils";
 import type { AsyncJob, AsyncJobManager } from "../async";
 import type { Rule } from "../capability/rule";
 import { MODEL_ROLE_IDS, type ModelRegistry } from "../config/model-registry";
 import {
 	extractExplicitThinkingSelector,
-	formatModelSelectorValue,
 	formatModelString,
 	parseModelString,
 	type ResolvedModelRoleValue,
@@ -103,11 +94,7 @@ import type { HookCommandContext } from "../extensibility/hooks/types";
 import type { Skill, SkillWarning } from "../extensibility/skills";
 import { expandSlashCommand, type FileSlashCommand } from "../extensibility/slash-commands";
 import { resolveLocalUrlToPath } from "../internal-urls";
-import {
-	disposeKernelSessionsByOwner,
-	executePython as executePythonCommand,
-	type PythonResult,
-} from "../ipy/executor";
+import { executePython as executePythonCommand, type PythonResult } from "../ipy/executor";
 import {
 	buildDiscoverableMCPSearchIndex,
 	collectDiscoverableMCPTools,
@@ -138,7 +125,6 @@ import { getLatestTodoPhasesFromEntries, type TodoItem, type TodoPhase } from ".
 import { ToolError } from "../tools/tool-errors";
 import { clampTimeout } from "../tools/tool-timeouts";
 import { parseCommandArgs } from "../utils/command-args";
-import { type EditMode, resolveEditMode } from "../utils/edit-mode";
 import { resolveFileDisplayMode } from "../utils/file-display-mode";
 import { extractFileMentions, generateFileMentionMessages } from "../utils/file-mentions";
 import { buildNamedToolChoice } from "../utils/tool-choice";
@@ -257,8 +243,8 @@ export interface AgentSessionConfig {
 	ttsrManager?: TtsrManager;
 	/** Secret obfuscator for deobfuscating streaming edit content */
 	obfuscator?: SecretObfuscator;
-	/** Logical owner for retained Python kernels created by this session. */
-	pythonKernelOwnerId?: string;
+	/** Shared native search DB for grep/glob/fuzzyFind-backed workflows. */
+	searchDb?: SearchDb;
 }
 
 /** Options for AgentSession.prompt() */
@@ -410,6 +396,7 @@ export class AgentSession {
 	readonly agent: Agent;
 	readonly sessionManager: SessionManager;
 	readonly settings: Settings;
+	readonly searchDb: SearchDb | undefined;
 
 	#powerAssertion: MacOSPowerAssertion | undefined;
 
@@ -464,11 +451,9 @@ export class AgentSession {
 	#pendingBashMessages: BashExecutionMessage[] = [];
 
 	// Python execution state
-	#pythonAbortControllers = new Set<AbortController>();
-	#pythonKernelOwnerId: string;
+	#pythonAbortController: AbortController | undefined = undefined;
 	#pendingPythonMessages: PythonExecutionMessage[] = [];
-	#activePythonExecutions = new Set<Promise<unknown>>();
-	#pythonExecutionDisposing = false;
+
 	// Extension system
 	#extensionRunner: ExtensionRunner | undefined = undefined;
 	#turnIndex = 0;
@@ -522,7 +507,7 @@ export class AgentSession {
 
 	#streamingEditFileCache = new Map<string, string>();
 	#promptInFlightCount = 0;
-	#obfuscator: SecretObfuscator | undefined;
+	#resolveObfuscator: () => SecretObfuscator | undefined;
 	#checkpointState: CheckpointState | undefined = undefined;
 	#pendingRewindReport: string | undefined = undefined;
 	#promptGeneration = 0;
@@ -558,9 +543,9 @@ export class AgentSession {
 		this.agent = config.agent;
 		this.sessionManager = config.sessionManager;
 		this.settings = config.settings;
+		this.searchDb = config.searchDb;
 		this.#startPowerAssertion();
 		this.#asyncJobManager = config.asyncJobManager;
-		this.#pythonKernelOwnerId = config.pythonKernelOwnerId ?? `agent-session:${Snowflake.next()}`;
 		this.#scopedModels = config.scopedModels ?? [];
 		this.#thinkingLevel = config.thinkingLevel;
 		this.#promptTemplates = config.promptTemplates ?? [];
@@ -584,6 +569,7 @@ export class AgentSession {
 		this.#defaultSelectedMCPServerNames = new Set(config.defaultSelectedMCPServerNames ?? []);
 		this.#defaultSelectedMCPToolNames = new Set(config.defaultSelectedMCPToolNames ?? []);
 		this.#pruneSelectedMCPToolNames();
+		this.#resolveObfuscator = () => config.obfuscator;
 		const persistedSelectedMCPToolNames = this.buildDisplaySessionContext().selectedMCPToolNames;
 		const currentSelectedMCPToolNames = this.getSelectedMCPToolNames();
 		const persistInitialMCPToolSelection =
@@ -600,7 +586,6 @@ export class AgentSession {
 			this.#getConfiguredDefaultSelectedMCPToolNames(),
 		);
 		this.#ttsrManager = config.ttsrManager;
-		this.#obfuscator = config.obfuscator;
 		this.agent.setAssistantMessageEventInterceptor((message, assistantMessageEvent) => {
 			const event: AgentEvent = {
 				type: "message_update",
@@ -706,23 +691,7 @@ export class AgentSession {
 		}
 	}
 
-	#queuedExtensionEvents: Promise<void> = Promise.resolve();
-
-	#queueExtensionEvent(event: AgentSessionEvent): Promise<void> {
-		const emit = async () => {
-			await this.#emitExtensionEvent(event);
-		};
-		const queued = this.#queuedExtensionEvents.then(emit, emit);
-		this.#queuedExtensionEvents = queued.catch(() => {});
-		return queued;
-	}
-
 	async #emitSessionEvent(event: AgentSessionEvent): Promise<void> {
-		if (event.type === "message_update") {
-			this.#emit(event);
-			void this.#queueExtensionEvent(event);
-			return;
-		}
 		await this.#emitExtensionEvent(event);
 		this.#emit(event);
 	}
@@ -757,7 +726,7 @@ export class AgentSession {
 		// writes `#HASH#` tokens to the session file; convertToLlm re-obfuscates outbound
 		// traffic on the next turn. Walks text, thinking, and toolCall arguments/intent.
 		let displayEvent: AgentEvent = event;
-		const obfuscator = this.#obfuscator;
+		const obfuscator = this.#resolveObfuscator();
 		if (obfuscator && event.type === "message_end" && event.message.role === "assistant") {
 			const message = event.message;
 			const deobfuscatedContent = obfuscator.deobfuscateObject(message.content);
@@ -1027,16 +996,6 @@ export class AgentSession {
 			const msg = this.#lastAssistantMessage ?? fallbackAssistant;
 			this.#lastAssistantMessage = undefined;
 			if (!msg) return;
-
-			// Invalidate GitHub Copilot credentials on auth failure so stale tokens
-			// aren't reused on the next request
-			if (
-				msg.stopReason === "error" &&
-				msg.provider === "github-copilot" &&
-				msg.errorMessage?.includes("GitHub Copilot authentication failed")
-			) {
-				await this.#modelRegistry.authStorage.remove("github-copilot");
-			}
 
 			if (this.#skipPostTurnMaintenanceAssistantTimestamp === msg.timestamp) {
 				this.#skipPostTurnMaintenanceAssistantTimestamp = undefined;
@@ -1573,7 +1532,8 @@ export class AgentSession {
 		let normalizedDiff = normalizeDiff(diffForCheck.replace(/\r/g, ""));
 		if (!normalizedDiff) return;
 		// Deobfuscate the diff so removed lines match real file content
-		if (this.#obfuscator) normalizedDiff = this.#obfuscator.deobfuscate(normalizedDiff);
+		const diffObfuscator = this.#resolveObfuscator();
+		if (diffObfuscator) normalizedDiff = diffObfuscator.deobfuscate(normalizedDiff);
 		if (!normalizedDiff) return;
 		const lines = normalizedDiff.split("\n");
 		const hasChangeLine = lines.some(line => line.startsWith("+") || line.startsWith("-"));
@@ -1828,7 +1788,6 @@ export class AgentSession {
 	 * Call this when completely done with the session.
 	 */
 	async dispose(): Promise<void> {
-		this.#pythonExecutionDisposing = true;
 		try {
 			if (this.#extensionRunner?.hasHandlers("session_shutdown")) {
 				await this.#extensionRunner.emit({ type: "session_shutdown" });
@@ -1843,13 +1802,6 @@ export class AgentSession {
 		if (drained === false && deliveryState) {
 			logger.warn("Async job completion deliveries still pending during dispose", { ...deliveryState });
 		}
-		const pythonExecutionsSettled = await this.#preparePythonExecutionsForDispose();
-		if (!pythonExecutionsSettled) {
-			logger.warn(
-				"Detaching retained Python kernel ownership during dispose while Python execution is still active",
-			);
-		}
-		await disposeKernelSessionsByOwner(this.#pythonKernelOwnerId);
 		this.#stopPowerAssertion();
 		await this.sessionManager.close();
 		this.#closeAllProviderSessions("dispose");
@@ -2008,24 +1960,6 @@ export class AgentSession {
 		return Array.from(this.#toolRegistry.keys());
 	}
 
-	#getEditModeSession() {
-		return {
-			settings: this.settings,
-			getActiveModelString: () => (this.model ? formatModelString(this.model) : undefined),
-		} as const;
-	}
-
-	#resolveActiveEditMode(): EditMode {
-		return resolveEditMode(this.#getEditModeSession());
-	}
-
-	async #syncEditToolModeAfterModelChange(previousEditMode: EditMode): Promise<void> {
-		const currentEditMode = this.#resolveActiveEditMode();
-		if (previousEditMode !== currentEditMode && this.getActiveToolNames().includes("edit")) {
-			await this.refreshBaseSystemPrompt();
-		}
-	}
-
 	isMCPDiscoveryEnabled(): boolean {
 		return this.#mcpDiscoveryEnabled;
 	}
@@ -2073,7 +2007,6 @@ export class AgentSession {
 		toolNames: string[],
 		options?: { persistMCPSelection?: boolean; previousSelectedMCPToolNames?: string[] },
 	): Promise<void> {
-		toolNames = [...new Set(toolNames.map(name => name.toLowerCase()))];
 		const previousSelectedMCPToolNames = options?.previousSelectedMCPToolNames ?? this.getSelectedMCPToolNames();
 		const tools: AgentTool[] = [];
 		const validToolNames: string[] = [];
@@ -2165,6 +2098,7 @@ export class AgentSession {
 			sessionManager: this.sessionManager,
 			modelRegistry: this.#modelRegistry,
 			model: this.model,
+			searchDb: this.searchDb,
 			isIdle: () => !this.isStreaming,
 			hasQueuedMessages: () => this.queuedMessageCount > 0,
 			abort: () => {
@@ -2251,7 +2185,7 @@ export class AgentSession {
 	}
 
 	buildDisplaySessionContext(): SessionContext {
-		return deobfuscateSessionContext(this.sessionManager.buildSessionContext(), this.#obfuscator);
+		return deobfuscateSessionContext(this.sessionManager.buildSessionContext(), this.#resolveObfuscator());
 	}
 
 	/** Convert session messages using the same pre-LLM pipeline as the active session. */
@@ -3370,8 +3304,8 @@ export class AgentSession {
 	/**
 	 * Set a display name for the current session.
 	 */
-	setSessionName(name: string, source: "auto" | "user" = "auto"): Promise<boolean> {
-		return this.sessionManager.setSessionName(name, source);
+	setSessionName(name: string): void {
+		this.sessionManager.setSessionName(name);
 	}
 
 	/**
@@ -3447,12 +3381,7 @@ export class AgentSession {
 	 * Validates API key, saves to session and settings.
 	 * @throws Error if no API key available for the model
 	 */
-	async setModel(
-		model: Model,
-		role: string = "default",
-		options?: { selector?: string; thinkingLevel?: ThinkingLevel },
-	): Promise<void> {
-		const previousEditMode = this.#resolveActiveEditMode();
+	async setModel(model: Model, role: string = "default"): Promise<void> {
 		const apiKey = await this.#modelRegistry.getApiKey(model, this.sessionId);
 		if (!apiKey) {
 			throw new Error(`No API key for ${model.provider}/${model.id}`);
@@ -3461,15 +3390,11 @@ export class AgentSession {
 		this.#clearActiveRetryFallback();
 		this.#setModelWithProviderSessionReset(model);
 		this.sessionManager.appendModelChange(`${model.provider}/${model.id}`, role);
-		this.settings.setModelRole(
-			role,
-			this.#formatRoleModelValue(role, model, options?.selector, options?.thinkingLevel),
-		);
+		this.settings.setModelRole(role, this.#formatRoleModelValue(role, model));
 		this.settings.getStorage()?.recordModelUsage(`${model.provider}/${model.id}`);
 
 		// Re-apply the current thinking level for the newly selected model
 		this.setThinkingLevel(this.thinkingLevel);
-		await this.#syncEditToolModeAfterModelChange(previousEditMode);
 	}
 
 	/**
@@ -3478,7 +3403,6 @@ export class AgentSession {
 	 * @throws Error if no API key available for the model
 	 */
 	async setModelTemporary(model: Model, thinkingLevel?: ThinkingLevel): Promise<void> {
-		const previousEditMode = this.#resolveActiveEditMode();
 		const apiKey = await this.#modelRegistry.getApiKey(model, this.sessionId);
 		if (!apiKey) {
 			throw new Error(`No API key for ${model.provider}/${model.id}`);
@@ -3491,7 +3415,6 @@ export class AgentSession {
 
 		// Apply explicit thinking level, or re-clamp current level to new model's capabilities
 		this.setThinkingLevel(thinkingLevel ?? this.thinkingLevel);
-		await this.#syncEditToolModeAfterModelChange(previousEditMode);
 	}
 
 	/**
@@ -3540,7 +3463,6 @@ export class AgentSession {
 			const resolved = resolveModelRoleValue(roleModelStr, availableModels, {
 				settings: this.settings,
 				matchPreferences,
-				modelRegistry: this.#modelRegistry,
 			});
 			if (!resolved.model) continue;
 
@@ -3599,7 +3521,6 @@ export class AgentSession {
 	}
 
 	async #cycleScopedModel(direction: "forward" | "backward"): Promise<ModelCycleResult | undefined> {
-		const previousEditMode = this.#resolveActiveEditMode();
 		const scopedModels = await this.#getScopedModelsWithApiKey();
 		if (scopedModels.length <= 1) return undefined;
 
@@ -3620,13 +3541,11 @@ export class AgentSession {
 
 		// Apply the scoped model's configured thinking level
 		this.setThinkingLevel(next.thinkingLevel);
-		await this.#syncEditToolModeAfterModelChange(previousEditMode);
 
 		return { model: next.model, thinkingLevel: this.thinkingLevel, isScoped: true };
 	}
 
 	async #cycleAvailableModel(direction: "forward" | "backward"): Promise<ModelCycleResult | undefined> {
-		const previousEditMode = this.#resolveActiveEditMode();
 		const availableModels = this.#modelRegistry.getAvailable();
 		if (availableModels.length <= 1) return undefined;
 
@@ -3650,7 +3569,6 @@ export class AgentSession {
 		this.settings.getStorage()?.recordModelUsage(`${nextModel.provider}/${nextModel.id}`);
 		// Re-apply the current thinking level for the newly selected model
 		this.setThinkingLevel(this.thinkingLevel);
-		await this.#syncEditToolModeAfterModelChange(previousEditMode);
 
 		return { model: nextModel, thinkingLevel: this.thinkingLevel, isScoped: false };
 	}
@@ -4309,14 +4227,6 @@ export class AgentSession {
 			return undefined;
 		}
 
-		// Only inject on the first user message of the conversation. Subsequent user
-		// turns must not receive the eager todo reminder — they often correct, clarify,
-		// or redirect the prior task, and forcing a brand-new todo list there is wrong.
-		const hasPriorUserMessage = this.agent.state.messages.some(m => m.role === "user");
-		if (hasPriorUserMessage) {
-			return undefined;
-		}
-
 		const trimmedPromptText = promptText.trimEnd();
 		if (trimmedPromptText.endsWith("?") || trimmedPromptText.endsWith("!")) {
 			return undefined;
@@ -4669,21 +4579,14 @@ export class AgentSession {
 		return `${model.provider}/${model.id}`;
 	}
 
-	#formatRoleModelValue(
-		role: string,
-		model: Model,
-		selectorOverride?: string,
-		thinkingLevelOverride?: ThinkingLevel,
-	): string {
-		const modelKey = selectorOverride ?? `${model.provider}/${model.id}`;
-		if (thinkingLevelOverride !== undefined) {
-			return formatModelSelectorValue(modelKey, thinkingLevelOverride);
-		}
+	#formatRoleModelValue(role: string, model: Model): string {
+		const modelKey = `${model.provider}/${model.id}`;
 		const existingRoleValue = this.settings.getModelRole(role);
 		if (!existingRoleValue) return modelKey;
 
 		const thinkingLevel = extractExplicitThinkingSelector(existingRoleValue, this.settings);
-		return formatModelSelectorValue(modelKey, thinkingLevel);
+		if (thinkingLevel === undefined) return modelKey;
+		return `${modelKey}:${thinkingLevel}`;
 	}
 	#resolveContextPromotionConfiguredTarget(currentModel: Model, availableModels: Model[]): Model | undefined {
 		const configuredTarget = currentModel.contextPromotionTarget?.trim();
@@ -4716,7 +4619,6 @@ export class AgentSession {
 		return resolveModelRoleValue(roleModelStr, availableModels, {
 			settings: this.settings,
 			matchPreferences: { usageOrder: this.settings.getStorage()?.getModelUsageOrder() },
-			modelRegistry: this.#modelRegistry,
 		});
 	}
 
@@ -5733,65 +5635,41 @@ export class AgentSession {
 	): Promise<PythonResult> {
 		const excludeFromContext = options?.excludeFromContext === true;
 		const cwd = this.sessionManager.getCwd();
-		this.assertPythonExecutionAllowed();
 
-		const abortController = new AbortController();
-		const execution = (async (): Promise<PythonResult> => {
-			if (this.#extensionRunner?.hasHandlers("user_python")) {
-				const hookResult = await this.#extensionRunner.emitUserPython({
-					type: "user_python",
-					code,
-					excludeFromContext,
-					cwd,
-				});
-				this.assertPythonExecutionAllowed();
-				if (hookResult?.result) {
-					this.recordPythonResult(code, hookResult.result, options);
-					return hookResult.result;
-				}
+		if (this.#extensionRunner?.hasHandlers("user_python")) {
+			const hookResult = await this.#extensionRunner.emitUserPython({
+				type: "user_python",
+				code,
+				excludeFromContext,
+				cwd,
+			});
+			if (hookResult?.result) {
+				this.recordPythonResult(code, hookResult.result, options);
+				return hookResult.result;
 			}
+		}
 
+		this.#pythonAbortController = new AbortController();
+
+		try {
 			// Use the same session ID as the Python tool for kernel sharing
 			const sessionFile = this.sessionManager.getSessionFile();
 			const sessionId = sessionFile ? `session:${sessionFile}:cwd:${cwd}` : `cwd:${cwd}`;
+
 			const result = await executePythonCommand(code, {
 				cwd,
 				sessionId,
-				kernelOwnerId: this.#pythonKernelOwnerId,
 				kernelMode: this.settings.get("python.kernelMode"),
 				useSharedGateway: this.settings.get("python.sharedGateway"),
 				onChunk,
-				signal: abortController.signal,
+				signal: this.#pythonAbortController.signal,
 			});
+
 			this.recordPythonResult(code, result, options);
 			return result;
-		})();
-		return await this.trackPythonExecution(execution, abortController);
-	}
-
-	assertPythonExecutionAllowed(): void {
-		if (this.#pythonExecutionDisposing) {
-			throw new Error("Python execution is unavailable while session disposal is in progress");
+		} finally {
+			this.#pythonAbortController = undefined;
 		}
-	}
-
-	/**
-	 * Track Python work started outside AgentSession.executePython so dispose can await and abort it too.
-	 */
-	trackPythonExecution<T>(execution: Promise<T>, abortController: AbortController): Promise<T> {
-		this.#pythonAbortControllers.add(abortController);
-		this.#activePythonExecutions.add(execution);
-		void execution.then(
-			() => {
-				this.#pythonAbortControllers.delete(abortController);
-				this.#activePythonExecutions.delete(execution);
-			},
-			() => {
-				this.#pythonAbortControllers.delete(abortController);
-				this.#activePythonExecutions.delete(execution);
-			},
-		);
-		return execution;
 	}
 
 	/**
@@ -5824,46 +5702,12 @@ export class AgentSession {
 	 * Cancel running Python execution.
 	 */
 	abortPython(): void {
-		for (const abortController of this.#pythonAbortControllers) {
-			abortController.abort();
-		}
-	}
-
-	async #waitForPythonExecutionsToSettle(timeoutMs: number): Promise<boolean> {
-		const deadline = Date.now() + timeoutMs;
-		while (this.#activePythonExecutions.size > 0) {
-			const remainingMs = deadline - Date.now();
-			if (remainingMs <= 0) {
-				return false;
-			}
-			const settled = await Promise.race([
-				Promise.allSettled(Array.from(this.#activePythonExecutions)).then(() => true),
-				Bun.sleep(remainingMs).then(() => false),
-			]);
-			if (!settled && this.#activePythonExecutions.size > 0) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	async #preparePythonExecutionsForDispose(): Promise<boolean> {
-		if (!(await this.#waitForPythonExecutionsToSettle(3_000))) {
-			logger.warn("Aborting active Python execution during dispose before retained kernel cleanup");
-			this.abortPython();
-			if (!(await this.#waitForPythonExecutionsToSettle(1_000))) {
-				logger.warn(
-					"Python execution is still active after dispose aborted all active runs; retained kernel ownership will still be detached",
-				);
-				return false;
-			}
-		}
-		return true;
+		this.#pythonAbortController?.abort();
 	}
 
 	/** Whether a Python execution is currently running */
 	get isPythonRunning(): boolean {
-		return this.#pythonAbortControllers.size > 0;
+		return this.#pythonAbortController !== undefined;
 	}
 
 	/** Whether there are pending Python messages waiting to be flushed */

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
+import { Settings } from "@f5xc-salesdemos/xcsh/config/settings";
 
 describe("cycleOrder with custom roles", () => {
 	test("cycleOrder setting accepts custom role names", () => {

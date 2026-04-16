@@ -19,7 +19,7 @@ import {
 	type ToolConfiguration,
 	ToolResultStatus,
 } from "@aws-sdk/client-bedrock-runtime";
-import { $env, $flag } from "@oh-my-pi/pi-utils";
+import { $env, $flag } from "@f5xc-salesdemos/pi-utils";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import type { Effort } from "../model-thinking";
 import { mapEffortToAnthropicAdaptiveEffort, requireSupportedEffort } from "../model-thinking";

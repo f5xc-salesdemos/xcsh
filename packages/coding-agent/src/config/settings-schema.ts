@@ -1,4 +1,4 @@
-import { THINKING_EFFORTS } from "@oh-my-pi/pi-ai";
+import { THINKING_EFFORTS } from "@f5xc-salesdemos/pi-ai";
 
 /** Unified settings schema - single source of truth for all settings.
  * Unified settings schema - single source of truth for all settings.
@@ -55,6 +55,7 @@ export const TAB_METADATA: Record<SettingTab, { label: string; icon: `tab.${stri
 
 /** Status line segment identifiers */
 export type StatusLineSegmentId =
+	| "os_icon"
 	| "pi"
 	| "model"
 	| "plan_mode"
@@ -75,7 +76,7 @@ export type StatusLineSegmentId =
 	| "hostname"
 	| "cache_read"
 	| "cache_write"
-	| "session_name";
+	| "profile_f5xc";
 
 interface UiMetadata {
 	tab: SettingTab;
@@ -206,6 +207,11 @@ export const SETTINGS_SCHEMA = {
 	},
 	shellPath: { type: "string", default: undefined },
 
+	"bash.environment": {
+		type: "record",
+		default: {} as Record<string, string>,
+	},
+
 	extensions: { type: "array", default: EMPTY_STRING_ARRAY },
 
 	"marketplace.autoUpdate": {
@@ -230,8 +236,6 @@ export const SETTINGS_SCHEMA = {
 
 	modelTags: { type: "record", default: EMPTY_MODEL_TAGS_RECORD },
 
-	modelProviderOrder: { type: "array", default: EMPTY_STRING_ARRAY },
-
 	cycleOrder: { type: "array", default: DEFAULT_CYCLE_ORDER },
 
 	// ────────────────────────────────────────────────────────────────────────
@@ -241,7 +245,7 @@ export const SETTINGS_SCHEMA = {
 	// Theme
 	"theme.dark": {
 		type: "string",
-		default: "titanium",
+		default: "xcsh-dark",
 		ui: {
 			tab: "appearance",
 			label: "Dark Theme",
@@ -252,7 +256,7 @@ export const SETTINGS_SCHEMA = {
 
 	"theme.light": {
 		type: "string",
-		default: "light",
+		default: "xcsh-light",
 		ui: {
 			tab: "appearance",
 			label: "Light Theme",
@@ -264,7 +268,7 @@ export const SETTINGS_SCHEMA = {
 	symbolPreset: {
 		type: "enum",
 		values: ["unicode", "nerd", "ascii"] as const,
-		default: "unicode",
+		default: "nerd",
 		ui: { tab: "appearance", label: "Symbol Preset", description: "Icon/symbol style", submenu: true },
 	},
 
@@ -281,8 +285,8 @@ export const SETTINGS_SCHEMA = {
 	// Status line
 	"statusLine.preset": {
 		type: "enum",
-		values: ["default", "minimal", "compact", "full", "nerd", "ascii", "custom"] as const,
-		default: "default",
+		values: ["default", "minimal", "compact", "full", "nerd", "ascii", "xcsh", "custom"] as const,
+		default: "xcsh",
 		ui: {
 			tab: "appearance",
 			label: "Status Line Preset",
@@ -294,7 +298,7 @@ export const SETTINGS_SCHEMA = {
 	"statusLine.separator": {
 		type: "enum",
 		values: ["powerline", "powerline-thin", "slash", "pipe", "block", "none", "ascii"] as const,
-		default: "powerline-thin",
+		default: "powerline",
 		ui: {
 			tab: "appearance",
 			label: "Status Line Separator",
@@ -650,6 +654,16 @@ export const SETTINGS_SCHEMA = {
 		},
 	},
 
+	"startup.clearScreen": {
+		type: "boolean",
+		default: false,
+		ui: {
+			tab: "interaction",
+			label: "Clear Screen on Startup",
+			description: "Clear the terminal screen when xcsh starts",
+		},
+	},
+
 	"startup.checkUpdate": {
 		type: "boolean",
 		default: true,
@@ -662,7 +676,7 @@ export const SETTINGS_SCHEMA = {
 
 	collapseChangelog: {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: { tab: "interaction", label: "Collapse Changelog", description: "Show condensed changelog after updates" },
 	},
 
@@ -695,7 +709,7 @@ export const SETTINGS_SCHEMA = {
 	// Speech-to-text
 	"stt.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: { tab: "interaction", label: "Speech-to-Text", description: "Enable speech-to-text input via microphone" },
 	},
 
@@ -783,7 +797,7 @@ export const SETTINGS_SCHEMA = {
 
 	"compaction.handoffSaveToDisk": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "context",
 			label: "Save Handoff Docs",
@@ -853,7 +867,7 @@ export const SETTINGS_SCHEMA = {
 	// Memories
 	"memories.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "context",
 			label: "Memories",
@@ -952,12 +966,12 @@ export const SETTINGS_SCHEMA = {
 	// Edit tool
 	"edit.mode": {
 		type: "enum",
-		values: ["replace", "patch", "hashline", "chunk", "vim"] as const,
+		values: ["replace", "patch", "hashline", "chunk"] as const,
 		default: "hashline",
 		ui: {
 			tab: "editing",
 			label: "Edit Mode",
-			description: "Select the edit tool variant (replace, patch, hashline, chunk, or vim)",
+			description: "Select the edit tool variant (replace, patch, hashline, or chunk)",
 		},
 	},
 
@@ -1241,7 +1255,7 @@ export const SETTINGS_SCHEMA = {
 
 	"renderMermaid.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "tools",
 			label: "Render Mermaid",
@@ -1261,7 +1275,7 @@ export const SETTINGS_SCHEMA = {
 
 	"calc.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "tools",
 			label: "Calculator",
@@ -1271,11 +1285,21 @@ export const SETTINGS_SCHEMA = {
 
 	"inspect_image.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "tools",
 			label: "Inspect Image",
 			description: "Enable the inspect_image tool, delegating image understanding to a vision-capable model",
+		},
+	},
+
+	"generate_image.enabled": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "tools",
+			label: "Generate Image",
+			description: "Enable the generate_image tool for AI-powered image and diagram generation",
 		},
 	},
 
@@ -1298,7 +1322,7 @@ export const SETTINGS_SCHEMA = {
 
 	"github.enabled": {
 		type: "boolean",
-		default: false,
+		default: true,
 		ui: {
 			tab: "tools",
 			label: "GitHub CLI",
@@ -1382,27 +1406,6 @@ export const SETTINGS_SCHEMA = {
 			tab: "tools",
 			label: "Max Async Jobs",
 			description: "Maximum concurrent background jobs (1-100)",
-			submenu: true,
-		},
-	},
-
-	"bash.autoBackground.enabled": {
-		type: "boolean",
-		default: false,
-		ui: {
-			tab: "tools",
-			label: "Bash Auto-Background",
-			description: "Automatically background long-running bash commands and deliver the result later",
-		},
-	},
-
-	"bash.autoBackground.thresholdMs": {
-		type: "number",
-		default: 60_000,
-		ui: {
-			tab: "tools",
-			label: "Bash Auto-Background Delay",
-			description: "Milliseconds to wait before a bash command is moved to the background (0 = immediately)",
 			submenu: true,
 		},
 	},
@@ -1603,6 +1606,7 @@ export const SETTINGS_SCHEMA = {
 		type: "enum",
 		values: [
 			"auto",
+			"firecrawl",
 			"exa",
 			"brave",
 			"jina",
@@ -1627,12 +1631,36 @@ export const SETTINGS_SCHEMA = {
 	},
 	"providers.image": {
 		type: "enum",
-		values: ["auto", "gemini", "openrouter"] as const,
+		values: ["auto", "gemini", "openrouter", "openai"] as const,
 		default: "auto",
 		ui: {
 			tab: "providers",
 			label: "Image Provider",
-			description: "Provider for image generation tool",
+			description: "Provider for image generation tool (auto detects from available API keys)",
+			submenu: true,
+		},
+	},
+
+	"providers.imageSize": {
+		type: "enum",
+		values: ["1024x1024", "1536x1024", "1024x1536"] as const,
+		default: "1536x1024",
+		ui: {
+			tab: "providers",
+			label: "Image Size",
+			description: "Default image dimensions for generation (landscape, square, or portrait)",
+			submenu: true,
+		},
+	},
+
+	"providers.imageQuality": {
+		type: "enum",
+		values: ["low", "medium", "high"] as const,
+		default: "high",
+		ui: {
+			tab: "providers",
+			label: "Image Quality",
+			description: "Rendering quality for generated images (higher = slower but more detailed)",
 			submenu: true,
 		},
 	},
@@ -1674,13 +1702,13 @@ export const SETTINGS_SCHEMA = {
 	// Exa
 	"exa.enabled": {
 		type: "boolean",
-		default: true,
+		default: false,
 		ui: { tab: "providers", label: "Exa", description: "Master toggle for all Exa search tools" },
 	},
 
 	"exa.enableSearch": {
 		type: "boolean",
-		default: true,
+		default: false,
 		ui: { tab: "providers", label: "Exa Search", description: "Basic search, deep search, code search, crawl" },
 	},
 

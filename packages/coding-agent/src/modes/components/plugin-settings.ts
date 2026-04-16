@@ -16,7 +16,7 @@ import {
 	SettingsList,
 	Spacer,
 	Text,
-} from "@oh-my-pi/pi-tui";
+} from "@f5xc-salesdemos/pi-tui";
 import { PluginManager } from "../../extensibility/plugins/manager";
 import type { InstalledPlugin, PluginSettingSchema } from "../../extensibility/plugins/types";
 import { getSelectListTheme, getSettingsListTheme, theme } from "../../modes/theme/theme";
@@ -46,13 +46,13 @@ export class PluginListComponent extends Container {
 
 		// Title
 		this.addChild(new DynamicBorder());
-		this.addChild(new Text(theme.bold(theme.fg("accent", "  Plugins")), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", "  Plugins")), 0, 0));
 		this.addChild(new Spacer(1));
 
 		if (plugins.length === 0) {
 			this.addChild(new Text(theme.fg("muted", "  No plugins installed"), 0, 0));
 			this.addChild(new Spacer(1));
-			this.addChild(new Text(theme.fg("dim", "  Install with: omp plugin install <package>"), 0, 0));
+			this.addChild(new Text(theme.fg("dim", "  Install with: xcsh plugin install <package>"), 0, 0));
 			this.addChild(new Spacer(1));
 			this.addChild(new DynamicBorder());
 
@@ -141,7 +141,7 @@ export class PluginDetailComponent extends Container {
 
 		// Header
 		this.addChild(new DynamicBorder());
-		this.addChild(new Text(theme.bold(theme.fg("accent", `  ${plugin.name}`)), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", `  ${plugin.name}`)), 0, 0));
 		if (manifest.description) {
 			this.addChild(new Text(theme.fg("muted", `  ${manifest.description}`), 0, 0));
 		}
@@ -301,7 +301,7 @@ class ConfigEnumSubmenu extends Container {
 	) {
 		super();
 
-		this.addChild(new Text(theme.bold(theme.fg("accent", key)), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", key)), 0, 0));
 		if (description) {
 			this.addChild(new Spacer(1));
 			this.addChild(new Text(theme.fg("muted", description), 0, 0));
@@ -344,7 +344,7 @@ class ConfigInputSubmenu extends Container {
 	) {
 		super();
 
-		this.addChild(new Text(theme.bold(theme.fg("accent", key)), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("contentAccent", key)), 0, 0));
 		if (schema.description) {
 			this.addChild(new Spacer(1));
 			this.addChild(new Text(theme.fg("muted", schema.description), 0, 0));

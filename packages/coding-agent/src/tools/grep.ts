@@ -1,15 +1,19 @@
 import * as path from "node:path";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-
-import { type GrepMatch, GrepOutputMode, type GrepResult, grep } from "@oh-my-pi/pi-natives";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { prompt, untilAborted } from "@oh-my-pi/pi-utils";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { type GrepMatch, GrepOutputMode, type GrepResult, grep } from "@f5xc-salesdemos/pi-natives";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { prompt, untilAborted } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { computeLineHash } from "../edit/line-hash";
 import { type ChunkedGrepMatch, describeChunkedGrepMatch } from "../edit/modes/chunk";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
-import { getLanguageFromPath, type Theme } from "../modes/theme/theme";
+import { getLanguageFromPath, highlightCode, type Theme } from "../modes/theme/theme";
 import grepDescription from "../prompts/tools/grep.md" with { type: "text" };
 import { DEFAULT_MAX_COLUMN, type TruncationResult, truncateHead } from "../session/streaming-output";
 import { Ellipsis, Hasher, type RenderCache, renderStatusLine, renderTreeList, truncateToWidth } from "../tui";
@@ -668,12 +672,29 @@ export const grepToolRenderer = {
 						maxCollapsed: matchGroups.length,
 						maxCollapsedLines: collapsedMatchLineBudget,
 						itemType: "match",
-						renderItem: group =>
-							group.map(line => {
+						renderItem: group => {
+							let lang: string | undefined;
+							return group.map(line => {
 								if (line.startsWith("## ")) return uiTheme.fg("dim", line);
-								if (line.startsWith("# ")) return uiTheme.fg("accent", line);
+								if (line.startsWith("# ")) {
+									lang = getLanguageFromPath(line.slice(2).trim());
+									return uiTheme.fg("contentAccent", line);
+								}
+								if (lang) {
+									// Match lines may have a "linenum:" or "linenum-" prefix
+									const prefixMatch = line.match(/^(\d+[-:])/);
+									if (prefixMatch) {
+										const prefix = prefixMatch[1];
+										const code = line.slice(prefix.length);
+										const highlighted = highlightCode(code, lang);
+										return uiTheme.fg("dim", prefix) + (highlighted[0] ?? code);
+									}
+									const highlighted = highlightCode(line, lang);
+									return highlighted[0] ?? uiTheme.fg("toolOutput", line);
+								}
 								return uiTheme.fg("toolOutput", line);
-							}),
+							});
+						},
 					},
 					uiTheme,
 				);

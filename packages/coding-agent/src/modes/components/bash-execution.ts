@@ -2,20 +2,9 @@
  * Component for displaying bash command execution with streaming output.
  */
 
-import { sanitizeText } from "@oh-my-pi/pi-natives";
-import {
-	Container,
-	Ellipsis,
-	ImageProtocol,
-	Loader,
-	Spacer,
-	TERMINAL,
-	Text,
-	type TUI,
-	truncateToWidth,
-	visibleWidth,
-} from "@oh-my-pi/pi-tui";
-import { getSymbolTheme, theme } from "../../modes/theme/theme";
+import { sanitizeText } from "@f5xc-salesdemos/pi-natives";
+import { Container, ImageProtocol, Loader, Spacer, TERMINAL, Text, type TUI } from "@f5xc-salesdemos/pi-tui";
+import { getSymbolTheme, highlightCode, theme } from "../../modes/theme/theme";
 import { formatTruncationMetaNotice, type TruncationMeta } from "../../tools/output-meta";
 import { getSixelLineMask, isSixelPassthroughEnabled, sanitizeWithOptionalSixelPassthrough } from "../../utils/sixel";
 import { DynamicBorder } from "./dynamic-border";
@@ -24,6 +13,29 @@ import { truncateToVisualLines } from "./visual-truncate";
 // Preview line limit when not expanded (matches tool execution behavior)
 const PREVIEW_LINES = 20;
 const STREAMING_LINE_CAP = PREVIEW_LINES * 5;
+
+/** Max bytes to attempt JSON detection on (avoid parsing huge outputs) */
+const JSON_DETECT_LIMIT = 32_768;
+
+/**
+ * Detect if output looks like JSON and return syntax-highlighted lines.
+ * Returns undefined if not JSON or if detection should not be attempted.
+ */
+function highlightIfStructured(lines: string[]): string[] | undefined {
+	if (lines.length === 0) return undefined;
+	const firstNonEmpty = lines.find(l => l.trim().length > 0)?.trim();
+	if (!firstNonEmpty) return undefined;
+	// Only detect JSON (starts with { or [)
+	if (firstNonEmpty[0] !== "{" && firstNonEmpty[0] !== "[") return undefined;
+	const fullText = lines.join("\n");
+	if (fullText.length > JSON_DETECT_LIMIT) return undefined;
+	try {
+		JSON.parse(fullText);
+		return highlightCode(fullText, "json");
+	} catch {
+		return undefined;
+	}
+}
 const MAX_DISPLAY_LINE_CHARS = 4000;
 // Minimum interval between processing incoming chunks for display (ms).
 // Chunks arriving faster than this are accumulated and processed in one batch.
@@ -174,15 +186,22 @@ export class BashExecutionComponent extends Container {
 
 		// Output
 		if (availableLines.length > 0) {
+			// Try to syntax-highlight structured output (e.g. JSON)
+			const highlightedLines = hasSixelOutput ? undefined : highlightIfStructured(availableLines);
+
 			if (this.#expanded || hasSixelOutput) {
-				const displayText = availableLines
-					.map((line, index) => (sixelLineMask?.[index] ? line : theme.fg("muted", line)))
-					.join("\n");
+				const displayText = highlightedLines
+					? highlightedLines.join("\n")
+					: availableLines
+							.map((line, index) => (sixelLineMask?.[index] ? line : theme.fg("muted", line)))
+							.join("\n");
 				this.#contentContainer.addChild(new Text(`\n${displayText}`, 1, 0));
 			} else {
 				// Use shared visual truncation utility, recomputed per render width
-				const styledOutput = previewLogicalLines.map(line => theme.fg("muted", line)).join("\n");
-				const previewText = `\n${styledOutput}`;
+				const previewHighlighted = highlightedLines
+					? highlightedLines.slice(-previewLogicalLines.length).join("\n")
+					: previewLogicalLines.map(line => theme.fg("muted", line)).join("\n");
+				const previewText = `\n${previewHighlighted}`;
 				this.#contentContainer.addChild({
 					render: (width: number) => {
 						const { visualLines } = truncateToVisualLines(previewText, PREVIEW_LINES, width, 1);
@@ -221,12 +240,11 @@ export class BashExecutionComponent extends Container {
 	}
 
 	#clampDisplayLine(line: string): string {
-		const visible = visibleWidth(line);
-		if (visible <= MAX_DISPLAY_LINE_CHARS) {
+		if (line.length <= MAX_DISPLAY_LINE_CHARS) {
 			return line;
 		}
-		const omitted = visible - MAX_DISPLAY_LINE_CHARS;
-		return `${truncateToWidth(line, MAX_DISPLAY_LINE_CHARS, Ellipsis.Omit)}… [${omitted} visible columns omitted]`;
+		const omitted = line.length - MAX_DISPLAY_LINE_CHARS;
+		return `${line.slice(0, MAX_DISPLAY_LINE_CHARS)}… [${omitted} chars omitted]`;
 	}
 
 	#clampLinesPreservingSixel(lines: string[]): string[] {

@@ -1,4 +1,4 @@
-import { isEnoent, logger, ptree, untilAborted } from "@oh-my-pi/pi-utils";
+import { isEnoent, logger, ptree, untilAborted } from "@f5xc-salesdemos/pi-utils";
 import { ToolAbortError, throwIfAborted } from "../tools/tool-errors";
 import { applyWorkspaceEdit } from "./edits";
 import { getLspmuxCommand, isLspmuxSupported } from "./lspmux";
@@ -475,7 +475,14 @@ export async function getOrCreateClient(config: ServerConfig, cwd: string, initT
 
 			// Reject any pending requests — the server is gone, they will never complete.
 			if (client.pendingRequests.size > 0) {
-				const stderr = proc.peekStderr().trim();
+				// Strip informational log lines (e.g. marksman's [INF]/[DBG] prefix)
+				// — they are startup noise, not actionable errors.
+				const rawStderr = proc.peekStderr().trim();
+				const stderr = rawStderr
+					.split("\n")
+					.filter(line => !/^\[\d{2}:\d{2}:\d{2} (?:INF|DBG|VRB)\]/.test(line))
+					.join("\n")
+					.trim();
 				const code = proc.exitCode;
 				const err = new Error(
 					stderr ? `LSP server exited (code ${code}): ${stderr}` : `LSP server exited unexpectedly (code ${code})`,

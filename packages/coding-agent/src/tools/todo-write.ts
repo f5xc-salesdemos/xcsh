@@ -1,8 +1,13 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { prompt } from "@oh-my-pi/pi-utils";
+import type {
+	AgentTool,
+	AgentToolContext,
+	AgentToolResult,
+	AgentToolUpdateCallback,
+} from "@f5xc-salesdemos/pi-agent-core";
+import { StringEnum } from "@f5xc-salesdemos/pi-ai";
+import type { Component } from "@f5xc-salesdemos/pi-tui";
+import { Text } from "@f5xc-salesdemos/pi-tui";
+import { prompt } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import chalk from "chalk";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
@@ -390,7 +395,7 @@ function formatTodoLine(item: TodoItem, uiTheme: Theme, prefix: string): string 
 		case "completed":
 			return uiTheme.fg("success", `${prefix}${checkbox.checked} ${chalk.strikethrough(item.content)}`);
 		case "in_progress": {
-			const main = uiTheme.fg("accent", `${prefix}${checkbox.unchecked} ${item.content}`);
+			const main = uiTheme.fg("contentAccent", `${prefix}${checkbox.unchecked} ${item.content}`);
 			if (!item.details) return main;
 			const detailLines = item.details.split("\n").map(l => uiTheme.fg("dim", `${prefix}  ${l}`));
 			return [main, ...detailLines].join("\n");
@@ -431,7 +436,7 @@ export const todoWriteToolRenderer = {
 		const lines: string[] = [header];
 		for (const phase of phases) {
 			if (phases.length > 1) {
-				lines.push(uiTheme.fg("accent", `  ${uiTheme.tree.hook} ${phase.name}`));
+				lines.push(uiTheme.fg("contentAccent", `  ${uiTheme.tree.hook} ${phase.name}`));
 			}
 			const treeLines = renderTreeList(
 				{
