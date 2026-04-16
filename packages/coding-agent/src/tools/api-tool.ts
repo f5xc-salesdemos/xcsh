@@ -73,7 +73,7 @@ export class ApiDiscoverTool implements AgentTool<typeof discoverSchema> {
 		_signal?: AbortSignal,
 	): Promise<AgentToolResult> {
 		const services = await this.#catalog.getServices();
-		if (!services.find(s => s.service === service)) {
+		if (!services.some(s => s.service === service)) {
 			const names = services.map(s => s.service).join(", ") || "none";
 			return { content: [{ type: "text", text: `Service '${service}' not found. Available: ${names}` }] };
 		}

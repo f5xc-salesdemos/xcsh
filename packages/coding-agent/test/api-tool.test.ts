@@ -177,7 +177,8 @@ describe("ApiCallTool", () => {
 	test("executes a low-danger GET operation and returns JSON response", async () => {
 		const mockItems = [{ id: "1", name: "item-one" }];
 		const origFetch = globalThis.fetch;
-		globalThis.fetch = async () => new Response(JSON.stringify(mockItems), { status: 200 });
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify(mockItems), { status: 200 })) as unknown as typeof fetch;
 
 		const catalog = new ApiCatalogService([tmpDir]);
 		const executor = new ApiExecutor();
@@ -193,10 +194,10 @@ describe("ApiCallTool", () => {
 	test("sends Authorization header with resolved token", async () => {
 		let capturedHeaders: Record<string, string> = {};
 		const origFetch = globalThis.fetch;
-		globalThis.fetch = async (_url: string | URL | Request, init?: RequestInit) => {
+		globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
 			capturedHeaders = Object.fromEntries(Object.entries(init?.headers ?? {})) as Record<string, string>;
 			return new Response(JSON.stringify({}), { status: 200 });
-		};
+		}) as unknown as typeof fetch;
 
 		const catalog = new ApiCatalogService([tmpDir]);
 		const executor = new ApiExecutor();
@@ -210,7 +211,8 @@ describe("ApiCallTool", () => {
 
 	test("returns error on API 404 response", async () => {
 		const origFetch = globalThis.fetch;
-		globalThis.fetch = async () => new Response(JSON.stringify({ message: "Not Found" }), { status: 404 });
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ message: "Not Found" }), { status: 404 })) as unknown as typeof fetch;
 
 		const catalog = new ApiCatalogService([tmpDir]);
 		const executor = new ApiExecutor();

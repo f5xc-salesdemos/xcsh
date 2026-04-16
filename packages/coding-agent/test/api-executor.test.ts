@@ -120,7 +120,8 @@ describe("ApiExecutor.execute()", () => {
 	test("returns ok:true with parsed JSON on success", async () => {
 		const mockData = [{ id: "1", name: "item-one" }];
 		const origFetch = globalThis.fetch;
-		globalThis.fetch = async () => new Response(JSON.stringify(mockData), { status: 200 });
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify(mockData), { status: 200 })) as unknown as typeof fetch;
 
 		const executor = new ApiExecutor();
 		const result = await executor.execute(auth, op, { namespace: "default" });
@@ -133,7 +134,8 @@ describe("ApiExecutor.execute()", () => {
 
 	test("returns ok:false with status and error on HTTP error", async () => {
 		const origFetch = globalThis.fetch;
-		globalThis.fetch = async () => new Response(JSON.stringify({ message: "Not Found" }), { status: 404 });
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ message: "Not Found" }), { status: 404 })) as unknown as typeof fetch;
 
 		const executor = new ApiExecutor();
 		const result = await executor.execute(auth, op, { namespace: "default" });
@@ -149,9 +151,9 @@ describe("ApiExecutor.execute()", () => {
 
 	test("returns ok:false with status 0 on network error", async () => {
 		const origFetch = globalThis.fetch;
-		globalThis.fetch = async () => {
+		globalThis.fetch = (async () => {
 			throw new Error("Connection refused");
-		};
+		}) as unknown as typeof fetch;
 
 		const executor = new ApiExecutor();
 		const result = await executor.execute(auth, op, { namespace: "default" });
@@ -169,15 +171,15 @@ describe("ApiExecutor.execute()", () => {
 		const postOp: ApiOperation = { ...op, method: "POST" };
 		let capturedBody: string | null = null;
 		const origFetch = globalThis.fetch;
-		globalThis.fetch = async (_url: string | URL | Request, init?: RequestInit) => {
+		globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
 			capturedBody = (init?.body as string) ?? null;
 			return new Response(JSON.stringify({}), { status: 201 });
-		};
+		}) as unknown as typeof fetch;
 
 		const executor = new ApiExecutor();
 		await executor.execute(auth, postOp, { namespace: "default" }, { name: "new-item" });
 
-		expect(capturedBody).toBe(JSON.stringify({ name: "new-item" }));
+		expect(capturedBody!).toBe(JSON.stringify({ name: "new-item" }));
 
 		globalThis.fetch = origFetch;
 	});

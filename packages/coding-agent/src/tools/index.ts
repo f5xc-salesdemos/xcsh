@@ -71,6 +71,7 @@ export * from "../lsp";
 export * from "../session/streaming-output";
 export * from "../task";
 export * from "../web/search";
+export * from "./api-tool";
 export * from "./ask";
 export * from "./ast-edit";
 export * from "./ast-grep";
