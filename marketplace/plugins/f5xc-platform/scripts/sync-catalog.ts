@@ -26,7 +26,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 	return res.arrayBuffer();
 }
 
-function validateCatalog(catalog: unknown): void {
+export function validateCatalog(catalog: unknown): void {
 	if (typeof catalog !== "object" || catalog === null) {
 		throw new Error("Catalog is not an object");
 	}
@@ -76,7 +76,9 @@ async function main(): Promise<void> {
 	console.log(`Saved to ${OUTPUT_PATH}`);
 }
 
-main().catch(err => {
-	console.error("sync-catalog failed:", err.message);
-	process.exit(1);
-});
+if (import.meta.main) {
+	main().catch(err => {
+		console.error("sync-catalog failed:", err.message);
+		process.exit(1);
+	});
+}
