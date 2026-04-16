@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "anthracite",
 	"vars": {
 		"coal": "#121419",
@@ -83,7 +83,8 @@
 		"statusLineOutput": 173,
 		"statusLineCost": 173,
 		"statusLineSubagents": "ember",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#7ba8d4"
 	},
 	"export": {
 		"pageBg": "#121419",

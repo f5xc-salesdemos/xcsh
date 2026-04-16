@@ -3,8 +3,8 @@ import type { PresetDef, StatusLinePreset } from "./types";
 export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 	default: {
 		leftSegments: ["pi", "model", "plan_mode", "path", "git", "pr", "context_pct", "token_total", "cost"],
-		rightSegments: ["session_name"],
-		separator: "powerline-thin",
+		rightSegments: ["profile_f5xc"],
+		separator: "powerline",
 		segmentOptions: {
 			model: { showThinkingLevel: true },
 			path: { abbreviate: true, maxLength: 40, stripWorkPrefix: true },
@@ -14,7 +14,7 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 
 	minimal: {
 		leftSegments: ["path", "git"],
-		rightSegments: ["session_name", "plan_mode", "context_pct"],
+		rightSegments: ["plan_mode", "context_pct", "profile_f5xc"],
 		separator: "slash",
 		segmentOptions: {
 			path: { abbreviate: true, maxLength: 30 },
@@ -24,8 +24,8 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 
 	compact: {
 		leftSegments: ["model", "plan_mode", "git", "pr"],
-		rightSegments: ["session_name", "cost", "context_pct"],
-		separator: "powerline-thin",
+		rightSegments: ["cost", "context_pct", "profile_f5xc"],
+		separator: "powerline",
 		segmentOptions: {
 			model: { showThinkingLevel: false },
 			git: { showBranch: true, showStaged: true, showUnstaged: true, showUntracked: false },
@@ -35,7 +35,6 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 	full: {
 		leftSegments: ["pi", "hostname", "model", "plan_mode", "path", "git", "pr", "subagents"],
 		rightSegments: [
-			"session_name",
 			"token_in",
 			"token_out",
 			"token_rate",
@@ -44,6 +43,7 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 			"context_pct",
 			"time_spent",
 			"time",
+			"profile_f5xc",
 		],
 		separator: "powerline",
 		segmentOptions: {
@@ -58,7 +58,6 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 		// Full preset with all Nerd Font icons
 		leftSegments: ["pi", "hostname", "model", "plan_mode", "path", "git", "pr", "session", "subagents"],
 		rightSegments: [
-			"session_name",
 			"token_in",
 			"token_out",
 			"cache_read",
@@ -69,6 +68,7 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 			"context_total",
 			"time_spent",
 			"time",
+			"profile_f5xc",
 		],
 		separator: "powerline",
 		segmentOptions: {
@@ -82,7 +82,7 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 	ascii: {
 		// No Nerd Font dependencies
 		leftSegments: ["model", "plan_mode", "path", "git", "pr"],
-		rightSegments: ["session_name", "token_total", "cost", "context_pct"],
+		rightSegments: ["token_total", "cost", "context_pct", "profile_f5xc"],
 		separator: "ascii",
 		segmentOptions: {
 			model: { showThinkingLevel: true },
@@ -91,11 +91,23 @@ export const STATUS_LINE_PRESETS: Record<StatusLinePreset, PresetDef> = {
 		},
 	},
 
+	xcsh: {
+		leftSegments: ["context_pct", "path", "git"],
+		rightSegments: ["plan_mode", "profile_f5xc"],
+		separator: "powerline",
+		segmentOptions: {
+			model: { showThinkingLevel: true },
+			path: { abbreviate: true, maxLength: 40, stripWorkPrefix: true },
+			git: { showBranch: true, showStaged: true, showUnstaged: true, showUntracked: true },
+			context_pct: { compact: true },
+		},
+	},
+
 	custom: {
 		// User-defined - these are just defaults that get overridden
 		leftSegments: ["model", "plan_mode", "path", "git", "pr"],
-		rightSegments: ["session_name", "token_total", "cost", "context_pct"],
-		separator: "powerline-thin",
+		rightSegments: ["token_total", "cost", "context_pct", "profile_f5xc"],
+		separator: "powerline",
 		segmentOptions: {},
 	},
 };

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-monochrome",
 	"vars": {
 		"accent": "#3b82f6",
@@ -91,7 +91,8 @@
 		"statusLineOutput": "gray600",
 		"statusLineCost": "gray700",
 		"statusLineSubagents": "accent",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "gray900"
 	},
 	"export": {
 		"pageBg": "#fafafa",

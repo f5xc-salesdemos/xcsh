@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-one",
 	"vars": {
 		"mono1": "#abb2bf",
@@ -90,7 +90,8 @@
 		"statusLineOutput": "hue3",
 		"statusLineCost": "hue5",
 		"statusLineSubagents": "hue62",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "hue3"
 	},
 	"export": {
 		"pageBg": "#1e2227",

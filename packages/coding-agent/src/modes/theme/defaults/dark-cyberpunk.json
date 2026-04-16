@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-cyberpunk",
 	"vars": {
 		"neonPink": "#FF007A",
@@ -92,7 +92,8 @@
 		"statusLineOutput": "#EA00D9",
 		"statusLineCost": "#FF6F61",
 		"statusLineSubagents": "accent",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "neonMagenta"
 	},
 	"export": {
 		"pageBg": "#091833",

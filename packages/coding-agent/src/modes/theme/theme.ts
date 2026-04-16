@@ -1,16 +1,16 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { Effort } from "@oh-my-pi/pi-ai";
+import type { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import type { Effort } from "@f5xc-salesdemos/pi-ai";
 import {
 	detectMacOSAppearance,
 	MacAppearanceObserver,
 	type HighlightColors as NativeHighlightColors,
 	highlightCode as nativeHighlightCode,
 	supportsLanguage as nativeSupportsLanguage,
-} from "@oh-my-pi/pi-natives";
-import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@oh-my-pi/pi-tui";
-import { adjustHsv, getCustomThemesDir, isEnoent, logger } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-natives";
+import type { EditorTheme, MarkdownTheme, SelectListTheme, SymbolTheme } from "@f5xc-salesdemos/pi-tui";
+import { adjustHsv, getCustomThemesDir, isEnoent, logger } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import chalk from "chalk";
@@ -805,8 +805,11 @@ const ThemeJsonSchema = Type.Object({
 	name: Type.String(),
 	vars: Type.Optional(Type.Record(Type.String(), ColorValueSchema)),
 	colors: Type.Object({
-		// Core UI (10 colors)
+		// Core UI (12 colors)
 		accent: ColorValueSchema,
+		chromeAccent: Type.Optional(ColorValueSchema),
+		spinnerAccent: Type.Optional(ColorValueSchema),
+		contentAccent: Type.Optional(ColorValueSchema),
 		border: ColorValueSchema,
 		borderAccent: ColorValueSchema,
 		borderMuted: ColorValueSchema,
@@ -854,6 +857,7 @@ const ThemeJsonSchema = Type.Object({
 		syntaxType: ColorValueSchema,
 		syntaxOperator: ColorValueSchema,
 		syntaxPunctuation: ColorValueSchema,
+		syntaxControl: ColorValueSchema,
 		// Thinking Level Borders (6 colors)
 		thinkingOff: ColorValueSchema,
 		thinkingMinimal: ColorValueSchema,
@@ -880,6 +884,30 @@ const ThemeJsonSchema = Type.Object({
 		statusLineOutput: ColorValueSchema,
 		statusLineCost: ColorValueSchema,
 		statusLineSubagents: ColorValueSchema,
+		// Powerline segment backgrounds
+		statusLineOsIconBg: Type.Optional(ColorValueSchema),
+		statusLineOsIconFg: Type.Optional(ColorValueSchema),
+		statusLinePathBg: Type.Optional(ColorValueSchema),
+		statusLinePathFg: Type.Optional(ColorValueSchema),
+		statusLineGitCleanBg: Type.Optional(ColorValueSchema),
+		statusLineGitDirtyBg: Type.Optional(ColorValueSchema),
+		statusLineGitUntrackedBg: Type.Optional(ColorValueSchema),
+		statusLineGitConflictBg: Type.Optional(ColorValueSchema),
+		statusLineGitFg: Type.Optional(ColorValueSchema),
+		statusLineGitCleanFg: Type.Optional(ColorValueSchema),
+		statusLineGitDirtyFg: Type.Optional(ColorValueSchema),
+		statusLineGitUntrackedFg: Type.Optional(ColorValueSchema),
+		statusLineGitConflictFg: Type.Optional(ColorValueSchema),
+		statusLinePlanModeBg: Type.Optional(ColorValueSchema),
+		statusLinePlanModeFg: Type.Optional(ColorValueSchema),
+		statusLineContextPctBg: Type.Optional(ColorValueSchema),
+		statusLineContextPctFg: Type.Optional(ColorValueSchema),
+		statusLineContextPctNormalBg: Type.Optional(ColorValueSchema),
+		statusLineContextPctWarningBg: Type.Optional(ColorValueSchema),
+		statusLineContextPctPurpleBg: Type.Optional(ColorValueSchema),
+		statusLineContextPctErrorBg: Type.Optional(ColorValueSchema),
+		statusLineProfileF5xcBg: Type.Optional(ColorValueSchema),
+		statusLineProfileF5xcFg: Type.Optional(ColorValueSchema),
 	}),
 	export: Type.Optional(
 		Type.Object({
@@ -898,6 +926,9 @@ const validateThemeJson = TypeCompiler.Compile(ThemeJsonSchema as any);
 
 export type ThemeColor =
 	| "accent"
+	| "chromeAccent"
+	| "spinnerAccent"
+	| "contentAccent"
 	| "border"
 	| "borderAccent"
 	| "borderMuted"
@@ -935,6 +966,7 @@ export type ThemeColor =
 	| "syntaxType"
 	| "syntaxOperator"
 	| "syntaxPunctuation"
+	| "syntaxControl"
 	| "thinkingOff"
 	| "thinkingMinimal"
 	| "thinkingLow"
@@ -955,11 +987,37 @@ export type ThemeColor =
 	| "statusLineUntracked"
 	| "statusLineOutput"
 	| "statusLineCost"
-	| "statusLineSubagents";
+	| "statusLineSubagents"
+	| "statusLineOsIconBg"
+	| "statusLineOsIconFg"
+	| "statusLinePathBg"
+	| "statusLinePathFg"
+	| "statusLineGitCleanBg"
+	| "statusLineGitDirtyBg"
+	| "statusLineGitUntrackedBg"
+	| "statusLineGitConflictBg"
+	| "statusLineGitCleanFg"
+	| "statusLineGitDirtyFg"
+	| "statusLineGitUntrackedFg"
+	| "statusLineGitConflictFg"
+	| "statusLineGitFg"
+	| "statusLinePlanModeBg"
+	| "statusLinePlanModeFg"
+	| "statusLineContextPctBg"
+	| "statusLineContextPctFg"
+	| "statusLineContextPctNormalBg"
+	| "statusLineContextPctWarningBg"
+	| "statusLineContextPctPurpleBg"
+	| "statusLineContextPctErrorBg"
+	| "statusLineProfileF5xcBg"
+	| "statusLineProfileF5xcFg";
 
 /** Set of all valid ThemeColor string values for runtime validation */
 const THEME_COLOR_RECORD = {
 	accent: true,
+	chromeAccent: true,
+	spinnerAccent: true,
+	contentAccent: true,
 	border: true,
 	borderAccent: true,
 	borderMuted: true,
@@ -997,6 +1055,7 @@ const THEME_COLOR_RECORD = {
 	syntaxType: true,
 	syntaxOperator: true,
 	syntaxPunctuation: true,
+	syntaxControl: true,
 	thinkingOff: true,
 	thinkingMinimal: true,
 	thinkingLow: true,
@@ -1018,6 +1077,29 @@ const THEME_COLOR_RECORD = {
 	statusLineOutput: true,
 	statusLineCost: true,
 	statusLineSubagents: true,
+	statusLineOsIconBg: true,
+	statusLineOsIconFg: true,
+	statusLinePathBg: true,
+	statusLinePathFg: true,
+	statusLineGitCleanBg: true,
+	statusLineGitDirtyBg: true,
+	statusLineGitUntrackedBg: true,
+	statusLineGitConflictBg: true,
+	statusLineGitFg: true,
+	statusLineGitCleanFg: true,
+	statusLineGitDirtyFg: true,
+	statusLineGitUntrackedFg: true,
+	statusLineGitConflictFg: true,
+	statusLinePlanModeBg: true,
+	statusLinePlanModeFg: true,
+	statusLineContextPctBg: true,
+	statusLineContextPctFg: true,
+	statusLineContextPctNormalBg: true,
+	statusLineContextPctWarningBg: true,
+	statusLineContextPctPurpleBg: true,
+	statusLineContextPctErrorBg: true,
+	statusLineProfileF5xcBg: true,
+	statusLineProfileF5xcFg: true,
 } satisfies Record<ThemeColor, true>;
 
 const VALID_THEME_COLORS: ReadonlySet<string> = new Set(Object.keys(THEME_COLOR_RECORD));
@@ -1229,6 +1311,34 @@ export class Theme {
 		for (const [key, value] of Object.entries(fgColors) as [ThemeColor, string | number][]) {
 			this.#fgColors[key] = fgAnsi(value, mode);
 		}
+		// Fallback: chromeAccent and contentAccent inherit from accent when not defined
+		this.#fgColors.chromeAccent ??= this.#fgColors.accent;
+		this.#fgColors.spinnerAccent ??= this.#fgColors.accent;
+		// Powerline segment bg/fg fallbacks
+		this.#fgColors.statusLineOsIconBg ??= this.#fgColors.muted;
+		this.#fgColors.statusLineOsIconFg ??= this.#fgColors.text;
+		this.#fgColors.statusLinePathBg ??= this.#fgColors.statusLinePath;
+		this.#fgColors.statusLinePathFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineGitCleanBg ??= this.#fgColors.statusLineGitClean;
+		this.#fgColors.statusLineGitDirtyBg ??= this.#fgColors.statusLineGitDirty;
+		this.#fgColors.statusLineGitUntrackedBg ??= this.#fgColors.statusLineUntracked;
+		this.#fgColors.statusLineGitConflictBg ??= this.#fgColors.error;
+		this.#fgColors.statusLineGitFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineGitCleanFg ??= this.#fgColors.statusLineGitFg;
+		this.#fgColors.statusLineGitDirtyFg ??= this.#fgColors.statusLineGitFg;
+		this.#fgColors.statusLineGitUntrackedFg ??= this.#fgColors.statusLineGitFg;
+		this.#fgColors.statusLineGitConflictFg ??= this.#fgColors.statusLineGitFg;
+		this.#fgColors.statusLinePlanModeBg ??= this.#fgColors.muted;
+		this.#fgColors.statusLinePlanModeFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineContextPctBg ??= this.#fgColors.muted;
+		this.#fgColors.statusLineContextPctFg ??= this.#fgColors.text;
+		this.#fgColors.statusLineContextPctNormalBg ??= this.#fgColors.statusLineContextPctBg;
+		this.#fgColors.statusLineContextPctWarningBg ??= this.#fgColors.statusLineContextPctBg;
+		this.#fgColors.statusLineContextPctPurpleBg ??= this.#fgColors.statusLineContextPctBg;
+		this.#fgColors.statusLineContextPctErrorBg ??= this.#fgColors.statusLineContextPctBg;
+		this.#fgColors.statusLineProfileF5xcBg ??= this.#fgColors.muted;
+		this.#fgColors.statusLineProfileF5xcFg ??= this.#fgColors.text;
+		this.#fgColors.contentAccent ??= this.#fgColors.accent;
 		this.#bgColors = {} as Record<ThemeBg, string>;
 		for (const [key, value] of Object.entries(bgColors) as [ThemeBg, string | number][]) {
 			this.#bgColors[key] = bgAnsi(value, mode);
@@ -1281,6 +1391,11 @@ export class Theme {
 		const ansi = this.#fgColors[color];
 		if (!ansi) throw new Error(`Unknown theme color: ${color}`);
 		return ansi;
+	}
+
+	/** Convert a ThemeColor's fg ANSI code to a bg ANSI code (swap \x1b[38; → \x1b[48;). */
+	fgColorAsBg(color: ThemeColor): string {
+		return this.getFgAnsi(color).replace("\x1b[38;", "\x1b[48;");
 	}
 
 	getBgAnsi(color: ThemeBg): string {
@@ -2287,6 +2402,7 @@ function getHighlightColors(t: Theme): NativeHighlightColors {
 			type: t.getFgAnsi("syntaxType"),
 			operator: t.getFgAnsi("syntaxOperator"),
 			punctuation: t.getFgAnsi("syntaxPunctuation"),
+			control: t.getFgAnsi("syntaxControl"),
 			inserted: t.getFgAnsi("toolDiffAdded"),
 			deleted: t.getFgAnsi("toolDiffRemoved"),
 		};
@@ -2353,8 +2469,8 @@ export function getMarkdownTheme(): MarkdownTheme {
 
 export function getSelectListTheme(): SelectListTheme {
 	return {
-		selectedPrefix: (text: string) => theme.fg("accent", text),
-		selectedText: (text: string) => theme.fg("accent", text),
+		selectedPrefix: (text: string) => theme.fg("chromeAccent", text),
+		selectedText: (text: string) => theme.fg("chromeAccent", text),
 		description: (text: string) => theme.fg("muted", text),
 		scrollInfo: (text: string) => theme.fg("muted", text),
 		noMatch: (text: string) => theme.fg("muted", text),
@@ -2371,12 +2487,13 @@ export function getEditorTheme(): EditorTheme {
 	};
 }
 
-export function getSettingsListTheme(): import("@oh-my-pi/pi-tui").SettingsListTheme {
+export function getSettingsListTheme(): import("@f5xc-salesdemos/pi-tui").SettingsListTheme {
 	return {
-		label: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : text),
-		value: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : theme.fg("muted", text)),
+		label: (text: string, selected: boolean) => (selected ? theme.fg("contentAccent", text) : text),
+		value: (text: string, selected: boolean) =>
+			selected ? theme.fg("contentAccent", text) : theme.fg("muted", text),
 		description: (text: string) => theme.fg("dim", text),
-		cursor: theme.fg("accent", `${theme.nav.cursor} `),
+		cursor: theme.fg("chromeAccent", `${theme.nav.cursor} `),
 		hint: (text: string) => theme.fg("dim", text),
 	};
 }

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-synthwave",
 	"vars": {
 		"hotPink": "#ff2975",
@@ -93,7 +93,8 @@
 		"statusLineOutput": "neonMagenta",
 		"statusLineCost": "vaporPink",
 		"statusLineSubagents": "hotPink",
-		"pythonMode": "gold"
+		"pythonMode": "gold",
+		"syntaxControl": "#FF7EDB"
 	},
 	"export": {
 		"pageBg": "#0c0c0c",

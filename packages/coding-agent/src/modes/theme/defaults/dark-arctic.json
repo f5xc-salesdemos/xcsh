@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-arctic",
 	"vars": {
 		"polarNight0": "#2e3440",
@@ -94,7 +94,8 @@
 		"statusLineOutput": 139,
 		"statusLineCost": 139,
 		"statusLineSubagents": "iceBlue",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "frost3"
 	},
 	"export": {
 		"pageBg": "#1a1f2b",

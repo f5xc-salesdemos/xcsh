@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-equinox",
 	"vars": {
 		"charcoal": "#121418",
@@ -80,7 +80,8 @@
 		"statusLineOutput": "light",
 		"statusLineCost": "warm",
 		"statusLineSubagents": "warm",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "violet"
 	},
 	"export": {
 		"pageBg": "#0f1115",

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-cyberpunk",
 	"vars": {
 		"neonPink": "#FF007A",
@@ -86,7 +86,8 @@
 		"statusLineOutput": "deepMagenta",
 		"statusLineCost": "neonPink",
 		"statusLineSubagents": "neonMagenta",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#D600FF"
 	},
 	"export": {
 		"pageBg": "offWhite",

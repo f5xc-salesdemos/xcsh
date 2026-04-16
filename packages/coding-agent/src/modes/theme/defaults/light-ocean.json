@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-ocean",
 	"vars": {
 		"oceanDeep": "#297685",
@@ -89,7 +89,8 @@
 		"statusLineOutput": 110,
 		"statusLineCost": 173,
 		"statusLineSubagents": "oceanTeal",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#0288d1"
 	},
 	"export": {
 		"pageBg": "lightSand",

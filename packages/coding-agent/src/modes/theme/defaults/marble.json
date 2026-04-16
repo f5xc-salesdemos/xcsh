@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "marble",
 	"vars": {
 		"carraraWhite": "#f9f7f5",
@@ -83,7 +83,8 @@
 		"statusLineOutput": 133,
 		"statusLineCost": 133,
 		"statusLineSubagents": "veinGray",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#2c3e50"
 	},
 	"export": {
 		"pageBg": "#f9f7f5",

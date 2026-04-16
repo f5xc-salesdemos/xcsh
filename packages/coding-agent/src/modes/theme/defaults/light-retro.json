@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-retro",
 	"vars": {
 		"paper": "#f4f1e8",
@@ -88,7 +88,8 @@
 		"statusLineOutput": 133,
 		"statusLineCost": 133,
 		"statusLineSubagents": "amberDark",
-		"pythonMode": "amber"
+		"pythonMode": "amber",
+		"syntaxControl": "#cc6600"
 	},
 	"export": {
 		"pageBg": "paper",

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-dawn",
 	"vars": {
 		"sunrise": "#f7d8c1",
@@ -80,7 +80,8 @@
 		"statusLineOutput": "ink",
 		"statusLineCost": "sunrise",
 		"statusLineSubagents": "gold",
-		"pythonMode": "gold"
+		"pythonMode": "gold",
+		"syntaxControl": "sky"
 	},
 	"export": {
 		"pageBg": "#faf7f2",

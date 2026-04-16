@@ -1,13 +1,11 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { TERMINAL } from "@oh-my-pi/pi-tui";
-import { formatDuration, formatNumber, getProjectDir, relativePathWithinRoot } from "@oh-my-pi/pi-utils";
+import { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
+import { TERMINAL } from "@f5xc-salesdemos/pi-tui";
+import { formatDuration, formatNumber, getProjectDir, relativePathWithinRoot } from "@f5xc-salesdemos/pi-utils";
 import { theme } from "../../../modes/theme/theme";
 import { shortenPath } from "../../../tools/render-utils";
-import { getSessionAccentAnsi, getSessionAccentHex } from "../../../utils/session-color";
-import { sanitizeStatusText } from "../../shared";
-import { getContextUsageLevel, getContextUsageThemeColor } from "./context-thresholds";
+import { getContextUsageBgThemeColor, getContextUsageLevel, getContextUsageThemeColor } from "./context-thresholds";
 import type { RenderedSegment, SegmentContext, StatusLineSegment, StatusLineSegmentId } from "./types";
 
 export type { SegmentContext } from "./types";
@@ -36,11 +34,24 @@ function normalizePremiumRequests(value: number): number {
 // Segment Implementations
 // ═══════════════════════════════════════════════════════════════════════════
 
+const osIconSegment: StatusLineSegment = {
+	id: "os_icon",
+	render(_ctx) {
+		const icon = process.platform === "darwin" ? "\uf179" : process.platform === "win32" ? "\uf17a" : "\uf17c";
+		return {
+			content: icon,
+			visible: true,
+			bg: theme.fgColorAsBg("statusLineOsIconBg"),
+			fg: theme.getFgAnsi("statusLineOsIconFg"),
+		};
+	},
+};
+
 const piSegment: StatusLineSegment = {
 	id: "pi",
 	render(_ctx) {
 		const content = theme.icon.pi ? `${theme.icon.pi} ` : "";
-		return { content: theme.fg("accent", content), visible: true };
+		return { content: theme.fg("contentAccent", content), visible: true };
 	},
 };
 
@@ -67,7 +78,8 @@ const modelSegment: StatusLineSegment = {
 			if (level !== ThinkingLevel.Off) {
 				const thinkingText = theme.thinking[level as keyof typeof theme.thinking];
 				if (thinkingText) {
-					content += `${theme.sep.dot}${thinkingText}`;
+					const coloredThinking = theme.getThinkingBorderColor(level)(thinkingText);
+					content += `${theme.sep.dot}${coloredThinking}`;
 				}
 			}
 		}
@@ -86,8 +98,13 @@ const planModeSegment: StatusLineSegment = {
 
 		const label = status.paused ? "Plan ⏸" : "Plan";
 		const content = withIcon(theme.icon.plan, label);
-		const color = status.paused ? "warning" : "accent";
-		return { content: theme.fg(color, content), visible: true };
+		const color = status.paused ? "warning" : "chromeAccent";
+		return {
+			content: theme.fg(color, content),
+			visible: true,
+			bg: theme.fgColorAsBg("statusLinePlanModeBg"),
+			fg: theme.getFgAnsi("statusLinePlanModeFg"),
+		};
 	},
 };
 
@@ -113,7 +130,12 @@ const pathSegment: StatusLineSegment = {
 		}
 
 		const content = withIcon(theme.icon.folder, pwd);
-		return { content: theme.fg("statusLinePath", content), visible: true };
+		return {
+			content: theme.fg("statusLinePathFg", content),
+			visible: true,
+			bg: theme.fgColorAsBg("statusLinePathBg"),
+			fg: theme.getFgAnsi("statusLinePathFg"),
+		};
 	},
 };
 
@@ -125,7 +147,6 @@ const gitSegment: StatusLineSegment = {
 
 		const opts = ctx.options.git ?? {};
 		const gitStatus = status;
-		const isDirty = gitStatus && (gitStatus.staged > 0 || gitStatus.unstaged > 0 || gitStatus.untracked > 0);
 
 		const showBranch = opts.showBranch !== false;
 		let content = "";
@@ -133,32 +154,42 @@ const gitSegment: StatusLineSegment = {
 			content = withIcon(theme.icon.branch, branch);
 		}
 
-		// Add status indicators
+		// p10k-style indicators: ⇡N ⇣M *N ~N +N !N ?N
 		if (gitStatus) {
-			const indicators: string[] = [];
-			if (opts.showUnstaged !== false && gitStatus.unstaged > 0) {
-				indicators.push(theme.fg("statusLineDirty", `*${gitStatus.unstaged}`));
-			}
-			if (opts.showStaged !== false && gitStatus.staged > 0) {
-				indicators.push(theme.fg("statusLineStaged", `+${gitStatus.staged}`));
-			}
-			if (opts.showUntracked !== false && gitStatus.untracked > 0) {
-				indicators.push(theme.fg("statusLineUntracked", `?${gitStatus.untracked}`));
-			}
-			if (indicators.length > 0) {
-				const indicatorText = indicators.join(" ");
-				if (!content && showBranch === false) {
-					content = withIcon(theme.icon.git, indicatorText);
-				} else {
-					content += content ? ` ${indicatorText}` : indicatorText;
-				}
+			const parts: string[] = [];
+			if (gitStatus.ahead > 0) parts.push(`⇡${gitStatus.ahead}`);
+			if (gitStatus.behind > 0) parts.push(`⇣${gitStatus.behind}`);
+			if (gitStatus.stashes > 0) parts.push(`*${gitStatus.stashes}`);
+			if (gitStatus.action) parts.push(gitStatus.action);
+			if (gitStatus.conflicted > 0) parts.push(`~${gitStatus.conflicted}`);
+			if (opts.showStaged !== false && gitStatus.staged > 0) parts.push(`+${gitStatus.staged}`);
+			if (opts.showUnstaged !== false && gitStatus.unstaged > 0) parts.push(`!${gitStatus.unstaged}`);
+			if (opts.showUntracked !== false && gitStatus.untracked > 0) parts.push(`?${gitStatus.untracked}`);
+			if (parts.length > 0) {
+				content += content ? ` ${parts.join(" ")}` : parts.join(" ");
 			}
 		}
 
 		if (!content) return { content: "", visible: false };
 
-		const colorName = isDirty ? "statusLineGitDirty" : "statusLineGitClean";
-		return { content: theme.fg(colorName, content), visible: true };
+		// State priority: conflicted > modified > untracked > clean (matches p10k)
+		const hasConflict = gitStatus && gitStatus.conflicted > 0;
+		const hasModified = gitStatus && (gitStatus.staged > 0 || gitStatus.unstaged > 0);
+		const hasUntracked = gitStatus && gitStatus.untracked > 0;
+		const [bgToken, fgToken] = hasConflict
+			? (["statusLineGitConflictBg", "statusLineGitConflictFg"] as const)
+			: hasModified
+				? (["statusLineGitDirtyBg", "statusLineGitDirtyFg"] as const)
+				: hasUntracked
+					? (["statusLineGitUntrackedBg", "statusLineGitUntrackedFg"] as const)
+					: (["statusLineGitCleanBg", "statusLineGitCleanFg"] as const);
+
+		return {
+			content: theme.fg(fgToken, content),
+			visible: true,
+			bg: theme.fgColorAsBg(bgToken),
+			fg: theme.getFgAnsi(fgToken),
+		};
 	},
 };
 
@@ -170,7 +201,7 @@ const prSegment: StatusLineSegment = {
 
 		const label = withIcon(theme.icon.pr, `#${pr.number}`);
 		const content = TERMINAL.hyperlinks ? `\x1b]8;;${pr.url}\x07${label}\x1b]8;;\x07` : label;
-		return { content: theme.fg("accent", content), visible: true };
+		return { content: theme.fg("contentAccent", content), visible: true };
 	},
 };
 
@@ -256,14 +287,26 @@ const contextPctSegment: StatusLineSegment = {
 	render(ctx) {
 		const pct = ctx.contextPercent;
 		const window = ctx.contextWindow;
+		const level = getContextUsageLevel(pct, window);
+		const compact = ctx.options?.context_pct?.compact;
 
-		const autoIcon = ctx.autoCompactEnabled && theme.icon.auto ? ` ${theme.icon.auto}` : "";
-		const text = `${pct.toFixed(1)}%/${formatNumber(window)}${autoIcon}`;
+		let text: string;
+		if (compact) {
+			text = `${Math.round(pct)}%`;
+		} else {
+			const autoIcon = ctx.autoCompactEnabled && theme.icon.auto ? ` ${theme.icon.auto}` : "";
+			text = `${pct.toFixed(1)}%/${formatNumber(window)}${autoIcon}`;
+		}
 
-		const color = getContextUsageThemeColor(getContextUsageLevel(pct, window));
-		const content = withIcon(theme.icon.context, theme.fg(color, text));
+		const color = getContextUsageThemeColor(level);
+		const content = compact ? theme.fg(color, text) : withIcon(theme.icon.context, theme.fg(color, text));
 
-		return { content, visible: true };
+		return {
+			content,
+			visible: true,
+			bg: theme.fgColorAsBg(getContextUsageBgThemeColor(level)),
+			fg: theme.getFgAnsi("statusLineContextPctFg"),
+		};
 	},
 };
 
@@ -356,23 +399,12 @@ const cacheWriteSegment: StatusLineSegment = {
 	},
 };
 
-const sessionNameSegment: StatusLineSegment = {
-	id: "session_name",
-	render(ctx) {
-		const sessionManager = ctx.session.sessionManager;
-		const name = sessionManager?.titleSource === "auto" ? undefined : sessionManager?.getSessionName();
-		if (!name) return { content: "", visible: false };
-
-		const ansi = getSessionAccentAnsi(getSessionAccentHex(name)) ?? theme.getFgAnsi("accent");
-		return { content: `${ansi}${sanitizeStatusText(name)}\x1b[39m`, visible: true };
-	},
-};
-
 // ═══════════════════════════════════════════════════════════════════════════
 // Segment Registry
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
+	os_icon: osIconSegment,
 	pi: piSegment,
 	model: modelSegment,
 	plan_mode: planModeSegment,
@@ -393,7 +425,23 @@ export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
 	hostname: hostnameSegment,
 	cache_read: cacheReadSegment,
 	cache_write: cacheWriteSegment,
-	session_name: sessionNameSegment,
+	profile_f5xc: {
+		id: "profile_f5xc",
+		render() {
+			try {
+				const { renderF5XCProfileSegment } = require("../../../services/f5xc-profile-segment");
+				const result = renderF5XCProfileSegment();
+				if (!result.visible) return result;
+				return {
+					...result,
+					bg: theme.fgColorAsBg("statusLineProfileF5xcBg"),
+					fg: theme.getFgAnsi("statusLineProfileF5xcFg"),
+				};
+			} catch {
+				return { content: "", visible: false };
+			}
+		},
+	},
 };
 
 export function renderSegment(id: StatusLineSegmentId, ctx: SegmentContext): RenderedSegment {

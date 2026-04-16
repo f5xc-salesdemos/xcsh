@@ -1,4 +1,4 @@
-import { extractMermaidBlocks, logger, renderMermaidAsciiSafe } from "@oh-my-pi/pi-utils";
+import { extractMermaidBlocks, logger, renderMermaidAsciiSafe } from "@f5xc-salesdemos/pi-utils";
 
 const cache = new Map<bigint | number, string | null>();
 

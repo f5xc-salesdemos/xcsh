@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-synthwave",
 	"vars": {
 		"retroPink": "#ff71ce",
@@ -88,7 +88,8 @@
 		"statusLineOutput": "#f222ff",
 		"statusLineCost": "#f222ff",
 		"statusLineSubagents": "retroPink",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#b967ff"
 	},
 	"export": {
 		"pageBg": "#fef6ff",

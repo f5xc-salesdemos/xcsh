@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-reef",
 	"vars": {
 		"deepBlue": "#0A0F14",
@@ -81,7 +81,8 @@
 		"statusLineOutput": "coralPink",
 		"statusLineCost": "fishYellow",
 		"statusLineSubagents": "anemonePurple",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "anemonePurple"
 	},
 	"export": {
 		"pageBg": "#070B10",

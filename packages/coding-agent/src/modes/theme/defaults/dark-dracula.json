@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-dracula",
 	"vars": {
 		"background": "#282A36",
@@ -88,7 +88,8 @@
 		"statusLineOutput": "pink",
 		"statusLineCost": "pink",
 		"statusLineSubagents": "purple",
-		"pythonMode": "yellow"
+		"pythonMode": "yellow",
+		"syntaxControl": "#FF79C6"
 	},
 	"export": {
 		"pageBg": "#1e1f29",

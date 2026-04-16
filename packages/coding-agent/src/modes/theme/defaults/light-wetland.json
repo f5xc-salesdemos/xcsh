@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-wetland",
 	"vars": {
 		"wetlandBg": "#F1F5F3",
@@ -81,7 +81,8 @@
 		"statusLineOutput": "heronBlue",
 		"statusLineCost": "warningGold",
 		"statusLineSubagents": "heronBlue",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "heronBlue"
 	},
 	"export": {
 		"pageBg": "#F1F5F3",

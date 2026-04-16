@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-tundra",
 	"vars": {
 		"frostBlack": "#0B0F12",
@@ -81,7 +81,8 @@
 		"statusLineOutput": "auroraGreen",
 		"statusLineCost": "warningGold",
 		"statusLineSubagents": "auroraGreen",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "auroraGreen"
 	},
 	"export": {
 		"pageBg": "#080B0E",

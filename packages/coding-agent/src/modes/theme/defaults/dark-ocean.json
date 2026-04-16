@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-ocean",
 	"vars": {
 		"deepSeaBlue": "#0B132B",
@@ -91,7 +91,8 @@
 		"statusLineOutput": 204,
 		"statusLineCost": 204,
 		"statusLineSubagents": "coral",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#6FFFE9"
 	},
 	"export": {
 		"pageBg": "abyssBlack",

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark",
 	"vars": {
 		"cyan": "#0088fa",
@@ -64,6 +64,7 @@
 		"syntaxType": "#4EC9B0",
 		"syntaxOperator": "#D4D4D4",
 		"syntaxPunctuation": "#D4D4D4",
+		"syntaxControl": "#C586C0",
 		"thinkingOff": "darkGray",
 		"thinkingMinimal": "dimGray",
 		"thinkingLow": "#178fb9",

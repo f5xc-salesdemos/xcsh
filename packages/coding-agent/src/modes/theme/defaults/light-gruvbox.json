@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-gruvbox",
 	"vars": {
 		"bg0Hard": "#f9f5d7",
@@ -98,7 +98,8 @@
 		"statusLineOutput": "purple",
 		"statusLineCost": "purple",
 		"statusLineSubagents": "aqua",
-		"pythonMode": "yellow"
+		"pythonMode": "yellow",
+		"syntaxControl": "#8f3f71"
 	},
 	"export": {
 		"pageBg": "bg0Hard",

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-forest",
 	"vars": {
 		"moss": "#8FBC8F",
@@ -86,7 +86,8 @@
 		"statusLineOutput": "walnut",
 		"statusLineCost": "earth",
 		"statusLineSubagents": "moss",
-		"pythonMode": "amber"
+		"pythonMode": "amber",
+		"syntaxControl": "pine"
 	},
 	"export": {
 		"pageBg": "#0A120E",

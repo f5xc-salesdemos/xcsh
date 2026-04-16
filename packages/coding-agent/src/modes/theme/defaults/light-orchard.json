@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-orchard",
 	"vars": {
 		"orchardBg": "#F7F2E8",
@@ -81,7 +81,8 @@
 		"statusLineOutput": "blossomPink",
 		"statusLineCost": "honeyGold",
 		"statusLineSubagents": "blossomPink",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "plumPurple"
 	},
 	"export": {
 		"pageBg": "#F7F2E8",

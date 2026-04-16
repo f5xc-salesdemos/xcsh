@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-eclipse",
 	"vars": {
 		"void": "#050507",
@@ -81,7 +81,8 @@
 		"statusLineOutput": "silver",
 		"statusLineCost": "corona",
 		"statusLineSubagents": "corona",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "violet"
 	},
 	"export": {
 		"pageBg": "#08070d",

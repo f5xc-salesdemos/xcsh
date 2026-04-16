@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-twilight",
 	"vars": {
 		"indigo": "#15142a",
@@ -81,7 +81,8 @@
 		"statusLineOutput": "afterglow",
 		"statusLineCost": "sunset",
 		"statusLineSubagents": "rose",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "violet"
 	},
 	"export": {
 		"pageBg": "#0f0e21",

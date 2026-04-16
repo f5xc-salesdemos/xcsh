@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "dark-lunar",
 	"vars": {
 		"night": "#0b0d12",
@@ -79,7 +79,8 @@
 		"statusLineOutput": "moonlight",
 		"statusLineCost": "glow",
 		"statusLineSubagents": "moonlight",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "ice"
 	},
 	"export": {
 		"pageBg": "#0a0c11",

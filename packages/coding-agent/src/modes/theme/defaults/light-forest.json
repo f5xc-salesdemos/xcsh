@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "light-forest",
 	"vars": {
 		"fernGreen": "#4f7942",
@@ -90,7 +90,8 @@
 		"statusLineOutput": 131,
 		"statusLineCost": 131,
 		"statusLineSubagents": "oliveBrown",
-		"pythonMode": "#f0c040"
+		"pythonMode": "#f0c040",
+		"syntaxControl": "#3d5a3c"
 	},
 	"export": {
 		"pageBg": "#f5f3ed",

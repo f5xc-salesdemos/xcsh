@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/f5xc-salesdemos/xcsh/main/packages/coding-agent/theme-schema.json",
 	"name": "sandstone",
 	"vars": {
 		"rust": "#b86040",
@@ -85,7 +85,8 @@
 		"statusLineOutput": 131,
 		"statusLineCost": 131,
 		"statusLineSubagents": "rust",
-		"pythonMode": "amber"
+		"pythonMode": "amber",
+		"syntaxControl": "#b86040"
 	},
 	"export": {
 		"pageBg": "#f5ede3",
