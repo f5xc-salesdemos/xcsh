@@ -1,6 +1,6 @@
 # Natives Addon Loader Runtime
 
-This document deep-dives the addon loading/validation layer in `@oh-my-pi/pi-natives`: how `native.ts` decides which `.node` file to load, when embedded payload extraction runs, and how startup failures are reported.
+This document deep-dives the addon loading/validation layer in `@f5xc-salesdemos/pi-natives`: how `native.ts` decides which `.node` file to load, when embedded payload extraction runs, and how startup failures are reported.
 
 ## Implementation files
 
@@ -31,7 +31,7 @@ At module initialization (`export const native = loadNative();`), `native.ts` co
   - `execDir`: directory containing `process.execPath`.
   - `versionedDir`: `<getNativesDir()>/<packageVersion>`.
   - `userDataDir` fallback:
-    - Windows: `%LOCALAPPDATA%/omp` (or `%USERPROFILE%/AppData/Local/omp`).
+    - Windows: `%LOCALAPPDATA%/xcsh` (or `%USERPROFILE%/AppData/Local/xcsh`).
     - Non-Windows: `~/.local/bin`.
 - **Compiled-binary mode** (`isCompiledBinary`): true if any of:
   - `PI_COMPILED` env var is set, or
@@ -240,7 +240,7 @@ In compiled mode final diagnostics include:
 
 In normal package/runtime mode final diagnostics include:
 
-- reinstall hint (`bun install @oh-my-pi/pi-natives`),
+- reinstall hint (`bun install @f5xc-salesdemos/pi-natives`),
 - local rebuild command (`bun --cwd=packages/natives run build`),
 - optional x64 variant build hint (`TARGET_VARIANT=baseline|modern ...`).
 

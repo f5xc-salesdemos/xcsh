@@ -10,7 +10,7 @@ It documents only active behavior.
 
 ## Resolution model and precedence
 
-Most runtime lookups use `$env` from `@oh-my-pi/pi-utils` (`packages/utils/src/env.ts`).
+Most runtime lookups use `$env` from `@f5xc-salesdemos/pi-utils` (`packages/utils/src/env.ts`).
 
 `$env` loading order:
 
@@ -18,7 +18,7 @@ Most runtime lookups use `$env` from `@oh-my-pi/pi-utils` (`packages/utils/src/e
 2. Project `.env` (`$PWD/.env`) for keys not already set
 3. Home `.env` (`~/.env`) for keys not already set
 
-Additional rule in `.env` files: `OMP_*` keys are mirrored to `PI_*` keys during parse.
+Additional rule in `.env` files: `XCSH_*` keys are mirrored to `PI_*` keys during parse.
 
 ---
 
@@ -45,7 +45,7 @@ These are consumed via `getEnvApiKey()` (`packages/ai/src/stream.ts`) unless not
 | `NVIDIA_API_KEY`                | NVIDIA auth | Using `nvidia` provider                                       |                                                                                                     |
 | `NANO_GPT_API_KEY`              | NanoGPT auth | Using `nanogpt` provider                                      |                                                                                                     |
 | `VENICE_API_KEY`                | Venice auth | Using `venice` provider                                       |                                                                                                     |
-| `LITELLM_API_KEY`               | LiteLLM auth | Using `litellm` provider                                      | OpenAI-compatible LiteLLM proxy key                                                                 |
+| `LITELLM_API_KEY`               | LiteLLM auth | Using `litellm` provider                                      | OpenAI-compatible LiteLLM proxy key. When set with `LITELLM_BASE_URL`, enables auto-config of `models.yml` |
 | `LM_STUDIO_API_KEY`             | LM Studio auth (optional) | Using `lm-studio` provider with authenticated hosts           | Local LM Studio usually runs without auth; any non-empty token works when a key is required         |
 | `OLLAMA_API_KEY`                | Ollama auth (optional) | Using `ollama` provider with authenticated hosts              | Local Ollama usually runs without auth; any non-empty token works when a key is required            |
 | `LLAMA_CPP_API_KEY`             | Ollama auth (optional) | Using `llama-server` with `--api-key` parameter              | Local llama.cpp usually runs without auth; any non-empty token works when a key is configured       |
@@ -250,13 +250,14 @@ Extra conditional behavior:
 | `PI_NO_TITLE`              | If set (any non-empty value), disables auto session title generation on first user message   |
 | `NULL_PROMPT`              | If `true`, system prompt builder returns empty string                                        |
 | `PI_BLOCKED_AGENT`         | Blocks a specific subagent type in task tool                                                 |
-| `PI_SUBPROCESS_CMD`        | Overrides subagent spawn command (`omp` / `omp.cmd` resolution bypass)                       |
+| `PI_SUBPROCESS_CMD`        | Overrides subagent spawn command (`xcsh` / `xcsh.cmd` resolution bypass)                       |
 | `PI_TASK_MAX_OUTPUT_BYTES` | Max captured output bytes per subagent (default `500000`)                                    |
 | `PI_TASK_MAX_OUTPUT_LINES` | Max captured output lines per subagent (default `5000`)                                      |
 | `PI_TIMING`                | If `1`, enables startup/tool timing instrumentation logs                                     |
 | `PI_DEBUG_STARTUP`         | Enables startup stage debug prints to stderr in multiple startup paths                       |
 | `PI_PACKAGE_DIR`           | Overrides package asset base dir resolution (docs/examples/changelog path lookup)            |
 | `PI_DISABLE_LSPMUX`        | If `1`, disables lspmux detection/integration and forces direct LSP server spawning          |
+| `LITELLM_BASE_URL`         | LiteLLM proxy base URL. When set with `LITELLM_API_KEY`, triggers auto-generation of `models.yml` on first run and self-healing on every startup |
 | `LM_STUDIO_BASE_URL`       | Default implicit LM Studio discovery base URL override (`http://127.0.0.1:1234/v1` if unset) |
 | `OLLAMA_BASE_URL`          | Default implicit Ollama discovery base URL override (`http://127.0.0.1:11434` if unset)      |
 | `LLAMA_CPP_BASE_URL`       | Default implicit Llama.cpp discovery base URL override (`http://127.0.0.1:8080` if unset)    |
@@ -269,12 +270,12 @@ Extra conditional behavior:
 
 ## 6) Storage and config root paths
 
-These are consumed via `@oh-my-pi/pi-utils/dirs` and affect where coding-agent stores data.
+These are consumed via `@f5xc-salesdemos/pi-utils/dirs` and affect where coding-agent stores data.
 
 | Variable | Default / behavior |
 |---|---|
-| `PI_CONFIG_DIR` | Config root dirname under home (default `.omp`) |
-| `PI_CODING_AGENT_DIR` | Full override for agent directory (default `~/<PI_CONFIG_DIR or .omp>/agent`) |
+| `PI_CONFIG_DIR` | Config root dirname under home (default `.xcsh`) |
+| `PI_CODING_AGENT_DIR` | Full override for agent directory (default `~/<PI_CONFIG_DIR or .xcsh>/agent`) |
 | `PWD` | Used when matching canonical current working directory in path helpers |
 
 ---

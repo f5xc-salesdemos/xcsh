@@ -1,6 +1,6 @@
 # Natives Architecture
 
-`@oh-my-pi/pi-natives` is a three-layer stack:
+`@f5xc-salesdemos/pi-natives` is a three-layer stack:
 
 1. **TypeScript wrapper/API layer** exposes stable JS/TS entrypoints.
 2. **Addon loading/validation layer** resolves and validates the `.node` binary for the current runtime.
@@ -35,7 +35,7 @@ Current top-level groups:
 - module-specific bindings are added by declaration merging from each module’s `types.ts`
 - `Cancellable` standardizes timeout and abort-signal options for wrappers that expose cancellation
 
-**Guaranteed contract (API-facing):** consumers import from `@oh-my-pi/pi-natives` and use typed wrappers.
+**Guaranteed contract (API-facing):** consumers import from `@f5xc-salesdemos/pi-natives` and use typed wrappers.
 
 **Implementation detail (may change):** declaration merging and internal wrapper layout (`src/<module>/index.ts`, `src/<module>/types.ts`).
 
@@ -81,7 +81,7 @@ For compiled binaries (`PI_COMPILED` or Bun embedded runtime markers), loader be
 
 1. Check versioned user cache path: `<getNativesDir()>/<packageVersion>/...`
 2. Check legacy compiled-binary location:
-   - Windows: `%LOCALAPPDATA%/omp` (fallback `%USERPROFILE%/AppData/Local/omp`)
+   - Windows: `%LOCALAPPDATA%/xcsh` (fallback `%USERPROFILE%/AppData/Local/xcsh`)
    - non-Windows: `~/.local/bin`
 3. Fall back to packaged `native/` and executable directory candidates
 
@@ -149,7 +149,7 @@ At architecture level, ownership is split as follows:
 
 ## Runtime flow (high level)
 
-1. Consumer imports from `@oh-my-pi/pi-natives`.
+1. Consumer imports from `@f5xc-salesdemos/pi-natives`.
 2. Wrapper module calls into singleton `native` binding.
 3. `native.ts` selects candidate binary for platform/arch/variant.
 4. Optional embedded binary extraction occurs for compiled distributions.

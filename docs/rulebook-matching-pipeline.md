@@ -54,10 +54,10 @@ Consequence: precedence and deduplication are **name-based only**. Two different
 
 ### Native provider (`builtin.ts`)
 
-Loads `.omp` rules from:
+Loads `.xcsh` rules from:
 
-- project: `<cwd>/.omp/rules/*.{md,mdc}`
-- user: `~/.omp/agent/rules/*.{md,mdc}`
+- project: `<cwd>/.xcsh/rules/*.{md,mdc}`
+- user: `~/.xcsh/agent/rules/*.{md,mdc}`
 
 Normalization:
 
