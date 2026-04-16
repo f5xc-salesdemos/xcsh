@@ -7,6 +7,7 @@ import type { AsyncJobManager } from "../async";
 import type { PromptTemplate } from "../config/prompt-templates";
 import type { Settings } from "../config/settings";
 import { EditTool } from "../edit";
+import { getEnabledPlugins } from "../extensibility/plugins/loader";
 import type { Skill } from "../extensibility/skills";
 import type { InternalUrlRouter } from "../internal-urls";
 import { getPreludeDocs, resetPreludeDocsCache, warmPythonEnvironment } from "../ipy/executor";
@@ -250,20 +251,36 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	web_search: s => new SearchTool(s),
 	search_tool_bm25: SearchToolBm25Tool.createIf,
 	write: s => new WriteTool(s),
-	api_services: _s => {
-		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
+	api_services: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			...installed.map(p => p.path),
+		]);
 		return new ApiServicesTool(catalog);
 	},
-	api_discover: _s => {
-		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
+	api_discover: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			...installed.map(p => p.path),
+		]);
 		return new ApiDiscoverTool(catalog);
 	},
-	api_describe: _s => {
-		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
+	api_describe: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			...installed.map(p => p.path),
+		]);
 		return new ApiDescribeTool(catalog);
 	},
-	api_call: s => {
-		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
+	api_call: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			...installed.map(p => p.path),
+		]);
 		const executor = new ApiExecutor();
 		return new ApiCallTool(catalog, executor, s);
 	},

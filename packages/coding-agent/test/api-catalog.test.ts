@@ -150,4 +150,46 @@ describe("ApiCatalogService", () => {
 		const services = await svc.getServices();
 		expect(services).toHaveLength(1);
 	});
+
+	test("getServices() discovers catalogs from multiple search paths", async () => {
+		// Create a second temp dir with a different service
+		const tmpDir2 = await fs.mkdtemp(path.join(os.tmpdir(), "api-catalog-test2-"));
+		const catalog2 = {
+			service: "test-svc-2",
+			displayName: "Test Service 2",
+			version: "1.0.0",
+			auth: {
+				type: "api_token",
+				headerName: "Authorization",
+				headerTemplate: "APIToken {token}",
+				tokenSource: "T2",
+				baseUrlSource: "T2_URL",
+			},
+			categories: [
+				{
+					name: "items",
+					displayName: "Items",
+					operations: [
+						{
+							name: "list_items2",
+							description: "List items 2",
+							method: "GET",
+							path: "/api/items2",
+							dangerLevel: "low",
+						},
+					],
+				},
+			],
+		};
+		await Bun.write(path.join(tmpDir2, "api-catalog.json"), JSON.stringify(catalog2));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(MINIMAL_CATALOG));
+
+		// Service with TWO search paths
+		const svc = new ApiCatalogService([tmpDir, tmpDir2]);
+		const services = await svc.getServices();
+
+		expect(services.map(s => s.service).sort()).toEqual(["test-svc", "test-svc-2"]);
+
+		await fs.rm(tmpDir2, { recursive: true, force: true });
+	});
 });
