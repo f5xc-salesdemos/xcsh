@@ -1,6 +1,6 @@
 {
 	"name": "@f5xc-salesdemos/pi-natives-linux-arm64-gnu",
-	"version": "17.0.2",
+	"version": "17.1.0",
 	"description": "Native addon for @f5xc-salesdemos/pi-natives (Linux arm64)",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",

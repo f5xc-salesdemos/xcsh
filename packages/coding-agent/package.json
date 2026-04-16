@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "@f5xc-salesdemos/xcsh",
-	"version": "17.0.2",
+	"version": "17.1.0",
 	"description": "Coding agent CLI with read, bash, edit, write tools and session management",
 	"homepage": "https://github.com/f5xc-salesdemos/xcsh",
 	"author": "Can Boluk",
