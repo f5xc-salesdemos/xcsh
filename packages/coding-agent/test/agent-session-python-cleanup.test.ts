@@ -120,7 +120,7 @@ const createWarmupKernel = (docs: PreludeHelper[] = []) => {
 	};
 };
 
-describe.skip("AgentSession python cleanup", () => {
+describe("AgentSession python cleanup", () => {
 	// skip: requires upstream executor lifecycle architecture
 	const tempDirs: string[] = [];
 

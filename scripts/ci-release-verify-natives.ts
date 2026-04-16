@@ -83,17 +83,20 @@ async function main(): Promise<void> {
 export function hasAvx512Markers(line: string): boolean {
 	// zmm or k-register references (e.g. %zmm0, %k1, kmovw)
 	if (/\bzmm\d|%k[0-7]\b|\bk[a-z]+[bwdq]\b/.test(line)) return true;
-	// EVEX prefix: starts with 62, and second byte has bit 2 set (distinguishes from BOUND)
+	// EVEX prefix: starts with 62, at least 4 bytes, P1 bits 3:2 must be 00
+	// (distinguishes from legacy BOUND which is also opcode 0x62)
 	const hexMatch = line.match(/:\t((?:[0-9a-f]{2} )+)/);
 	if (hexMatch) {
 		const bytes = hexMatch[1].trim().split(" ");
 		if (bytes[0] === "62" && bytes.length >= 4) {
 			const p1 = parseInt(bytes[1], 16);
-			// Bit 2 of P1 (the R' bit inverted) is always set in valid EVEX
-			if ((p1 & 0x04) !== 0) return true;
+			// bits 3:2 of P1 must be 00 AND bit 6 (X inverted) must be 1 in valid 64-bit EVEX
+			if ((p1 & 0x0c) === 0 && (p1 & 0x40) !== 0) return true;
 		}
 	}
 	return false;
 }
 
-await main();
+if (import.meta.main) {
+	await main();
+}

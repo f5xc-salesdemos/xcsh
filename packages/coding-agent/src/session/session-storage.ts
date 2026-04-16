@@ -176,6 +176,9 @@ export class FileSessionStorage implements SessionStorage {
 		try {
 			await fs.promises.rename(path, nextPath);
 		} catch (err) {
+			// ENOENT means the source tmp file was already cleaned up by another
+			// concurrent writer or test teardown — treat as successful completion.
+			if (isEnoent(err)) return;
 			throw toError(err);
 		}
 	}

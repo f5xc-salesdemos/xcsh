@@ -181,6 +181,9 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 			throw new ToolError("Python tool requires a session when not using proxy executor");
 		}
 
+		// Reject early if session disposal has already started
+		this.session.assertPythonExecutionAllowed?.();
+
 		const { cells, timeout: rawTimeout = 30, cwd, reset } = params;
 		// Clamp to reasonable range: 1s - 600s (10 min)
 		const timeoutSec = clampTimeout("python", rawTimeout);
@@ -264,6 +267,10 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 
 			const sessionFile = this.session.getSessionFile?.() ?? undefined;
 			const { path: artifactPath, id: artifactId } = (await this.session.allocateOutputArtifact?.("python")) ?? {};
+
+			// Re-check disposal after async artifact allocation — dispose may have started while awaiting
+			this.session.assertPythonExecutionAllowed?.();
+
 			outputSink = new OutputSink({
 				artifactPath,
 				artifactId,
@@ -277,23 +284,39 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 			});
 			const sessionId = sessionFile ? `session:${sessionFile}:cwd:${commandCwd}` : `cwd:${commandCwd}`;
 
+			const kernelOwnerId = this.session.getPythonKernelOwnerId?.() ?? undefined;
+
 			if (getPreludeDocs().length === 0) {
-				const warmup = await warmPythonEnvironment(
+				const warmupAbortController = new AbortController();
+				const warmupSignal = AbortSignal.any([combinedSignal, warmupAbortController.signal]);
+				const warmupExecution = warmPythonEnvironment(
 					commandCwd,
 					sessionId,
 					this.session.settings.get("python.sharedGateway"),
 					sessionFile ?? undefined,
+					kernelOwnerId,
+					warmupSignal,
 				);
+				const warmup = await (this.session.trackPythonExecution
+					? this.session.trackPythonExecution(warmupExecution, warmupAbortController)
+					: warmupExecution);
 				if (!warmup.ok) {
+					// If the abort signal fired, throw ToolAbortError for consistent abort handling
+					if (warmupSignal.aborted) {
+						throw new ToolAbortError();
+					}
 					throw new ToolError(warmup.reason ?? "Python prelude helpers unavailable");
 				}
 			}
 
-			const baseExecutorOptions: Omit<PythonExecutorOptions, "reset"> = {
+			// After warmup, re-check disposal state — dispose may have started while warmup was in progress
+			this.session.assertPythonExecutionAllowed?.();
+
+			const baseExecutorOptions: Omit<PythonExecutorOptions, "reset" | "signal"> = {
 				cwd: commandCwd,
 				deadlineMs,
-				signal: combinedSignal,
 				sessionId,
+				kernelOwnerId,
 				maskSecrets: this.session?.obfuscator?.hasSecrets()
 					? t => this.session!.obfuscator!.obfuscate(t)
 					: undefined,
@@ -313,8 +336,13 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 				cellResult.durationMs = undefined;
 				pushUpdate();
 
+				// Create abort controller first so trackPythonExecution can abort this specific execution
+				const abortController = new AbortController();
+				const executionSignal = AbortSignal.any([combinedSignal, abortController.signal]);
+
 				const executorOptions: PythonExecutorOptions = {
 					...baseExecutorOptions,
+					signal: executionSignal,
 					reset: isFirstCell ? reset : false,
 					onChunk: chunk => {
 						outputSink!.push(chunk);
@@ -322,7 +350,10 @@ export class PythonTool implements AgentTool<typeof pythonSchema> {
 				};
 
 				const startTime = Date.now();
-				const result = await executePython(cell.code, executorOptions);
+				const executionPromise = executePython(cell.code, executorOptions);
+				const result = await (this.session.trackPythonExecution
+					? this.session.trackPythonExecution(executionPromise, abortController)
+					: executionPromise);
 				const durationMs = Date.now() - startTime;
 
 				const cellStatusEvents: PythonStatusEvent[] = [];
