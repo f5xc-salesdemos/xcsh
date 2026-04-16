@@ -1792,4 +1792,36 @@ describe("ModelRegistry", () => {
 			expect(llama?.input).toEqual(["text", "image"]);
 		});
 	});
+
+	describe("openai-compat discovery (LiteLLM proxy)", () => {
+		test("config with discovery.type openai-compat loads without schema error", () => {
+			writeRawModelsJson({
+				litellm: {
+					baseUrl: "http://localhost:4000",
+					apiKey: "test-key",
+					api: "openai-completions",
+					discovery: { type: "openai-compat" },
+				},
+			});
+			// If schema rejects openai-compat, ModelRegistry constructor throws ConfigError
+			const registry = new ModelRegistry(authStorage, modelsJsonPath);
+			expect(registry).toBeDefined();
+		});
+
+		test("openai-compat discovery fetches /models endpoint", async () => {
+			writeRawModelsJson({
+				litellm: {
+					baseUrl: "http://localhost:4000",
+					apiKey: "test-key",
+					api: "openai-completions",
+					discovery: { type: "openai-compat" },
+				},
+			});
+			using _hook = mockOpenAiCompatibleModels("http://localhost:4000/models", ["claude-3.5-sonnet", "gpt-4o"]);
+			const registry = new ModelRegistry(authStorage, modelsJsonPath);
+			await registry.refreshProvider("litellm", "online");
+			expect(registry.find("litellm", "claude-3.5-sonnet")).toBeDefined();
+			expect(registry.find("litellm", "gpt-4o")).toBeDefined();
+		});
+	});
 });
