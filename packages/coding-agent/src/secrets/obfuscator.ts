@@ -1,4 +1,4 @@
-import type { Message, TextContent } from "@oh-my-pi/pi-ai";
+import type { Message, TextContent } from "@f5xc-salesdemos/pi-ai";
 import type { SessionContext } from "../session/session-manager";
 import { compileSecretRegex } from "./regex";
 
@@ -116,6 +116,19 @@ export class SecretObfuscator {
 
 	hasSecrets(): boolean {
 		return this.#hasAny;
+	}
+
+	/** Register additional plain secrets after construction (e.g. after profile switch). */
+	addPlainSecrets(values: string[]): void {
+		for (const value of values) {
+			if (!value || this.#plainMappings.has(value)) continue;
+			const index = this.#nextIndex++;
+			const placeholder = buildPlaceholder(index);
+			this.#plainMappings.set(value, index);
+			this.#obfuscateMappings.set(index, { secret: value, placeholder });
+			this.#deobfuscateMap.set(placeholder, value);
+			this.#hasAny = true;
+		}
 	}
 
 	/** Obfuscate all secrets in text. Bidirectional placeholders for obfuscate mode, one-way for replace. */

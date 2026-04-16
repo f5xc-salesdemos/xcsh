@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { isEnoent, logger } from "@oh-my-pi/pi-utils";
+import { isEnoent, logger } from "@f5xc-salesdemos/pi-utils";
 import { YAML } from "bun";
 import type { SecretEntry } from "./obfuscator";
 import { compileSecretRegex } from "./regex";
@@ -11,7 +11,7 @@ export { deobfuscateSessionContext, obfuscateMessages, type SecretEntry, SecretO
  * Project-local entries override global entries with matching content.
  */
 export async function loadSecrets(cwd: string, agentDir: string): Promise<SecretEntry[]> {
-	const projectPath = path.join(cwd, ".omp", "secrets.yml");
+	const projectPath = path.join(cwd, ".xcsh", "secrets.yml");
 	const globalPath = path.join(agentDir, "secrets.yml");
 
 	const globalEntries = await loadSecretsFile(globalPath);
@@ -30,12 +30,21 @@ export async function loadSecrets(cwd: string, agentDir: string): Promise<Secret
 const MIN_ENV_VALUE_LENGTH = 8;
 
 /** Env var name patterns that indicate secret values. */
-const SECRET_ENV_PATTERNS = /(?:KEY|SECRET|TOKEN|PASSWORD|PASS|AUTH|CREDENTIAL|PRIVATE|OAUTH)(?:_|$)/i;
+export const SECRET_ENV_PATTERNS = /(?:KEY|SECRET|TOKEN|PASSWORD|PASS|AUTH|CREDENTIAL|PRIVATE|OAUTH)(?:_|$)/i;
 
-/** Collect environment variable values that look like secrets. */
-export function collectEnvSecrets(): SecretEntry[] {
+/**
+ * Collect environment variable values that look like secrets.
+ * @param options.additionalEnv Extra env records to scan (e.g. bash.environment settings from profile).
+ * @param options.additionalValues Extra values to include unconditionally (e.g. profile sensitiveKeys).
+ */
+export function collectEnvSecrets(options?: {
+	additionalEnv?: Record<string, string>;
+	additionalValues?: string[];
+}): SecretEntry[] {
 	const entries: SecretEntry[] = [];
 	const seen = new Set<string>();
+
+	// Scan process.env for sensitive patterns
 	for (const [name, value] of Object.entries(process.env)) {
 		if (!value || value.length < MIN_ENV_VALUE_LENGTH) continue;
 		if (!SECRET_ENV_PATTERNS.test(name)) continue;
@@ -43,6 +52,29 @@ export function collectEnvSecrets(): SecretEntry[] {
 		seen.add(value);
 		entries.push({ type: "plain", content: value, mode: "obfuscate" });
 	}
+
+	// Scan additional env records (e.g. bash.environment from profile) for sensitive patterns
+	if (options?.additionalEnv) {
+		for (const [name, value] of Object.entries(options.additionalEnv)) {
+			if (!value || value.length < MIN_ENV_VALUE_LENGTH) continue;
+			if (!SECRET_ENV_PATTERNS.test(name)) continue;
+			if (seen.has(value)) continue;
+			seen.add(value);
+			entries.push({ type: "plain", content: value, mode: "obfuscate" });
+		}
+	}
+
+	// Include explicit additional values (e.g. profile env vars marked as sensitive).
+	// No length check — these are explicitly marked sensitive by the user.
+	if (options?.additionalValues) {
+		for (const value of options.additionalValues) {
+			if (!value) continue;
+			if (seen.has(value)) continue;
+			seen.add(value);
+			entries.push({ type: "plain", content: value, mode: "obfuscate" });
+		}
+	}
+
 	return entries;
 }
 
