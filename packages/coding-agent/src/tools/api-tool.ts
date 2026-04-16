@@ -244,6 +244,20 @@ export class ApiCallTool implements AgentTool<typeof callSchema> {
 		const userParams = params ? Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])) : {};
 		const resolvedParams = this.#executor.resolveParams(op, userParams);
 
+		const missingRequired = (op.parameters ?? [])
+			.filter(p => p.required && resolvedParams[p.name] === undefined)
+			.map(p => `${p.name} (${p.in})`);
+		if (missingRequired.length > 0) {
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Missing required parameter(s): ${missingRequired.join(", ")}. Pass them via the \`params\` argument or set the corresponding environment variable.`,
+					},
+				],
+			};
+		}
+
 		const result = await this.#executor.execute(
 			resolvedAuth,
 			op,

@@ -258,4 +258,22 @@ describe("ApiCallTool", () => {
 		const text = (result.content[0] as { type: "text"; text: string }).text;
 		expect(text.toLowerCase()).toContain("critical");
 	});
+
+	test("returns error when required path parameter is missing", async () => {
+		// The test catalog has list_items which requires 'namespace' with default $TEST_NS
+		// Delete the default env var so it can't be resolved
+		delete process.env.TEST_NS;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor);
+
+		const result = await tool.execute("id1", { service: "test-svc", operation: "list_items" });
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text).toContain("Missing required parameter");
+		expect(text).toContain("namespace");
+
+		// Restore for other tests
+		process.env.TEST_NS = "default";
+	});
 });
