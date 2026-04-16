@@ -318,3 +318,114 @@ export class ApiCallTool implements AgentTool<typeof callSchema> {
 		return { content: [{ type: "text", text: responseText }] };
 	}
 }
+
+// ─── api_batch ────────────────────────────────────────────────────────────────
+
+const batchSchema = Type.Object({
+	service: Type.String({ description: "Vendor service name (e.g., 'f5xc')" }),
+	operations: Type.Array(
+		Type.Object({
+			operation: Type.String({ description: "Operation name to execute" }),
+			params: Type.Optional(
+				Type.Record(Type.String(), Type.Unknown(), { description: "Path and query parameters" }),
+			),
+			body: Type.Optional(
+				Type.Record(Type.String(), Type.Unknown(), { description: "Request body for POST/PUT/PATCH" }),
+			),
+		}),
+		{ description: "List of operations to execute sequentially" },
+	),
+	mode: Type.Optional(
+		Type.Union([Type.Literal("best-effort"), Type.Literal("strict")], {
+			description:
+				"Error mode: 'best-effort' continues on failure, 'strict' stops on first error (default: best-effort)",
+		}),
+	),
+});
+
+export class ApiBatchTool implements AgentTool<typeof batchSchema> {
+	readonly name = "api_batch";
+	readonly label = "Execute Batch API Operations";
+	readonly description =
+		"Execute multiple vendor API operations sequentially and return aggregated results. Useful for workflows that require multiple API calls (e.g., list resources, then get details for each).";
+	readonly parameters = batchSchema;
+
+	#catalog: ApiCatalogService;
+	#executor: ApiExecutor;
+
+	constructor(catalog: ApiCatalogService, executor: ApiExecutor) {
+		this.#catalog = catalog;
+		this.#executor = executor;
+	}
+
+	async execute(
+		_toolCallId: string,
+		{ service, operations, mode = "best-effort" }: Static<typeof batchSchema>,
+		_signal?: AbortSignal,
+	): Promise<AgentToolResult> {
+		const services = await this.#catalog.getServices();
+		if (!services.some(s => s.service === service)) {
+			const names = services.map(s => s.service).join(", ") || "none";
+			return { content: [{ type: "text", text: `Service '${service}' not found. Available: ${names}` }] };
+		}
+
+		const catalog = await this.#catalog.getCatalog(service);
+		if (!catalog) {
+			return { content: [{ type: "text", text: `Failed to load catalog for '${service}'` }] };
+		}
+
+		const auth = this.#executor.resolveAuth(catalog.auth);
+		const results: Array<{ operation: string; ok: boolean; data?: unknown; error?: string }> = [];
+
+		for (const item of operations) {
+			const op = await this.#catalog.getOperation(service, item.operation);
+			if (!op) {
+				const err = {
+					operation: item.operation,
+					ok: false,
+					error: `Operation '${item.operation}' not found in service '${service}'`,
+				};
+				results.push(err);
+				if (mode === "strict") break;
+				continue;
+			}
+
+			const userParams = (item.params as Record<string, unknown>) ?? {};
+			const resolvedParams = this.#executor.resolveParams(op, userParams);
+			const missing = (op.parameters ?? []).filter(p => p.required && resolvedParams[p.name] === undefined);
+			if (missing.length > 0) {
+				const err = {
+					operation: item.operation,
+					ok: false,
+					error: `Missing required parameters: ${missing.map(p => p.name).join(", ")}`,
+				};
+				results.push(err);
+				if (mode === "strict") break;
+				continue;
+			}
+
+			const result = await this.#executor.execute(
+				auth,
+				op,
+				resolvedParams,
+				item.body as Record<string, unknown> | undefined,
+			);
+			results.push({
+				operation: item.operation,
+				ok: result.ok,
+				...(result.ok ? { data: result.data } : { error: result.error }),
+			});
+
+			if (!result.ok && mode === "strict") break;
+
+			await new Promise(resolve => setTimeout(resolve, 200));
+		}
+
+		const lines = results.map(r =>
+			r.ok ? `✓ **${r.operation}**: ${JSON.stringify(r.data).slice(0, 200)}` : `✗ **${r.operation}**: ${r.error}`,
+		);
+
+		const summary = `Batch complete: ${results.filter(r => r.ok).length}/${results.length} succeeded`;
+		return { content: [{ type: "text", text: `${summary}\n\n${lines.join("\n")}` }] };
+	}
+}

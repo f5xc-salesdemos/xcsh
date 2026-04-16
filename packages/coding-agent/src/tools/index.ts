@@ -23,7 +23,7 @@ import { TaskTool } from "../task";
 import type { AgentOutputManager } from "../task/output-manager";
 import type { EventBus } from "../utils/event-bus";
 import { SearchTool } from "../web/search";
-import { ApiCallTool, ApiDescribeTool, ApiDiscoverTool, ApiServicesTool } from "./api-tool";
+import { ApiBatchTool, ApiCallTool, ApiDescribeTool, ApiDiscoverTool, ApiServicesTool } from "./api-tool";
 import { AskTool } from "./ask";
 import { AstEditTool } from "./ast-edit";
 import { AstGrepTool } from "./ast-grep";
@@ -255,6 +255,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
 		const catalog = new ApiCatalogService([
 			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
 			...installed.map(p => p.path),
 		]);
 		return new ApiServicesTool(catalog);
@@ -263,6 +264,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
 		const catalog = new ApiCatalogService([
 			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
 			...installed.map(p => p.path),
 		]);
 		return new ApiDiscoverTool(catalog);
@@ -271,6 +273,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
 		const catalog = new ApiCatalogService([
 			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
 			...installed.map(p => p.path),
 		]);
 		return new ApiDescribeTool(catalog);
@@ -279,10 +282,21 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
 		const catalog = new ApiCatalogService([
 			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
 			...installed.map(p => p.path),
 		]);
 		const executor = new ApiExecutor();
 		return new ApiCallTool(catalog, executor, s);
+	},
+	api_batch: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
+			...installed.map(p => p.path),
+		]);
+		const executor = new ApiExecutor();
+		return new ApiBatchTool(catalog, executor);
 	},
 };
 

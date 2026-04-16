@@ -329,3 +329,153 @@ describe("ApiCallTool", () => {
 		expect(text).toContain("result");
 	});
 });
+
+const BATCH_CATALOG = {
+	service: "svc",
+	displayName: "Test Batch Service",
+	version: "1.0.0",
+	auth: {
+		type: "api_token",
+		headerName: "Authorization",
+		headerTemplate: "APIToken {token}",
+		tokenSource: "TEST_TOKEN",
+		baseUrlSource: "TEST_BASE_URL",
+	},
+	defaults: {},
+	categories: [
+		{
+			name: "widgets",
+			displayName: "Widgets",
+			operations: [
+				{
+					name: "list_widgets",
+					description: "List widgets",
+					method: "GET",
+					path: "/api/widgets",
+					dangerLevel: "low",
+					parameters: [],
+				},
+				{
+					name: "list_gadgets",
+					description: "List gadgets",
+					method: "GET",
+					path: "/api/gadgets",
+					dangerLevel: "low",
+					parameters: [],
+				},
+				{
+					name: "delete_widget",
+					description: "Delete a widget",
+					method: "DELETE",
+					path: "/api/widgets/{id}",
+					dangerLevel: "high",
+					parameters: [{ name: "id", in: "path", required: true, type: "string" }],
+				},
+			],
+		},
+	],
+};
+
+describe("ApiBatchTool", () => {
+	let tmpDir: string;
+	let origFetch: typeof fetch;
+
+	beforeEach(async () => {
+		origFetch = globalThis.fetch;
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-batch-test-"));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(BATCH_CATALOG));
+		process.env.TEST_TOKEN = "batch-token-123";
+		process.env.TEST_BASE_URL = "https://api.example.com";
+	});
+
+	afterEach(async () => {
+		globalThis.fetch = origFetch;
+		await fs.rm(tmpDir, { recursive: true, force: true });
+		delete process.env.TEST_TOKEN;
+		delete process.env.TEST_BASE_URL;
+	});
+
+	test("executes multiple operations and returns aggregated results", async () => {
+		globalThis.fetch = (async (url: string | URL | Request) => {
+			const urlStr = String(url);
+			if (urlStr.includes("widgets")) return new Response(JSON.stringify([{ id: "w1" }]), { status: 200 });
+			if (urlStr.includes("gadgets")) return new Response(JSON.stringify([{ id: "g1" }]), { status: 200 });
+			return new Response(JSON.stringify({}), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const result = await tool.execute("id1", {
+			service: "svc",
+			operations: [{ operation: "list_widgets" }, { operation: "list_gadgets" }],
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text).toContain("list_widgets");
+		expect(text).toContain("list_gadgets");
+	});
+
+	test("continues on failure in best-effort mode (default)", async () => {
+		globalThis.fetch = (async (url: string | URL | Request) => {
+			const urlStr = String(url);
+			if (urlStr.includes("widgets")) return new Response(JSON.stringify({ error: "fail" }), { status: 500 });
+			if (urlStr.includes("gadgets")) return new Response(JSON.stringify([{ id: "g1" }]), { status: 200 });
+			return new Response(JSON.stringify({}), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const result = await tool.execute("id1", {
+			service: "svc",
+			operations: [{ operation: "list_widgets" }, { operation: "list_gadgets" }],
+			mode: "best-effort",
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text).toContain("list_gadgets");
+	});
+
+	test("returns error for unknown service", async () => {
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const result = await tool.execute("id1", {
+			service: "unknown",
+			operations: [{ operation: "list_widgets" }],
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text.toLowerCase()).toContain("not found");
+	});
+
+	test("returns error for unknown operation name", async () => {
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const result = await tool.execute("id1", {
+			service: "svc",
+			operations: [{ operation: "nonexistent_op" }],
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text.toLowerCase()).toContain("not found");
+	});
+});
+
+describe("Plugin discovery path fix", () => {
+	test("ApiCatalogService accepts marketplace cache path without error", async () => {
+		const home = os.homedir();
+		const svc = new ApiCatalogService([
+			path.join(home, ".claude", "plugins"),
+			path.join(home, ".xcsh", "plugins", "cache", "plugins"),
+		]);
+		const services = await svc.getServices();
+		expect(Array.isArray(services)).toBe(true);
+	});
+});
