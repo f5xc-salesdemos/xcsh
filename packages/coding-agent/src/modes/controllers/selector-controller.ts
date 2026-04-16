@@ -1,20 +1,13 @@
-import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
-import { getOAuthProviders, loginLiteLLM, type OAuthProvider } from "@f5xc-salesdemos/pi-ai";
+import { getOAuthProviders, type OAuthProvider } from "@f5xc-salesdemos/pi-ai";
 import type { Component } from "@f5xc-salesdemos/pi-tui";
 import { Input, Loader, Spacer, Text } from "@f5xc-salesdemos/pi-tui";
-import { getAgentDbPath, getAgentDir, getConfigDirName, getProjectDir } from "@f5xc-salesdemos/pi-utils";
+import { getAgentDbPath, getConfigDirName, getProjectDir } from "@f5xc-salesdemos/pi-utils";
 import { invalidate as invalidateFsCache } from "../../capability/fs";
-import {
-	generateConfigYml,
-	generateModelsYml,
-	healConfigYmlModelRoles,
-	probeLiteLLMConnection,
-	readLiteLLMConfig,
-} from "../../config/auto-config";
 import { getRoleInfo } from "../../config/model-registry";
+import { formatModelSelectorValue } from "../../config/model-resolver";
 import { settings } from "../../config/settings";
 import { DebugSelectorComponent } from "../../debug";
 import { disableProvider, enableProvider } from "../../discovery";
@@ -43,7 +36,6 @@ import { setSessionTerminalTitle } from "../../utils/title-generator";
 import { AgentDashboard } from "../components/agent-dashboard";
 import { AssistantMessageComponent } from "../components/assistant-message";
 import { ExtensionDashboard } from "../components/extensions";
-import { GutterBlock } from "../components/gutter-block";
 import { HistorySearchComponent } from "../components/history-search";
 import { ModelSelectorComponent } from "../components/model-selector";
 import { OAuthSelectorComponent } from "../components/oauth-selector";
@@ -51,7 +43,6 @@ import { PluginSelectorComponent } from "../components/plugin-selector";
 import { SessionObserverOverlayComponent } from "../components/session-observer-overlay";
 import { SessionSelectorComponent } from "../components/session-selector";
 import { SettingsSelectorComponent } from "../components/settings-selector";
-import { getPreset } from "../components/status-line/presets";
 import { ToolExecutionComponent } from "../components/tool-execution";
 import { TreeSelectorComponent } from "../components/tree-selector";
 import { UserMessageSelectorComponent } from "../components/user-message-selector";
@@ -269,18 +260,16 @@ export class SelectorController {
 			// Settings with UI side effects
 			case "showImages":
 				for (const child of this.ctx.chatContainer.children) {
-					const unwrapped = child instanceof GutterBlock ? child.child : child;
-					if (unwrapped instanceof ToolExecutionComponent) {
-						unwrapped.setShowImages(value as boolean);
+					if (child instanceof ToolExecutionComponent) {
+						child.setShowImages(value as boolean);
 					}
 				}
 				break;
 			case "hideThinking":
 				this.ctx.hideThinkingBlock = value as boolean;
 				for (const child of this.ctx.chatContainer.children) {
-					const unwrapped = child instanceof GutterBlock ? child.child : child;
-					if (unwrapped instanceof AssistantMessageComponent) {
-						unwrapped.setHideThinkingBlock(value as boolean);
+					if (child instanceof AssistantMessageComponent) {
+						child.setHideThinkingBlock(value as boolean);
 					}
 				}
 				this.ctx.chatContainer.clear();
@@ -341,20 +330,20 @@ export class SelectorController {
 				this.ctx.session.agent.repetitionPenalty = repetitionPenalty >= 0 ? repetitionPenalty : undefined;
 				break;
 			}
-			case "statusLine.preset":
-			case "statusLine.separator":
-			case "statusLine.showHookStatus":
-			case "statusLine.leftSegments":
-			case "statusLine.rightSegments":
-			case "statusLine.segmentOptions": {
-				// When selecting a non-custom preset, sync the preset's separator
-				// to the store so #resolveSettings picks it up correctly.
-				if (id === "statusLine.preset" && value !== "custom") {
-					const presetDef = getPreset(value as Parameters<typeof getPreset>[0]);
-					if (presetDef.separator) {
-						settings.set("statusLine.separator", presetDef.separator);
-					}
-				}
+			case "statusLinePreset":
+			case "statusLineSeparator":
+			case "statusLineShowHooks":
+			case "statusLineSegments":
+			case "statusLineModelThinking":
+			case "statusLinePathAbbreviate":
+			case "statusLinePathMaxLength":
+			case "statusLinePathStripWorkPrefix":
+			case "statusLineGitShowBranch":
+			case "statusLineGitShowStaged":
+			case "statusLineGitShowUnstaged":
+			case "statusLineGitShowUntracked":
+			case "statusLineTimeFormat":
+			case "statusLineTimeShowSeconds": {
 				const statusLineSettings = {
 					preset: settings.get("statusLine.preset"),
 					leftSegments: settings.get("statusLine.leftSegments"),
@@ -399,31 +388,38 @@ export class SelectorController {
 				this.ctx.settings,
 				this.ctx.session.modelRegistry,
 				this.ctx.session.scopedModels,
-				async (model, role, thinkingLevel) => {
+				async (model, role, thinkingLevel, selector) => {
 					try {
 						if (role === null) {
 							// Temporary: update agent state but don't persist to settings
 							await this.ctx.session.setModelTemporary(model);
 							this.ctx.statusLine.invalidate();
 							this.ctx.updateEditorBorderColor();
-							this.ctx.showStatus(`Temporary model: ${model.id}`);
+							this.ctx.showStatus(`Temporary model: ${selector ?? model.id}`);
 							done();
 							this.ctx.ui.requestRender();
 						} else if (role === "default") {
 							// Default: update agent state and persist
-							await this.ctx.session.setModel(model, role);
+							await this.ctx.session.setModel(model, role, {
+								selector,
+								thinkingLevel,
+							});
 							if (thinkingLevel && thinkingLevel !== ThinkingLevel.Inherit) {
 								this.ctx.session.setThinkingLevel(thinkingLevel);
 							}
 							this.ctx.statusLine.invalidate();
 							this.ctx.updateEditorBorderColor();
-							this.ctx.showStatus(`Default model: ${model.id}`);
+							this.ctx.showStatus(`Default model: ${selector ?? model.id}`);
 							// Don't call done() - selector stays open for role assignment
 						} else {
 							// Other roles (smol, slow): just update settings, not current model
+							this.ctx.settings.setModelRole(
+								role,
+								formatModelSelectorValue(selector ?? `${model.provider}/${model.id}`, thinkingLevel),
+							);
 							const roleInfo = getRoleInfo(role, settings);
 							const roleLabel = roleInfo?.name ?? role;
-							this.ctx.showStatus(`${roleLabel} model: ${model.id}`);
+							this.ctx.showStatus(`${roleLabel} model: ${selector ?? model.id}`);
 							// Don't call done() - selector stays open
 						}
 					} catch (error) {
@@ -637,7 +633,7 @@ export class SelectorController {
 						this.ctx.chatContainer.addChild(new Spacer(1));
 						summaryLoader = new Loader(
 							this.ctx.ui,
-							spinner => theme.fg("spinnerAccent", spinner),
+							spinner => theme.fg("accent", spinner),
 							text => theme.fg("muted", text),
 							"Summarizing branch... (esc to cancel)",
 							getSymbolTheme().spinnerFrames,
@@ -751,8 +747,9 @@ export class SelectorController {
 		const sessionManager = this.ctx.sessionManager as {
 			getSessionName?: () => string | undefined;
 			getCwd: () => string;
+			titleSource?: "auto" | "user" | undefined;
 		};
-		setSessionTerminalTitle(sessionManager.getSessionName?.(), sessionManager.getCwd());
+		setSessionTerminalTitle(sessionManager.getSessionName?.(), sessionManager.getCwd(), sessionManager.titleSource);
 	}
 
 	async #detachActiveSessionBeforeDeletion(sessionPath: string): Promise<boolean> {
@@ -771,6 +768,7 @@ export class SelectorController {
 		this.ctx.statusLine.invalidate();
 		this.ctx.statusLine.setSessionStartTime(Date.now());
 		this.ctx.updateEditorTopBorder();
+		this.ctx.updateEditorBorderColor();
 		this.ctx.renderInitialMessages();
 		await this.ctx.reloadTodos();
 		this.ctx.ui.requestRender();
@@ -783,6 +781,7 @@ export class SelectorController {
 		// Switch session via AgentSession (emits hook and tool session events)
 		await this.ctx.session.switchSession(sessionPath);
 		this.#refreshSessionTerminalTitle();
+		this.ctx.updateEditorBorderColor();
 
 		// Clear and re-render the chat
 		this.ctx.chatContainer.clear();
@@ -829,100 +828,7 @@ export class SelectorController {
 		await this.showSessionSelector();
 	}
 
-	async #handleLiteLLMLogin(): Promise<void> {
-		this.ctx.showStatus("Configuring LiteLLM proxy…");
-
-		// Read existing config for idempotent defaults
-		const modelsPath = path.join(getAgentDir(), "models.yml");
-
-		try {
-			const existing = readLiteLLMConfig(modelsPath);
-			// Sequential prompts for base URL + API key
-			const result = await loginLiteLLM({
-				defaults: existing,
-				onPrompt: async prompt => {
-					this.ctx.chatContainer.addChild(new Spacer(1));
-					this.ctx.chatContainer.addChild(new Text(theme.fg("text", prompt.message), 1, 0));
-					if (prompt.placeholder) {
-						this.ctx.chatContainer.addChild(new Text(theme.fg("dim", `e.g., ${prompt.placeholder}`), 1, 0));
-					}
-					this.ctx.ui.requestRender();
-
-					const { promise, resolve } = Promise.withResolvers<string>();
-					const codeInput = new Input();
-					codeInput.onSubmit = () => {
-						const value = codeInput.getValue();
-						this.ctx.editorContainer.clear();
-						this.ctx.editorContainer.addChild(this.ctx.editor);
-						this.ctx.ui.setFocus(this.ctx.editor);
-						resolve(value);
-					};
-					this.ctx.editorContainer.clear();
-					this.ctx.editorContainer.addChild(codeInput);
-					this.ctx.ui.setFocus(codeInput);
-					return promise;
-				},
-			});
-
-			// Verification
-			this.ctx.chatContainer.addChild(new Spacer(1));
-			this.ctx.chatContainer.addChild(new Text(theme.fg("dim", `Connecting to ${result.baseUrl}…`), 1, 0));
-			this.ctx.ui.requestRender();
-
-			const probe = await probeLiteLLMConnection(result.baseUrl, result.apiKey);
-
-			if (probe.reachable) {
-				this.ctx.chatContainer.addChild(
-					new Text(
-						theme.fg("success", `${theme.status.success} OK — ${probe.models.length} models available`),
-						1,
-						0,
-					),
-				);
-			} else {
-				this.ctx.chatContainer.addChild(
-					new Text(theme.fg("error", `${theme.status.error} FAIL — ${probe.error ?? "connection failed"}`), 1, 0),
-				);
-				this.ctx.ui.requestRender();
-				return;
-			}
-
-			// Write models.yml with the literal API key so both providers work
-			// without requiring the LITELLM_API_KEY env var to be set
-			const yml = generateModelsYml(result.baseUrl, {
-				apiBasePath: probe.apiBasePath,
-				apiKeyLiteral: result.apiKey,
-			});
-			fs.mkdirSync(path.dirname(modelsPath), { recursive: true });
-			fs.writeFileSync(modelsPath, yml);
-
-			// Create/heal config.yml for model defaults
-			const configPath = path.join(path.dirname(modelsPath), "config.yml");
-			if (!fs.existsSync(configPath)) {
-				fs.writeFileSync(configPath, generateConfigYml());
-			}
-			healConfigYmlModelRoles(configPath);
-
-			// Force online refresh so the registry re-probes the new proxy
-			// instead of serving stale data from the in-process SQLite cache.
-			await this.ctx.session.modelRegistry.refresh("online");
-
-			this.ctx.chatContainer.addChild(new Spacer(1));
-			this.ctx.chatContainer.addChild(
-				new Text(theme.fg("success", `LiteLLM configuration saved to ${modelsPath}`), 1, 0),
-			);
-			this.ctx.ui.requestRender();
-		} catch (error: unknown) {
-			this.ctx.showError(`LiteLLM login failed: ${error instanceof Error ? error.message : String(error)}`);
-		}
-	}
-
 	async #handleOAuthLogin(providerId: string): Promise<void> {
-		// LiteLLM has its own flow with config persistence
-		if (providerId === "litellm") {
-			return this.#handleLiteLLMLogin();
-		}
-
 		this.ctx.showStatus(`Logging in to ${providerId}…`);
 		const manualInput = this.ctx.oauthManualInput;
 		const useManualInput = CALLBACK_SERVER_PROVIDERS.has(providerId as OAuthProvider);
@@ -932,7 +838,7 @@ export class SelectorController {
 					this.ctx.chatContainer.addChild(new Spacer(1));
 					this.ctx.chatContainer.addChild(new Text(theme.fg("dim", info.url), 1, 0));
 					const hyperlink = `\x1b]8;;${info.url}\x07Click here to login\x1b]8;;\x07`;
-					this.ctx.chatContainer.addChild(new Text(theme.fg("contentAccent", hyperlink), 1, 0));
+					this.ctx.chatContainer.addChild(new Text(theme.fg("accent", hyperlink), 1, 0));
 					if (info.instructions) {
 						this.ctx.chatContainer.addChild(new Spacer(1));
 						this.ctx.chatContainer.addChild(new Text(theme.fg("warning", info.instructions), 1, 0));
