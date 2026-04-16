@@ -160,4 +160,37 @@ describe("wrapTextWithAnsi", () => {
 			}
 		});
 	});
+
+	describe("OSC 8 hyperlink handling", () => {
+		it("should close and reopen OSC 8 at each wrapped line boundary", () => {
+			const url = "https://example.com/very/long/path/that/wraps";
+			const text = `prefix \x1b]8;;${url}\x07${url}\x1b]8;;\x07 suffix`;
+			const wrapped = wrapTextWithAnsi(text, 20);
+			expect(wrapped.length).toBeGreaterThan(1);
+			for (const line of wrapped) {
+				const opens = (line.match(/\x1b\]8;;[^\x07]+\x07/g) ?? []).length;
+				const closes = (line.match(/\x1b\]8;;\x07/g) ?? []).length;
+				expect(closes).toBeGreaterThanOrEqual(opens);
+			}
+		});
+
+		it("should not add OSC 8 sequences when input has none", () => {
+			const text = "plain text without any hyperlinks that is long enough to wrap at all";
+			const wrapped = wrapTextWithAnsi(text, 20);
+			for (const line of wrapped) {
+				expect(line.includes("\x1b]8;;")).toBe(false);
+			}
+		});
+
+		it("should handle multiple hyperlinks on the same wrapped line", () => {
+			const url1 = "https://a.com";
+			const url2 = "https://b.com";
+			const text = `\x1b]8;;${url1}\x07${url1}\x1b]8;;\x07 and \x1b]8;;${url2}\x07${url2}\x1b]8;;\x07 end`;
+			const wrapped = wrapTextWithAnsi(text, 20);
+			const full = wrapped.join("\n");
+			const opens = (full.match(/\x1b\]8;;[^\x07]+\x07/g) ?? []).length;
+			const closes = (full.match(/\x1b\]8;;\x07/g) ?? []).length;
+			expect(closes).toBeGreaterThanOrEqual(opens);
+		});
+	});
 });
