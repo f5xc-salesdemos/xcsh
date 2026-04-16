@@ -7,13 +7,14 @@ import type {
 } from "@f5xc-salesdemos/pi-agent-core";
 import type { Component } from "@f5xc-salesdemos/pi-tui";
 import { ImageProtocol, TERMINAL, Text } from "@f5xc-salesdemos/pi-tui";
-import { $env, getProjectDir, isEnoent, prompt } from "@f5xc-salesdemos/pi-utils";
+import { $env, getProjectDir, isEnoent, prompt, setShellPwd } from "@f5xc-salesdemos/pi-utils";
 import { Type } from "@sinclair/typebox";
 import { type BashResult, executeBash } from "../exec/bash-executor";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import { truncateToVisualLines } from "../modes/components/visual-truncate";
 import type { Theme } from "../modes/theme/theme";
 import bashDescription from "../prompts/tools/bash.md" with { type: "text" };
+import { SECRET_ENV_PATTERNS, type SecretObfuscator } from "../secrets";
 import { DEFAULT_MAX_BYTES, TailBuffer } from "../session/streaming-output";
 import { renderStatusLine } from "../tui";
 import { CachedOutputBlock } from "../tui/output-block";
@@ -29,6 +30,9 @@ import { formatToolWorkingDirectory, replaceTabs } from "./render-utils";
 import { ToolAbortError, ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 import { clampTimeout } from "./tool-timeouts";
+
+// Module-level obfuscator reference for the renderer (set by BashTool constructor).
+let _sessionObfuscator: SecretObfuscator | undefined;
 
 export const BASH_DEFAULT_PREVIEW_LINES = 10;
 
@@ -137,11 +141,20 @@ function escapeBashEnvValueForDisplay(value: string): string {
 		.replaceAll("`", "\\`");
 }
 
-function formatBashEnvAssignments(env: Record<string, string> | undefined): string {
+function formatBashEnvAssignments(
+	env: Record<string, string> | undefined,
+	obfuscator?: import("../secrets/obfuscator").SecretObfuscator,
+): string {
 	if (!env || Object.keys(env).length === 0) return "";
 	return Object.entries(env)
 		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([key, value]) => `${key}="${escapeBashEnvValueForDisplay(value)}"`)
+		.map(([key, value]) => {
+			// Mask if name matches hardcoded patterns OR if the obfuscator recognizes the value as a secret.
+			const isSensitiveName = SECRET_ENV_PATTERNS.test(key);
+			const isSensitiveValue = obfuscator?.hasSecrets() && obfuscator.obfuscate(value) !== value;
+			const display = isSensitiveName || isSensitiveValue ? "***" : escapeBashEnvValueForDisplay(value);
+			return `${key}="${display}"`;
+		})
 		.join(" ");
 }
 
@@ -241,6 +254,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 	readonly #autoBackgroundThresholdMs: number;
 
 	constructor(private readonly session: ToolSession) {
+		_sessionObfuscator = session.obfuscator;
 		this.#asyncEnabled = this.session.settings.get("async.enabled");
 		this.#autoBackgroundEnabled = this.session.settings.get("bash.autoBackground.enabled");
 		this.#autoBackgroundThresholdMs = Math.max(
@@ -338,6 +352,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 		headLines?: number;
 		tailLines?: number;
 		resolvedEnv?: Record<string, string>;
+		maskSecrets?: (text: string) => string;
 		onUpdate?: AgentToolUpdateCallback<BashToolDetails>;
 		startBackgrounded: boolean;
 	}): ManagedBashJobHandle {
@@ -366,9 +381,11 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 						env: options.resolvedEnv,
 						artifactPath,
 						artifactId,
+						maskSecrets: options.maskSecrets,
 						onChunk: chunk => {
 							tailBuffer.append(chunk);
-							latestText = tailBuffer.text();
+							const preview = options.maskSecrets ? options.maskSecrets(tailBuffer.text()) : tailBuffer.text();
+							latestText = preview;
 							void reportProgress(latestText, { async: { state: "running", jobId, type: "bash" } });
 						},
 					});
@@ -539,6 +556,11 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 		const timeoutSec = clampTimeout("bash", rawTimeout);
 		const timeoutMs = timeoutSec * 1000;
 
+		// Build secret masking callback from the session obfuscator (always-on for env secrets).
+		const obfuscator = this.session.obfuscator;
+		_sessionObfuscator = obfuscator; // Keep module-level ref fresh for renderer
+		const maskSecrets = obfuscator?.hasSecrets() ? (t: string) => obfuscator.obfuscate(t) : undefined;
+
 		if (asyncRequested) {
 			if (!this.session.asyncJobManager) {
 				throw new ToolError("Async job manager unavailable for this session.");
@@ -551,6 +573,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 				headLines,
 				tailLines,
 				resolvedEnv,
+				maskSecrets,
 				onUpdate,
 				startBackgrounded: true,
 			});
@@ -568,6 +591,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 				headLines,
 				tailLines,
 				resolvedEnv,
+				maskSecrets,
 				onUpdate,
 				startBackgrounded,
 			});
@@ -608,6 +632,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 					env: resolvedEnv,
 					artifactPath,
 					artifactId,
+					maskSecrets,
 				})
 			: await executeBash(command, {
 					cwd: commandCwd,
@@ -617,16 +642,25 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 					env: resolvedEnv,
 					artifactPath,
 					artifactId,
+					maskSecrets,
 					onChunk: chunk => {
 						tailBuffer.append(chunk);
 						if (onUpdate) {
+							const preview = maskSecrets ? maskSecrets(tailBuffer.text()) : tailBuffer.text();
 							onUpdate({
-								content: [{ type: "text", text: tailBuffer.text() }],
+								content: [{ type: "text", text: preview }],
 								details: {},
 							});
 						}
 					},
 				});
+		// Update working directory if the persistent shell changed it
+		if ("newCwd" in result && result.newCwd && result.newCwd !== this.session.cwd) {
+			this.session.cwd = result.newCwd;
+			setShellPwd(result.newCwd);
+			this.session.eventBus?.emit("cwd:changed", result.newCwd);
+		}
+
 		if (result.cancelled) {
 			if (signal?.aborted) {
 				throw new ToolAbortError(normalizeResultOutput(result) || "Command aborted");
@@ -671,7 +705,9 @@ function formatBashCommand(args: BashRenderArgs): string {
 	const prompt = "$";
 	const cwd = getProjectDir();
 	const displayWorkdir = formatToolWorkingDirectory(args.cwd, cwd);
-	const renderedCommand = [formatBashEnvAssignments(getBashEnvForDisplay(args)), command].filter(Boolean).join(" ");
+	const renderedCommand = [formatBashEnvAssignments(getBashEnvForDisplay(args), _sessionObfuscator), command]
+		.filter(Boolean)
+		.join(" ");
 	return displayWorkdir ? `${prompt} cd ${displayWorkdir} && ${renderedCommand}` : `${prompt} ${renderedCommand}`;
 }
 

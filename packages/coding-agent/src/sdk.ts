@@ -88,6 +88,8 @@ import {
 	deobfuscateSessionContext,
 	loadSecrets,
 	obfuscateMessages,
+	SECRET_ENV_PATTERNS,
+	type SecretEntry,
 	SecretObfuscator,
 } from "./secrets";
 import { AgentSession } from "./session/agent-session";
@@ -701,16 +703,69 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 
 	// Load and create secret obfuscator early so resumed session state and prompt warnings
 	// reflect actual loaded secrets, not just the setting toggle.
+	// Env-based secrets are always collected (hardcoded masking — no opt-in required).
+	// File-based secrets (secrets.yml) remain opt-in behind the secrets.enabled setting.
 	let obfuscator: SecretObfuscator | undefined;
-	if (settings.get("secrets.enabled")) {
-		const fileEntries = await logger.time("loadSecrets", loadSecrets, cwd, agentDir);
-		const envEntries = collectEnvSecrets();
-		const allEntries = [...envEntries, ...fileEntries];
+	{
+		// Collect profile-sensitive values (profile loads before session in main.ts).
+		let profileSensitiveValues: string[] | undefined;
+		try {
+			const { ProfileService } = await import("./services/f5xc-profile");
+			profileSensitiveValues = ProfileService.getSensitiveProfileValues();
+		} catch {
+			// ProfileService not initialized — skip (SDK consumers, tests, etc.)
+		}
+		// Scan both process.env AND bash.environment (profile-injected values)
+		// for env vars matching sensitive name patterns.
+		const bashEnv = (settings.get("bash.environment") ?? {}) as Record<string, string>;
+		const envEntries = collectEnvSecrets({
+			additionalEnv: bashEnv,
+			additionalValues: profileSensitiveValues,
+		});
+		let fileEntries: SecretEntry[] = [];
+		if (settings.get("secrets.enabled")) {
+			fileEntries = await logger.time("loadSecrets", loadSecrets, cwd, agentDir);
+		}
+		// File entries MUST come first to preserve placeholder index stability
+		// for resumed sessions that persisted #HASH# tokens from secrets.yml.
+		const allEntries = [...fileEntries, ...envEntries];
 		if (allEntries.length > 0) {
 			obfuscator = new SecretObfuscator(allEntries);
 		}
 	}
 	const secretsEnabled = obfuscator?.hasSecrets() === true;
+
+	// Register profile-change listener to refresh obfuscator when /profile activate runs.
+	try {
+		const { ProfileService } = await import("./services/f5xc-profile");
+		ProfileService.onProfileChange(profile => {
+			const newValues: string[] = [profile.apiToken];
+			if (profile.sensitiveKeys && profile.env) {
+				for (const key of profile.sensitiveKeys) {
+					const v = profile.env[key];
+					if (v) newValues.push(v);
+				}
+			}
+			const bashEnv = (settings.get("bash.environment") ?? {}) as Record<string, string>;
+			for (const [name, value] of Object.entries(bashEnv)) {
+				if (value && SECRET_ENV_PATTERNS.test(name)) newValues.push(value);
+			}
+			if (obfuscator) {
+				obfuscator.addPlainSecrets(newValues);
+			} else {
+				// Obfuscator was undefined at session start (no secrets detected).
+				// Create one now so late profile activations are still masked.
+				const entries: SecretEntry[] = newValues
+					.filter(v => v.length > 0)
+					.map(v => ({ type: "plain" as const, content: v, mode: "obfuscate" as const }));
+				if (entries.length > 0) {
+					obfuscator = new SecretObfuscator(entries);
+				}
+			}
+		});
+	} catch {
+		// ProfileService not available — skip
+	}
 
 	// Check if session has existing data to restore
 	const existingSession = logger.time("loadSessionContext", () =>
