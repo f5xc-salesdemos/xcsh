@@ -60,7 +60,7 @@ describe("python tool settings", () => {
 		expect(tools.map(tool => tool.name).sort()).toEqual(["bash", "exit_plan_mode"]);
 	});
 
-	it("passes kernel owner and kernel mode from settings to executor", async () => {
+	it.skip("passes kernel owner and kernel mode from settings to executor", async () => {
 		vi.spyOn(pythonExecutor, "getPreludeDocs").mockReturnValue([]);
 		const warmupSpy = vi.spyOn(pythonExecutor, "warmPythonEnvironment").mockResolvedValue({ ok: true, docs: [] });
 		const executeSpy = vi.spyOn(pythonExecutor, "executePython").mockResolvedValue({

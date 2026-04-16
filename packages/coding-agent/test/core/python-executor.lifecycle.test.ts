@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { disposeAllKernelSessions, executePython } from "@f5xc-salesdemos/xcsh/ipy/executor";
-import { type KernelExecuteOptions, type KernelExecuteResult, PythonKernel } from "@f5xc-salesdemos/xcsh/ipy/kernel";
+import {
+	type KernelExecuteOptions,
+	type KernelExecuteResult,
+	type KernelShutdownResult,
+	PythonKernel,
+} from "@f5xc-salesdemos/xcsh/ipy/kernel";
 
 Bun.env.PI_PYTHON_SKIP_CHECK = "1";
 
@@ -30,9 +35,10 @@ class FakeKernel {
 		return this.#result;
 	}
 
-	async shutdown(): Promise<void> {
+	async shutdown(): Promise<KernelShutdownResult> {
 		this.shutdownCalls += 1;
 		this.#alive = false;
+		return { confirmed: true };
 	}
 
 	async ping(): Promise<boolean> {
@@ -168,11 +174,13 @@ describe("executePython session lifecycle", () => {
 			return kernels.shift() as unknown as PythonKernel;
 		};
 
-		kernelA.shutdown = async () => {
+		kernelA.shutdown = async (): Promise<KernelShutdownResult> => {
 			shutdownCount += 1;
+			return { confirmed: true };
 		};
-		kernelB.shutdown = async () => {
+		kernelB.shutdown = async (): Promise<KernelShutdownResult> => {
 			shutdownCount += 1;
+			return { confirmed: true };
 		};
 
 		await executePython("print('one')", { kernelMode: "per-call" });
