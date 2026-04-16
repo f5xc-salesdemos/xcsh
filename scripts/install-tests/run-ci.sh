@@ -39,7 +39,7 @@ bun --cwd=packages/coding-agent run build
 
 BINARY_DIR="$WORK_DIR/binary-bin"
 mkdir -p "$BINARY_DIR"
-cp packages/coding-agent/dist/omp "$BINARY_DIR/omp"
+cp packages/coding-agent/dist/xcsh "$BINARY_DIR/xcsh"
 shopt -s nullglob
 native_addons=(packages/natives/native/pi_natives.*.node)
 shopt -u nullglob
@@ -49,7 +49,7 @@ if [ "${#native_addons[@]}" -eq 0 ]; then
 fi
 cp "${native_addons[@]}" "$BINARY_DIR/"
 
-smoke_cli "$BINARY_DIR/omp"
+smoke_cli "$BINARY_DIR/xcsh"
 
 section "Source install smoke"
 SOURCE_BUN_HOME="$WORK_DIR/bun-source"
@@ -57,7 +57,7 @@ SOURCE_BUN_HOME="$WORK_DIR/bun-source"
 	export BUN_INSTALL="$SOURCE_BUN_HOME"
 	export PATH="$BUN_INSTALL/bin:$PATH"
 	bun --cwd="$ROOT_DIR/packages/coding-agent" link
-	smoke_cli "$BUN_INSTALL/bin/omp"
+	smoke_cli "$BUN_INSTALL/bin/xcsh"
 )
 
 section "Tarball install smoke"
@@ -70,13 +70,13 @@ for pkg in utils natives ai agent tui stats coding-agent; do
 	)
 done
 
-utils_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-utils-*.tgz)"
-natives_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-natives-*.tgz)"
-ai_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-ai-*.tgz)"
-agent_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-agent-core-*.tgz)"
-tui_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-tui-*.tgz)"
-stats_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-omp-stats-*.tgz)"
-coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-coding-agent-*.tgz)"
+utils_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-utils-*.tgz)"
+natives_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-natives-*.tgz)"
+ai_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-ai-*.tgz)"
+agent_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-agent-core-*.tgz)"
+tui_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-pi-tui-*.tgz)"
+stats_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-xcsh-stats-*.tgz)"
+coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/f5xc-salesdemos-xcsh-[0-9]*.tgz)"
 
 TARBALL_APP_DIR="$WORK_DIR/tarball-install"
 mkdir -p "$TARBALL_APP_DIR"
@@ -89,19 +89,40 @@ mkdir -p "$TARBALL_APP_DIR"
 	node -e "
 		const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
 		pkg.overrides = {
-			'@oh-my-pi/pi-utils': '$utils_tgz',
-			'@oh-my-pi/pi-natives': '$natives_tgz',
-			'@oh-my-pi/pi-ai': '$ai_tgz',
-			'@oh-my-pi/pi-agent-core': '$agent_tgz',
-			'@oh-my-pi/pi-tui': '$tui_tgz',
-			'@oh-my-pi/omp-stats': '$stats_tgz',
-			'@oh-my-pi/pi-coding-agent': '$coding_agent_tgz'
+			'@f5xc-salesdemos/pi-utils': '$utils_tgz',
+			'@f5xc-salesdemos/pi-natives': '$natives_tgz',
+			'@f5xc-salesdemos/pi-ai': '$ai_tgz',
+			'@f5xc-salesdemos/pi-agent-core': '$agent_tgz',
+			'@f5xc-salesdemos/pi-tui': '$tui_tgz',
+			'@f5xc-salesdemos/xcsh-stats': '$stats_tgz',
+			'@f5xc-salesdemos/xcsh': '$coding_agent_tgz'
 		};
 		require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
 	"
 
 	bun add "$utils_tgz" "$natives_tgz" "$ai_tgz" "$agent_tgz" "$tui_tgz" "$stats_tgz" "$coding_agent_tgz"
-	smoke_cli ./node_modules/.bin/omp
+	smoke_cli ./node_modules/.bin/xcsh
+)
+
+section "Platform package structure verification"
+(
+	NPM_DIR="$ROOT_DIR/packages/natives/npm"
+	for platform_dir in "$NPM_DIR"/*/; do
+		pkg_name=$(basename "$platform_dir")
+		pkg_json="$platform_dir/package.json"
+		if [ ! -f "$pkg_json" ]; then
+			echo "Missing package.json in $pkg_name"
+			exit 1
+		fi
+		# Verify package.json has required fields: os, cpu, main
+		for field in os cpu main; do
+			if ! grep -q "\"$field\"" "$pkg_json"; then
+				echo "Missing '$field' in $pkg_name/package.json"
+				exit 1
+			fi
+		done
+		echo "  $pkg_name: package.json valid"
+	done
 )
 
 echo ""

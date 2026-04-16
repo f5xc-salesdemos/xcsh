@@ -24,9 +24,9 @@ from rich.table import Table
 from rich.text import Text
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "python/omp-rpc/src"))
+sys.path.insert(0, str(REPO_ROOT / "python/xcsh-rpc/src"))
 
-from omp_rpc import (  # noqa: E402
+from xcsh_rpc import (  # noqa: E402
     AgentEndEvent,
     AutoRetryEndEvent,
     AutoRetryStartEvent,
@@ -1158,9 +1158,9 @@ def require_openrouter_key() -> str:
 def resolve_omp_bin(raw: str | None) -> str:
     if raw:
         return raw
-    found = shutil.which("omp")
+    found = shutil.which("xcsh")
     if not found:
-        raise SystemExit("Could not find `omp` on PATH. Set --omp-bin or OMP_BIN.")
+        raise SystemExit("Could not find `xcsh` on PATH. Set --xcsh-bin or XCSH_BIN.")
     return found
 
 
@@ -1580,8 +1580,8 @@ def run_oracle_review_sync(
     return review_markdown.strip()
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run OpenRouter fixture evaluations through omp RPC mode.")
-    parser.add_argument("--omp-bin", default=os.environ.get("OMP_BIN"))
+    parser = argparse.ArgumentParser(description="Run OpenRouter fixture evaluations through xcsh RPC mode.")
+    parser.add_argument("--xcsh-bin", default=os.environ.get("XCSH_BIN"))
     parser.add_argument("--fixtures-dir", default=os.path.expanduser("~/tmp/fixtures"))
     parser.add_argument("--results-dir")
     parser.add_argument("--timeout", type=float, default=900.0, help="Per run timeout in seconds.")
@@ -1598,7 +1598,7 @@ async def run_all(args: argparse.Namespace) -> int:
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     tmp_root = Path(tempfile.gettempdir())
-    results_dir = Path(args.results_dir) if args.results_dir else tmp_root / f"omp-fixture-runs-{timestamp}"
+    results_dir = Path(args.results_dir) if args.results_dir else tmp_root / f"xcsh-fixture-runs-{timestamp}"
     results_dir.mkdir(parents=True, exist_ok=True)
     workspace_root = tmp_root / f"rate-edit-tool-workspaces-{timestamp}"
     workspace_root.mkdir(parents=True, exist_ok=True)

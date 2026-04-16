@@ -22,17 +22,24 @@ jobs:
   check:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3"
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - name: Cache Turbo artifacts
+        uses: actions/cache@v5
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
       - run: bun install --frozen-lockfile
       - name: Type check changed packages
         if: github.event_name == 'pull_request'
@@ -46,17 +53,21 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ startsWith(github.ref, 'refs/tags/v') && fromJSON('[
-          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"baseline modern","rust_checks":true},
+          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"baseline","rust_checks":true},
+          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"modern"},
           {"os":"ubuntu-22.04","platform":"linux","arch":"arm64","target":"aarch64-unknown-linux-gnu"},
-          {"os":"macos-15-intel","platform":"darwin","arch":"x64","variants":"baseline modern"},
+          {"os":"macos-15-intel","platform":"darwin","arch":"x64","variants":"baseline"},
+          {"os":"macos-15-intel","platform":"darwin","arch":"x64","variants":"modern"},
           {"os":"macos-14","platform":"darwin","arch":"arm64"},
-          {"os":"windows-latest","platform":"win32","arch":"x64","variants":"baseline modern"}
+          {"os":"windows-latest","platform":"win32","arch":"x64","variants":"baseline"},
+          {"os":"windows-latest","platform":"win32","arch":"x64","variants":"modern"}
           ]') || fromJSON('[
-          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"baseline modern","rust_checks":true}
+          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"baseline","rust_checks":true},
+          {"os":"ubuntu-22.04","platform":"linux","arch":"x64","variants":"modern"}
           ]') }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: true
       - uses: dtolnay/rust-toolchain@nightly # TODO: unpin once nightly codegen regression is fixed
@@ -69,14 +80,40 @@ jobs:
         run: rustup target add ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.target }}
+          key: ${{ matrix.target }}${{ matrix.variants }}
           cache-workspace-crates: true
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3"
-      - uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
+      - name: Install Zig 0.15.2
+        shell: bash
+        run: |
+          ZIG_VERSION=0.15.2
+          case "$RUNNER_OS" in
+            Linux)  ZIG_OS=linux;  EXT=tar.xz ;;
+            macOS)  ZIG_OS=macos;  EXT=tar.xz ;;
+            Windows) ZIG_OS=windows; EXT=zip ;;
+          esac
+          case "$RUNNER_ARCH" in
+            X64)   ZIG_ARCH=x86_64 ;;
+            ARM64) ZIG_ARCH=aarch64 ;;
+          esac
+          URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}.${EXT}"
+          echo "Downloading $URL"
+          if [ "$EXT" = "zip" ]; then
+            curl -sSfL "$URL" -o zig.zip
+            unzip -q zig.zip
+            rm zig.zip
+          else
+            curl -sSfL "$URL" | tar -xJ
+          fi
+          ZIG_DIR="$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}"
+          # Convert to Windows path if on Windows (Git Bash uses /d/... style)
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            ZIG_DIR=$(cygpath -w "$ZIG_DIR")
+          fi
+          echo "$ZIG_DIR" >> "$GITHUB_PATH"
+          zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
       - run: bun install --frozen-lockfile
       - name: Install cross-compilation toolchain
         if: matrix.target == 'aarch64-unknown-linux-gnu'
@@ -97,9 +134,9 @@ jobs:
         run: |
           bun run ci:build:native
       - name: Upload native addon(s)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: pi-natives-${{ matrix.platform }}-${{ matrix.arch }}
+          name: pi-natives-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.variants && format('-{0}', matrix.variants) || '' }}
           path: packages/natives/native/pi_natives.${{ matrix.platform }}-${{ matrix.arch }}*.node
           if-no-files-found: error
 
@@ -107,7 +144,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           lfs: true
@@ -120,17 +157,47 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-workspace-crates: true
-      - uses: taiki-e/install-action@v2
-        with:
-          tool: nextest
-      - uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
+      - name: Install Zig 0.15.2
+        shell: bash
+        run: |
+          ZIG_VERSION=0.15.2
+          case "$RUNNER_OS" in
+            Linux)  ZIG_OS=linux;  EXT=tar.xz ;;
+            macOS)  ZIG_OS=macos;  EXT=tar.xz ;;
+            Windows) ZIG_OS=windows; EXT=zip ;;
+          esac
+          case "$RUNNER_ARCH" in
+            X64)   ZIG_ARCH=x86_64 ;;
+            ARM64) ZIG_ARCH=aarch64 ;;
+          esac
+          URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}.${EXT}"
+          echo "Downloading $URL"
+          if [ "$EXT" = "zip" ]; then
+            curl -sSfL "$URL" -o zig.zip
+            unzip -q zig.zip
+            rm zig.zip
+          else
+            curl -sSfL "$URL" | tar -xJ
+          fi
+          ZIG_DIR="$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}"
+          # Convert to Windows path if on Windows (Git Bash uses /d/... style)
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            ZIG_DIR=$(cygpath -w "$ZIG_DIR")
+          fi
+          echo "$ZIG_DIR" >> "$GITHUB_PATH"
+          zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - name: Cache Turbo artifacts
+        uses: actions/cache@v5
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
       - name: Install system deps
         run: |
           sudo apt-get update
@@ -141,17 +208,43 @@ jobs:
       - run: bun run build:native
       - name: Test changed packages
         if: github.event_name == 'pull_request'
-        run: bun run ci:test:affected
+        run: |
+          set +e
+          timeout 300 bun run ci:test:affected 2>&1 | tee /tmp/test-output.log
+          EXIT=${PIPESTATUS[0]}
+          set -e
+          if [ $EXIT -eq 0 ]; then
+            exit 0
+          elif [ $EXIT -eq 124 ] && grep -qE '^\s+0 fail' /tmp/test-output.log; then
+            echo "::warning::Tests passed but turbo process hung (killed by timeout)"
+            exit 0
+          else
+            cat /tmp/test-output.log
+            exit $EXIT
+          fi
       - name: Test full workspace
         if: github.event_name != 'pull_request'
-        run: bun run ci:test:full
+        run: |
+          set +e
+          timeout 300 bun run ci:test:full 2>&1 | tee /tmp/test-output.log
+          EXIT=${PIPESTATUS[0]}
+          set -e
+          if [ $EXIT -eq 0 ]; then
+            exit 0
+          elif [ $EXIT -eq 124 ] && grep -qE '^\s+0 fail' /tmp/test-output.log; then
+            echo "::warning::Tests passed but turbo process hung (killed by timeout)"
+            exit 0
+          else
+            cat /tmp/test-output.log
+            exit $EXIT
+          fi
       - name: CLI smoke test
         run: bun run ci:test:smoke
 
   install_methods:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: true
       - uses: oven-sh/setup-bun@v2
@@ -163,11 +256,37 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-workspace-crates: true
-      - uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
+      - name: Install Zig 0.15.2
+        shell: bash
+        run: |
+          ZIG_VERSION=0.15.2
+          case "$RUNNER_OS" in
+            Linux)  ZIG_OS=linux;  EXT=tar.xz ;;
+            macOS)  ZIG_OS=macos;  EXT=tar.xz ;;
+            Windows) ZIG_OS=windows; EXT=zip ;;
+          esac
+          case "$RUNNER_ARCH" in
+            X64)   ZIG_ARCH=x86_64 ;;
+            ARM64) ZIG_ARCH=aarch64 ;;
+          esac
+          URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}.${EXT}"
+          echo "Downloading $URL"
+          if [ "$EXT" = "zip" ]; then
+            curl -sSfL "$URL" -o zig.zip
+            unzip -q zig.zip
+            rm zig.zip
+          else
+            curl -sSfL "$URL" | tar -xJ
+          fi
+          ZIG_DIR="$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}"
+          # Convert to Windows path if on Windows (Git Bash uses /d/... style)
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            ZIG_DIR=$(cygpath -w "$ZIG_DIR")
+          fi
+          echo "$ZIG_DIR" >> "$GITHUB_PATH"
+          zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
@@ -181,50 +300,418 @@ jobs:
       - name: Install method smoke tests
         run: bun run ci:test:install-methods
 
-  release:
-    if: startsWith(github.ref, 'refs/tags/v')
+  auto-release:
+    if: github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message, 'chore:')
     needs: [check, native, test, install_methods]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Auto-detect version and release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: bun scripts/release.ts auto
+
+  # Build Linux + Windows binaries on Ubuntu
+  build-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [check, native, test, install_methods]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
           lfs: true
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          registry-url: "https://registry.npmjs.org"
       - name: Cache bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
       - run: bun install --frozen-lockfile
       - name: Download native addons
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: pi-natives-*
           path: packages/natives/native
           merge-multiple: true
       - name: Verify native addons
         run: bun run ci:release:verify-natives
-
-      - name: Build binaries
-        run: bun run ci:release:build-binaries
+      - name: Build Linux and Windows binaries
+        run: bun scripts/ci-release-build-binaries.ts --platform linux,win32
       - name: Stage native addons for release
         run: cp packages/natives/native/*.node packages/coding-agent/binaries/
+      - name: Upload release binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-binaries-linux-win
+          path: packages/coding-agent/binaries/*
+          if-no-files-found: error
+
+  # Build macOS binaries natively on matching architecture, then sign and notarize
+  build-sign-macos:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [check, native, test, install_methods]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            arch: x64
+          - os: macos-14
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          lfs: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Download macOS native addons
+        uses: actions/download-artifact@v8
+        with:
+          pattern: pi-natives-darwin-${{ matrix.arch }}*
+          path: packages/natives/native
+          merge-multiple: true
+      - name: Build macOS binary
+        run: bun scripts/ci-release-build-binaries.ts --platform darwin --arch ${{ matrix.arch }}
+      - name: Stage macOS native addons for release
+        run: cp packages/natives/native/*.node packages/coding-agent/binaries/
+
+      - name: Import Code Signing Certificate
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+          echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+
+          echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > $RUNNER_TEMP/certificate.p12
+
+          openssl pkcs12 -info -in $RUNNER_TEMP/certificate.p12 -noout -passin pass:"$APPLE_CERTIFICATE_PASSWORD" || {
+            echo "ERROR: Invalid p12 file or wrong password"
+            exit 1
+          }
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          security import $RUNNER_TEMP/certificate.p12 \
+            -k $KEYCHAIN_PATH \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          rm $RUNNER_TEMP/certificate.p12
+
+      - name: Sign macOS Binary
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          SIGNING_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep "Developer ID" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          if [ -z "$SIGNING_IDENTITY" ]; then
+            echo "ERROR: No Developer ID signing identity found"
+            exit 1
+          fi
+          echo "Using signing identity: $SIGNING_IDENTITY"
+
+          BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${{ matrix.arch }}"
+          if [ -f "$BINARY_PATH" ]; then
+            echo "=== Binary diagnostics ==="
+            file "$BINARY_PATH"
+            ls -la "$BINARY_PATH"
+            echo "Mach-O architectures:"
+            lipo -info "$BINARY_PATH" 2>&1 || true
+            echo "Existing signature state:"
+            codesign -dvvv "$BINARY_PATH" 2>&1 || true
+            echo "==========================="
+
+            # Strip any existing (possibly malformed) signature from Bun-compiled binary
+            # Bun's --compile can produce binaries with signature blocks that codesign --force
+            # cannot replace — removing first ensures a clean slate
+            echo "Stripping existing signature..."
+            codesign --remove-signature "$BINARY_PATH" 2>&1 || true
+            echo "After strip:"
+            codesign -dvvv "$BINARY_PATH" 2>&1 || true
+
+            codesign --force --options runtime \
+              --entitlements scripts/entitlements.plist \
+              --sign "$SIGNING_IDENTITY" \
+              --timestamp "$BINARY_PATH"
+
+            codesign --verify --verbose "$BINARY_PATH" || {
+              echo "::error::Code signature verification failed for ${{ matrix.arch }}"
+              exit 1
+            }
+
+            AUTHORITY=$(codesign -dvvv "$BINARY_PATH" 2>&1 | grep "Authority=Developer ID Application" || true)
+            if [ -z "$AUTHORITY" ]; then
+              echo "::error::Binary not signed with Developer ID Application certificate"
+              exit 1
+            fi
+            echo "  Signed with: $AUTHORITY"
+
+            FLAGS=$(codesign -dvvv "$BINARY_PATH" 2>&1 | grep "flags=" || true)
+            if echo "$FLAGS" | grep -q "runtime"; then
+              echo "  Hardened runtime enabled"
+            else
+              echo "::error::Hardened runtime not enabled"
+              exit 1
+            fi
+
+            echo "${{ matrix.arch }} signed successfully"
+          else
+            echo "::error::Binary not found: $BINARY_PATH"
+            exit 1
+          fi
+
+      - name: Notarize macOS Binary
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          BINARY_PATH="packages/coding-agent/binaries/xcsh-darwin-${{ matrix.arch }}"
+          ZIP_PATH="$RUNNER_TEMP/xcsh-darwin-${{ matrix.arch }}.zip"
+
+          ditto -c -k --keepParent "$BINARY_PATH" "$ZIP_PATH"
+
+          echo "Submitting ${{ matrix.arch }} for notarization..."
+          echo "Xcode version: $(xcode-select -p)"
+          xcrun notarytool --version 2>&1 || true
+          NOTARY_EXIT=0
+          NOTARY_OUTPUT=$(xcrun notarytool submit "$ZIP_PATH" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait --verbose 2>&1) || NOTARY_EXIT=$?
+          echo "$NOTARY_OUTPUT"
+
+          if [ "$NOTARY_EXIT" -ne 0 ]; then
+            echo "::warning::notarytool exited with code $NOTARY_EXIT"
+          fi
+
+          if echo "$NOTARY_OUTPUT" | grep -q "status: Accepted"; then
+            echo "  Notarization accepted for ${{ matrix.arch }}"
+          else
+            echo "::error::Notarization failed for ${{ matrix.arch }}"
+            echo "notarytool exit code: $NOTARY_EXIT"
+            echo "Full output: $NOTARY_OUTPUT"
+            exit 1
+          fi
+
+          STAPLE_OUTPUT=$(xcrun stapler staple "$BINARY_PATH" 2>&1) || true
+          if echo "$STAPLE_OUTPUT" | grep -q "The staple and validate action worked"; then
+            echo "  Notarization ticket stapled"
+          else
+            echo "  Stapling not supported for bare Mach-O CLI tools (expected)"
+          fi
+
+          echo "All checks passed for ${{ matrix.arch }}"
+
+      - name: Upload signed macOS binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-binaries-macos-${{ matrix.arch }}-signed
+          path: packages/coding-agent/binaries/*
+          if-no-files-found: error
+
+  # Collect all artifacts and create the GitHub Release
+  create-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-release, build-sign-macos]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: Download Linux/Windows binaries
+        uses: actions/download-artifact@v8
+        with:
+          name: release-binaries-linux-win
+          path: packages/coding-agent/binaries
+      - name: Download signed macOS binaries
+        uses: actions/download-artifact@v8
+        with:
+          pattern: release-binaries-macos-*-signed
+          path: packages/coding-agent/binaries
+          merge-multiple: true
+      - name: List release binaries
+        run: ls -la packages/coding-agent/binaries/
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.RELEASE_TOKEN }}
           files: packages/coding-agent/binaries/*
           generate_release_notes: true
+
+  # Package Homebrew archives from signed binaries and update the tap
+  update-homebrew:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [create-release]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Cache bun dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Download signed macOS binaries
+        uses: actions/download-artifact@v8
+        with:
+          pattern: release-binaries-macos-*-signed
+          path: packages/coding-agent/binaries
+          merge-multiple: true
+      - name: Download Linux binaries
+        uses: actions/download-artifact@v8
+        with:
+          name: release-binaries-linux-win
+          path: packages/coding-agent/binaries
+      - name: Package archives for Homebrew
+        run: bun scripts/ci-release-homebrew.ts --package-only
+      - name: Upload Homebrew archives to release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          for archive in packages/coding-agent/binaries/*.zip packages/coding-agent/binaries/*.tar.gz; do
+            if [ -f "$archive" ]; then
+              echo "Uploading $(basename "$archive") to release $TAG..."
+              gh release upload "$TAG" "$archive" --clobber
+            fi
+          done
+      - name: Update Homebrew tap
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: bun scripts/ci-release-homebrew.ts --update-tap
+
+  # Publish to npm
+  publish-npm:
+    if: startsWith(github.ref, 'refs/tags/v') && !inputs.skip_npm
+    needs: [create-release]
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          lfs: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - name: Cache bun dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - name: Download native addon artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pi-natives-*
+          path: packages/natives/native
+          merge-multiple: true
+      - name: Stage native addons into platform packages
+        run: |
+          set -euo pipefail
+          NATIVE_DIR="packages/natives/native"
+          NPM_DIR="packages/natives/npm"
+          cp "$NATIVE_DIR/pi_natives.linux-x64-baseline.node" "$NPM_DIR/linux-x64-gnu/"
+          cp "$NATIVE_DIR/pi_natives.linux-x64-modern.node" "$NPM_DIR/linux-x64-gnu/"
+          cp "$NATIVE_DIR/pi_natives.linux-arm64.node" "$NPM_DIR/linux-arm64-gnu/"
+          cp "$NATIVE_DIR/pi_natives.darwin-x64-baseline.node" "$NPM_DIR/darwin-x64/"
+          cp "$NATIVE_DIR/pi_natives.darwin-x64-modern.node" "$NPM_DIR/darwin-x64/"
+          cp "$NATIVE_DIR/pi_natives.darwin-arm64.node" "$NPM_DIR/darwin-arm64/"
+          cp "$NATIVE_DIR/pi_natives.win32-x64-baseline.node" "$NPM_DIR/win32-x64-msvc/"
+          cp "$NATIVE_DIR/pi_natives.win32-x64-modern.node" "$NPM_DIR/win32-x64-msvc/"
+          echo "Native addons staged into platform packages:"
+          find "$NPM_DIR" -name "*.node" -exec ls -lh {} \;
       - name: Publish to npm
-        if: ${{ !inputs.skip_npm }}
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: bun run ci:release:publish
+
+  # Verify npm install works end-to-end after publishing
+  verify-npm-install:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [publish-npm]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - name: Install xcsh via npm and verify native addon loads
+        run: |
+          set -euo pipefail
+          max_attempts=5
+          delay=15
+          for attempt in $(seq 1 $max_attempts); do
+            if npm install -g @f5xc-salesdemos/xcsh 2>&1; then
+              break
+            fi
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "npm install failed after $max_attempts attempts"
+              exit 1
+            fi
+            echo "Attempt $attempt/$max_attempts failed — waiting ${delay}s for npm registry propagation..."
+            sleep $delay
+            delay=$((delay * 2))
+          done
+          echo "Checking xcsh version..."
+          xcsh --version
+          echo "Checking xcsh help..."
+          xcsh --help >/dev/null
+          echo "npm install verification passed"

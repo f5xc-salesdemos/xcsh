@@ -1,0 +1,189 @@
+name: Test macOS Code Signing
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-codesign:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            arch: arm64
+            label: "arm64-native"
+          - os: macos-15-intel
+            arch: x64
+            label: "x64-native"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3"
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly-2026-03-27
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-workspace-crates: true
+      - name: Install Zig 0.15.2
+        shell: bash
+        run: |
+          ZIG_VERSION=0.15.2
+          case "$RUNNER_OS" in
+            Linux)  ZIG_OS=linux;  EXT=tar.xz ;;
+            macOS)  ZIG_OS=macos;  EXT=tar.xz ;;
+            Windows) ZIG_OS=windows; EXT=zip ;;
+          esac
+          case "$RUNNER_ARCH" in
+            X64)   ZIG_ARCH=x86_64 ;;
+            ARM64) ZIG_ARCH=aarch64 ;;
+          esac
+          URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}.${EXT}"
+          echo "Downloading $URL"
+          if [ "$EXT" = "zip" ]; then
+            curl -sSfL "$URL" -o zig.zip
+            unzip -q zig.zip
+            rm zig.zip
+          else
+            curl -sSfL "$URL" | tar -xJ
+          fi
+          echo "$PWD/zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}" >> "$GITHUB_PATH"
+          zig-${ZIG_ARCH}-${ZIG_OS}-${ZIG_VERSION}/zig version
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build native addon from source
+        run: bun run build:native
+      - name: Embed native addon for target
+        env:
+          TARGET_PLATFORM: darwin
+          TARGET_ARCH: ${{ matrix.arch }}
+        run: bun --cwd=packages/natives run embed:native
+
+      - name: "Test 1: Full build (all flags)"
+        id: test1
+        continue-on-error: true
+        run: |
+          echo "=== Test 1: bun build --compile --define PI_COMPILED=true --root . --external mupdf --target=bun-darwin-${{ matrix.arch }} ==="
+          bun build --compile \
+            --define PI_COMPILED=true \
+            --root . \
+            --external mupdf \
+            --target=bun-darwin-${{ matrix.arch }} \
+            ./packages/coding-agent/src/cli.ts \
+            --outfile /tmp/test1-xcsh
+          echo "--- file ---"
+          file /tmp/test1-xcsh
+          echo "--- lipo ---"
+          lipo -info /tmp/test1-xcsh 2>&1 || true
+          echo "--- existing signature ---"
+          codesign -dvvv /tmp/test1-xcsh 2>&1 || true
+          echo "--- codesign (direct, no strip) ---"
+          codesign --force --options runtime -s - --timestamp=none /tmp/test1-xcsh 2>&1 && echo "PASS: ad-hoc sign" || echo "FAIL: ad-hoc sign"
+          echo "--- codesign (strip then sign) ---"
+          codesign --remove-signature /tmp/test1-xcsh 2>&1 || true
+          codesign --force --options runtime -s - --timestamp=none /tmp/test1-xcsh 2>&1 && echo "PASS: strip+sign" || echo "FAIL: strip+sign"
+
+      - name: "Test 2: No --external mupdf"
+        id: test2
+        continue-on-error: true
+        run: |
+          echo "=== Test 2: without --external mupdf ==="
+          bun build --compile \
+            --define PI_COMPILED=true \
+            --root . \
+            --target=bun-darwin-${{ matrix.arch }} \
+            ./packages/coding-agent/src/cli.ts \
+            --outfile /tmp/test2-xcsh 2>&1 || { echo "BUILD FAILED (expected if mupdf import fails)"; exit 0; }
+          file /tmp/test2-xcsh
+          lipo -info /tmp/test2-xcsh 2>&1 || true
+          codesign -dvvv /tmp/test2-xcsh 2>&1 || true
+          codesign --force --options runtime -s - --timestamp=none /tmp/test2-xcsh 2>&1 && echo "PASS: ad-hoc sign" || echo "FAIL: ad-hoc sign"
+
+      - name: "Test 3: No --define, no --root, no --external"
+        id: test3
+        continue-on-error: true
+        run: |
+          echo "=== Test 3: minimal flags ==="
+          bun build --compile \
+            --target=bun-darwin-${{ matrix.arch }} \
+            ./packages/coding-agent/src/cli.ts \
+            --outfile /tmp/test3-xcsh 2>&1 || { echo "BUILD FAILED"; exit 0; }
+          file /tmp/test3-xcsh
+          lipo -info /tmp/test3-xcsh 2>&1 || true
+          codesign -dvvv /tmp/test3-xcsh 2>&1 || true
+          codesign --force --options runtime -s - --timestamp=none /tmp/test3-xcsh 2>&1 && echo "PASS: ad-hoc sign" || echo "FAIL: ad-hoc sign"
+
+      - name: "Test 4: No --target (native build)"
+        id: test4
+        continue-on-error: true
+        run: |
+          echo "=== Test 4: no --target (build for host arch) ==="
+          bun build --compile \
+            --define PI_COMPILED=true \
+            --root . \
+            --external mupdf \
+            ./packages/coding-agent/src/cli.ts \
+            --outfile /tmp/test4-xcsh 2>&1 || { echo "BUILD FAILED"; exit 0; }
+          file /tmp/test4-xcsh
+          lipo -info /tmp/test4-xcsh 2>&1 || true
+          codesign -dvvv /tmp/test4-xcsh 2>&1 || true
+          codesign --force --options runtime -s - --timestamp=none /tmp/test4-xcsh 2>&1 && echo "PASS: ad-hoc sign" || echo "FAIL: ad-hoc sign"
+
+      - name: "Test 5: Simple hello world binary"
+        id: test5
+        continue-on-error: true
+        run: |
+          echo "=== Test 5: simple binary (control test) ==="
+          echo 'console.log("hello")' > /tmp/hello.ts
+          bun build --compile \
+            --target=bun-darwin-${{ matrix.arch }} \
+            /tmp/hello.ts \
+            --outfile /tmp/test5-xcsh
+          file /tmp/test5-xcsh
+          lipo -info /tmp/test5-xcsh 2>&1 || true
+          codesign -dvvv /tmp/test5-xcsh 2>&1 || true
+          codesign --force --options runtime -s - --timestamp=none /tmp/test5-xcsh 2>&1 && echo "PASS: ad-hoc sign" || echo "FAIL: ad-hoc sign"
+
+      - name: "Test 6: Full build with strip-then-sign using entitlements"
+        id: test6
+        continue-on-error: true
+        run: |
+          echo "=== Test 6: full build + strip + sign with entitlements ==="
+          bun build --compile \
+            --define PI_COMPILED=true \
+            --root . \
+            --external mupdf \
+            --target=bun-darwin-${{ matrix.arch }} \
+            ./packages/coding-agent/src/cli.ts \
+            --outfile /tmp/test6-xcsh 2>&1 || { echo "BUILD FAILED"; exit 0; }
+          echo "--- before strip ---"
+          codesign -dvvv /tmp/test6-xcsh 2>&1 || true
+          echo "--- stripping ---"
+          codesign --remove-signature /tmp/test6-xcsh 2>&1 || true
+          echo "--- after strip ---"
+          codesign -dvvv /tmp/test6-xcsh 2>&1 || true
+          echo "--- signing with entitlements ---"
+          codesign --force --options runtime \
+            --entitlements scripts/entitlements.plist \
+            -s - --timestamp=none \
+            /tmp/test6-xcsh 2>&1 && echo "PASS: strip+entitlements sign" || echo "FAIL: strip+entitlements sign"
+          echo "--- verify ---"
+          codesign --verify --verbose /tmp/test6-xcsh 2>&1 || true
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "============================================"
+          echo "RESULTS for ${{ matrix.label }} (${{ matrix.os }}, ${{ matrix.arch }})"
+          echo "============================================"
+          echo "Test 1 (full flags, direct sign):       ${{ steps.test1.outcome }}"
+          echo "Test 2 (no --external mupdf):           ${{ steps.test2.outcome }}"
+          echo "Test 3 (minimal flags):                 ${{ steps.test3.outcome }}"
+          echo "Test 4 (no --target, native):           ${{ steps.test4.outcome }}"
+          echo "Test 5 (simple hello world):            ${{ steps.test5.outcome }}"
+          echo "Test 6 (full + strip + entitlements):   ${{ steps.test6.outcome }}"
+          echo "============================================"
