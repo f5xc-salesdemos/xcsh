@@ -447,3 +447,90 @@ describe("ApiExecutor — cache edge cases", () => {
 		expect(callCount).toBe(3);
 	});
 });
+
+describe("validateResponse", () => {
+	test("returns empty array for valid data matching schema", async () => {
+		const { validateResponse } = await import("../src/services/api-executor");
+		const schema = { type: "object" as const, properties: { items: { type: "array" } }, required: ["items"] };
+		const warnings = validateResponse({ items: [1, 2] }, schema);
+		expect(warnings).toHaveLength(0);
+	});
+
+	test("warns on wrong top-level type", async () => {
+		const { validateResponse } = await import("../src/services/api-executor");
+		const schema = { type: "array" as const };
+		const warnings = validateResponse({ not: "array" }, schema);
+		expect(warnings.length).toBeGreaterThan(0);
+		expect(warnings[0]).toContain("array");
+	});
+
+	test("warns on missing required key", async () => {
+		const { validateResponse } = await import("../src/services/api-executor");
+		const schema = { type: "object" as const, required: ["items", "metadata"] };
+		const warnings = validateResponse({ items: [] }, schema);
+		expect(warnings.some(w => w.includes("metadata"))).toBe(true);
+	});
+
+	test("warns on wrong property type", async () => {
+		const { validateResponse } = await import("../src/services/api-executor");
+		const schema = { type: "object" as const, properties: { count: { type: "number" } } };
+		const warnings = validateResponse({ count: "not-a-number" }, schema);
+		expect(warnings.some(w => w.includes("count"))).toBe(true);
+	});
+});
+
+describe("ApiExecutor — response validation integration", () => {
+	let origFetch: typeof fetch;
+
+	beforeEach(() => {
+		origFetch = globalThis.fetch;
+	});
+
+	afterEach(() => {
+		globalThis.fetch = origFetch;
+	});
+
+	test("execute attaches warnings when responseSchema defined", async () => {
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ wrong: "shape" }), { status: 200 })) as unknown as typeof fetch;
+
+		const auth: ResolvedAuth = { headers: { Authorization: "test" }, baseUrl: "https://api.example.com" };
+		const op: ApiOperation = {
+			name: "test_op",
+			description: "Test",
+			method: "GET",
+			path: "/test",
+			dangerLevel: "low",
+			parameters: [],
+			responseSchema: { type: "object", required: ["items"] },
+		};
+		const executor = new ApiExecutor();
+		const result = await executor.execute(auth, op, {});
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.warnings).toBeDefined();
+			expect(result.warnings!.length).toBeGreaterThan(0);
+		}
+	});
+
+	test("execute skips validation when no responseSchema", async () => {
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ data: "ok" }), { status: 200 })) as unknown as typeof fetch;
+
+		const auth: ResolvedAuth = { headers: { Authorization: "test" }, baseUrl: "https://api.example.com" };
+		const op: ApiOperation = {
+			name: "test_op",
+			description: "Test",
+			method: "GET",
+			path: "/test",
+			dangerLevel: "low",
+			parameters: [],
+		};
+		const executor = new ApiExecutor();
+		const result = await executor.execute(auth, op, {});
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.warnings).toBeUndefined();
+		}
+	});
+});

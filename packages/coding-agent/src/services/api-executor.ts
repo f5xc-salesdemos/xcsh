@@ -10,6 +10,41 @@ interface CacheEntry {
 	expiresAt: number;
 }
 
+export function validateResponse(
+	data: unknown,
+	schema: { type: string; properties?: Record<string, { type: string }>; required?: string[] },
+): string[] {
+	const warnings: string[] = [];
+
+	const actualType = Array.isArray(data) ? "array" : typeof data;
+	if (schema.type && actualType !== schema.type) {
+		warnings.push(`Expected top-level type '${schema.type}', got '${actualType}'`);
+		return warnings;
+	}
+
+	if (schema.required && typeof data === "object" && data !== null) {
+		for (const key of schema.required) {
+			if (!(key in (data as Record<string, unknown>))) {
+				warnings.push(`Missing required key '${key}'`);
+			}
+		}
+	}
+
+	if (schema.properties && typeof data === "object" && data !== null) {
+		const obj = data as Record<string, unknown>;
+		for (const [key, prop] of Object.entries(schema.properties)) {
+			if (key in obj) {
+				const valType = Array.isArray(obj[key]) ? "array" : typeof obj[key];
+				if (valType !== prop.type) {
+					warnings.push(`Property '${key}' expected type '${prop.type}', got '${valType}'`);
+				}
+			}
+		}
+	}
+
+	return warnings;
+}
+
 export class ApiExecutor {
 	#cache = new Map<string, CacheEntry>();
 	#lruOrder: string[] = [];
@@ -84,7 +119,7 @@ export class ApiExecutor {
 		resolvedParams: Record<string, string>,
 		body?: Record<string, unknown>,
 		signal?: AbortSignal,
-	): Promise<{ ok: true; data: unknown } | { ok: false; status: number; error: string }> {
+	): Promise<{ ok: true; data: unknown; warnings?: string[] } | { ok: false; status: number; error: string }> {
 		const pathParams: Record<string, string> = {};
 		const queryParams: Record<string, string> = {};
 
@@ -148,6 +183,11 @@ export class ApiExecutor {
 
 		if (op.method === "GET") {
 			this.#setCache(url, data);
+		}
+
+		if (op.responseSchema) {
+			const warnings = validateResponse(data, op.responseSchema);
+			return { ok: true, data, ...(warnings.length > 0 ? { warnings } : {}) };
 		}
 
 		return { ok: true, data };
