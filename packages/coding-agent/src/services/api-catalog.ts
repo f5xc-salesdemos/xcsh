@@ -6,7 +6,6 @@ import type { ApiCatalog, ApiCatalogMeta, ApiCategory, ApiOperation } from "./ap
 interface CatalogIndex {
 	operationsByName: Map<string, ApiOperation>;
 	categoriesByName: Map<string, ApiCategory>;
-	keywordIndex: Map<string, Set<string>>;
 }
 
 export class ApiCatalogService {
@@ -52,42 +51,58 @@ export class ApiCatalogService {
 	}
 
 	async search(service: string, query: string): Promise<ApiOperation[]> {
+		if (!query) return [];
 		await this.getCatalog(service);
 		const index = this.#indexes.get(service);
 		if (!index) return [];
+
 		const q = query.toLowerCase();
-		const matchingOpNames = new Set<string>();
-		for (const [keyword, opNames] of index.keywordIndex) {
-			if (keyword.includes(q)) {
-				for (const name of opNames) matchingOpNames.add(name);
+
+		const exact = index.operationsByName.get(q);
+		if (exact) return [exact];
+
+		const queryTokens = q.split(/[\s_-]+/).filter(t => t.length > 0);
+		const scored: Array<{ op: ApiOperation; score: number }> = [];
+
+		for (const [, category] of index.categoriesByName) {
+			const categoryNameLower = category.name.toLowerCase();
+			for (const op of category.operations) {
+				let bestScore = 0;
+				const nameTokens = op.name.toLowerCase().split("_");
+				const descLower = op.description.toLowerCase();
+
+				for (const token of queryTokens) {
+					if (nameTokens.includes(token)) {
+						bestScore = Math.max(bestScore, 80);
+					} else if (categoryNameLower.includes(token)) {
+						bestScore = Math.max(bestScore, 60);
+					} else if (descLower.includes(token)) {
+						bestScore = Math.max(bestScore, 40);
+					} else if (op.name.toLowerCase().includes(token)) {
+						bestScore = Math.max(bestScore, 20);
+					}
+				}
+
+				if (bestScore > 0) scored.push({ op, score: bestScore });
 			}
 		}
-		return [...matchingOpNames].map(name => index.operationsByName.get(name)!).filter(Boolean);
+
+		scored.sort((a, b) => b.score - a.score || a.op.name.localeCompare(b.op.name));
+		return scored.slice(0, 25).map(s => s.op);
 	}
 
 	#buildIndex(service: string, catalog: ApiCatalog): void {
 		const operationsByName = new Map<string, ApiOperation>();
 		const categoriesByName = new Map<string, ApiCategory>();
-		const keywordIndex = new Map<string, Set<string>>();
-
-		const addKeyword = (keyword: string, opName: string) => {
-			if (!keywordIndex.has(keyword)) keywordIndex.set(keyword, new Set());
-			keywordIndex.get(keyword)!.add(opName);
-		};
 
 		for (const category of catalog.categories) {
 			categoriesByName.set(category.name, category);
 			for (const op of category.operations) {
 				operationsByName.set(op.name, op);
-				for (const token of op.name.split("_")) addKeyword(token, op.name);
-				for (const word of op.description.toLowerCase().split(/\s+/)) {
-					if (word.length > 2) addKeyword(word, op.name);
-				}
-				addKeyword(category.name, op.name);
 			}
 		}
 
-		this.#indexes.set(service, { operationsByName, categoriesByName, keywordIndex });
+		this.#indexes.set(service, { operationsByName, categoriesByName });
 	}
 
 	async #scan(): Promise<void> {

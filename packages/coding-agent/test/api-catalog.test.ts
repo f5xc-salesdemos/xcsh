@@ -358,3 +358,119 @@ describe("ApiCatalogService — collision and rescan", () => {
 		}
 	});
 });
+
+describe("ApiCatalogService — scored fuzzy search", () => {
+	let dir: string;
+
+	beforeEach(async () => {
+		dir = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-search-"));
+		const catalog = {
+			service: "test",
+			displayName: "Test",
+			version: "1.0.0",
+			auth: { type: "bearer", tokenSource: "T", baseUrlSource: "U" },
+			categories: [
+				{
+					name: "load-balancers",
+					displayName: "Load Balancers",
+					operations: [
+						{
+							name: "list_http_loadbalancers",
+							description: "List all HTTP load balancers",
+							method: "GET",
+							path: "/lbs",
+							dangerLevel: "low",
+							parameters: [],
+						},
+						{
+							name: "get_http_loadbalancer",
+							description: "Get a specific HTTP load balancer",
+							method: "GET",
+							path: "/lbs/{name}",
+							dangerLevel: "low",
+							parameters: [],
+						},
+						{
+							name: "delete_http_loadbalancer",
+							description: "Remove an HTTP load balancer",
+							method: "DELETE",
+							path: "/lbs/{name}",
+							dangerLevel: "high",
+							parameters: [],
+						},
+					],
+				},
+				{
+					name: "origin-pools",
+					displayName: "Origin Pools",
+					operations: [
+						{
+							name: "list_origin_pools",
+							description: "List all origin pools",
+							method: "GET",
+							path: "/pools",
+							dangerLevel: "low",
+							parameters: [],
+						},
+					],
+				},
+				...Array.from({ length: 30 }, (_, i) => ({
+					name: `filler-${i}`,
+					displayName: `Filler ${i}`,
+					operations: [
+						{
+							name: `filler_op_${i}`,
+							description: `Filler operation ${i} for loadbalancer testing`,
+							method: "GET",
+							path: `/filler/${i}`,
+							dangerLevel: "low",
+							parameters: [],
+						},
+					],
+				})),
+			],
+		};
+		await Bun.write(path.join(dir, "api-catalog.json"), JSON.stringify(catalog));
+	});
+
+	afterEach(async () => {
+		await fs.rm(dir, { recursive: true });
+	});
+
+	test("exact name match ranks first", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const results = await svc.search("test", "list_http_loadbalancers");
+		expect(results.length).toBeGreaterThanOrEqual(1);
+		expect(results[0].name).toBe("list_http_loadbalancers");
+	});
+
+	test("name token match ranks above description-only match", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const results = await svc.search("test", "loadbalancer");
+		const nameMatchIdx = results.findIndex(r => r.name.includes("loadbalancer"));
+		const descOnlyIdx = results.findIndex(
+			r => r.name.startsWith("filler_op_") && r.description.includes("loadbalancer"),
+		);
+		if (nameMatchIdx >= 0 && descOnlyIdx >= 0) {
+			expect(nameMatchIdx).toBeLessThan(descOnlyIdx);
+		}
+	});
+
+	test("results capped at 25", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const results = await svc.search("test", "filler");
+		expect(results.length).toBeLessThanOrEqual(25);
+	});
+
+	test("category name match returns relevant ops", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const results = await svc.search("test", "load-balancers");
+		expect(results.some(r => r.name === "list_http_loadbalancers")).toBe(true);
+	});
+
+	test("empty query returns empty", async () => {
+		const svc = new ApiCatalogService([dir]);
+		const results = await svc.search("test", "");
+		expect(results).toHaveLength(0);
+	});
+});
