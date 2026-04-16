@@ -106,7 +106,11 @@ export class ApiExecutor {
 		}
 
 		if (WRITE_METHODS.has(op.method)) {
-			this.#invalidateByPrefix(auth.baseUrl + op.path.replace(/\/\{[^}]+\}$/, ""));
+			// Use the resolved URL (path params already substituted) as the invalidation base.
+			// For item-path writes (path ends in /{name}), strip the last segment so the
+			// invalidation also covers cached list responses for the same collection.
+			const prefix = /\/\{[^}]+\}$/.test(op.path) ? url.replace(/\/[^/?]+$/, "") : url.replace(/\?.*$/, "");
+			this.#invalidateByPrefix(prefix);
 		}
 
 		const headers: Record<string, string> = { "Content-Type": "application/json", ...auth.headers };

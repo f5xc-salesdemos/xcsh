@@ -479,3 +479,129 @@ describe("Plugin discovery path fix", () => {
 		expect(Array.isArray(services)).toBe(true);
 	});
 });
+
+describe("ApiCallTool — deferrable", () => {
+	test("ApiCallTool is marked deferrable", async () => {
+		let tmpDir: string | undefined;
+		try {
+			tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-deferrable-"));
+			await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(TEST_CATALOG));
+			const catalog = new ApiCatalogService([tmpDir]);
+			const executor = new ApiExecutor();
+			const tool = new ApiCallTool(catalog, executor);
+			expect((tool as { deferrable?: boolean }).deferrable).toBe(true);
+		} finally {
+			if (tmpDir) await fs.rm(tmpDir, { recursive: true, force: true });
+		}
+	});
+});
+
+describe("ApiBatchTool — danger-level gate", () => {
+	let tmpDir: string;
+
+	beforeEach(async () => {
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-batch-danger-"));
+		const catalog = {
+			...BATCH_CATALOG,
+			categories: [
+				{
+					name: "resources",
+					displayName: "Resources",
+					operations: [
+						{
+							name: "list_resources",
+							description: "List",
+							method: "GET",
+							path: "/resources",
+							dangerLevel: "low",
+							parameters: [],
+						},
+						{
+							name: "update_resource",
+							description: "Update",
+							method: "PUT",
+							path: "/resources/{id}",
+							dangerLevel: "medium",
+							parameters: [{ name: "id", in: "path", required: true, type: "string" }],
+						},
+						{
+							name: "delete_resource",
+							description: "Delete",
+							method: "DELETE",
+							path: "/resources/{id}",
+							dangerLevel: "high",
+							parameters: [{ name: "id", in: "path", required: true, type: "string" }],
+						},
+						{
+							name: "nuke_resources",
+							description: "Nuke all",
+							method: "DELETE",
+							path: "/resources",
+							dangerLevel: "critical",
+							parameters: [],
+						},
+					],
+				},
+			],
+		};
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(catalog));
+		process.env.TEST_TOKEN = "token";
+		process.env.TEST_BASE_URL = "https://api.example.com";
+	});
+
+	afterEach(async () => {
+		await fs.rm(tmpDir, { recursive: true, force: true });
+		delete process.env.TEST_TOKEN;
+		delete process.env.TEST_BASE_URL;
+	});
+
+	test("rejects critical-danger operations in batch", async () => {
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+		const result = await tool.execute("id", {
+			service: "svc",
+			operations: [{ operation: "nuke_resources" }],
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text).toContain("critical");
+		expect(text).toContain("api_call");
+	});
+
+	test("rejects high-danger operations in batch", async () => {
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+		const result = await tool.execute("id", {
+			service: "svc",
+			operations: [{ operation: "delete_resource", params: { id: "x" } }],
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text).toContain("high");
+		expect(text).toContain("api_call");
+	});
+
+	test("executes low and medium danger operations normally", async () => {
+		let called = false;
+		const origFetch = globalThis.fetch;
+		globalThis.fetch = (async () => {
+			called = true;
+			return new Response(JSON.stringify({ items: [] }), { status: 200 });
+		}) as unknown as typeof fetch;
+		try {
+			const { ApiBatchTool } = await import("../src/tools/api-tool");
+			const catalog = new ApiCatalogService([tmpDir]);
+			const executor = new ApiExecutor();
+			const tool = new ApiBatchTool(catalog, executor);
+			await tool.execute("id", {
+				service: "svc",
+				operations: [{ operation: "list_resources" }],
+			});
+			expect(called).toBe(true);
+		} finally {
+			globalThis.fetch = origFetch;
+		}
+	});
+});

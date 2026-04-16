@@ -288,4 +288,47 @@ describe("ApiExecutor — response caching", () => {
 		await executor.execute(auth, postOp, {}, { name: "new" });
 		expect(callCount).toBe(2);
 	});
+
+	test("DELETE invalidates cached GET using resolved namespace in URL", async () => {
+		// Regression: prefix was built from raw path template ({namespace} literal)
+		// so it never matched cached keys with the real value ("default").
+		const namespacedGetOp: ApiOperation = {
+			name: "list_lbs",
+			description: "List load balancers",
+			method: "GET",
+			path: "/api/config/namespaces/{namespace}/http_loadbalancers",
+			dangerLevel: "low",
+			parameters: [{ name: "namespace", in: "path", required: true, type: "string", default: "$F5XC_NAMESPACE" }],
+		};
+		const namespacedDeleteOp: ApiOperation = {
+			name: "delete_lb",
+			description: "Delete a load balancer",
+			method: "DELETE",
+			path: "/api/config/namespaces/{namespace}/http_loadbalancers/{name}",
+			dangerLevel: "high",
+			parameters: [
+				{ name: "namespace", in: "path", required: true, type: "string", default: "$F5XC_NAMESPACE" },
+				{ name: "name", in: "path", required: true, type: "string" },
+			],
+		};
+		let callCount = 0;
+		globalThis.fetch = (async () => {
+			callCount++;
+			return new Response(JSON.stringify({ items: [] }), { status: 200 });
+		}) as unknown as typeof fetch;
+		process.env["F5XC_NAMESPACE"] = "default";
+		try {
+			const nsAuth: ResolvedAuth = {
+				headers: { Authorization: "APIToken test" },
+				baseUrl: "https://api.example.com",
+			};
+			const executor = new ApiExecutor();
+			await executor.execute(nsAuth, namespacedGetOp, { namespace: "default" }); // cached
+			await executor.execute(nsAuth, namespacedDeleteOp, { namespace: "default", name: "my-lb" }); // must invalidate
+			await executor.execute(nsAuth, namespacedGetOp, { namespace: "default" }); // must re-fetch
+			expect(callCount).toBe(3);
+		} finally {
+			delete process.env["F5XC_NAMESPACE"];
+		}
+	});
 });

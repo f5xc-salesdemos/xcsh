@@ -197,6 +197,7 @@ export class ApiCallTool implements AgentTool<typeof callSchema> {
 	readonly description =
 		"Execute a vendor API operation deterministically. Resolves auth from environment variables, substitutes path parameters, and returns the JSON response. For unfamiliar operations use api_discover first, for body shape use api_describe first.";
 	readonly parameters = callSchema;
+	readonly deferrable = true;
 
 	#catalog: ApiCatalogService;
 	#executor: ApiExecutor;
@@ -390,6 +391,17 @@ export class ApiBatchTool implements AgentTool<typeof batchSchema> {
 				continue;
 			}
 
+			if (op.dangerLevel === "critical" || op.dangerLevel === "high") {
+				const level = op.dangerLevel;
+				const err = {
+					operation: item.operation,
+					ok: false,
+					error: `Operation '${item.operation}' is ${level}-danger and cannot run in a batch. Use api_call directly.`,
+				};
+				results.push(err);
+				if (mode === "strict") break;
+				continue;
+			}
 			const userParams = (item.params as Record<string, unknown>) ?? {};
 			const resolvedParams = this.#executor.resolveParams(op, userParams);
 			const missing = (op.parameters ?? []).filter(p => p.required && resolvedParams[p.name] === undefined);
