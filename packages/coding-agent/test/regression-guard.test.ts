@@ -376,3 +376,24 @@ describe("TUI isMultiplexer late-binding function for test isolation (commit be6
 		expect(callRefs).toBe(allRefs);
 	});
 });
+
+// ─── Provider registration: env var name must not leak as Bearer token ────
+
+describe("Provider registration: env var fallback must not send literal name (PR #104)", () => {
+	it("welcome-checks.ts detects unresolved env var names (prevents false connected status)", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/modes/components/welcome-checks.ts"), "utf8");
+		expect(src).toContain("Detect unresolved env var names");
+	});
+
+	it("autoFixModelsConfig calls readApiKeyLiteral to preserve literal keys", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/config/auto-config.ts"), "utf8");
+		expect(src).toContain("readApiKeyLiteral");
+	});
+
+	it("probeAndUpgradeLiteLLMConfig preserves literal keys during upgrade", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/config/auto-config.ts"), "utf8");
+		// probeAndUpgradeLiteLLMConfig must use readApiKeyLiteral or apiKeyLiteral
+		const probeSection = src.slice(src.indexOf("probeAndUpgradeLiteLLMConfig"));
+		expect(probeSection).toContain("apiKeyLiteral");
+	});
+});

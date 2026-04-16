@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import { hookFetch } from "@f5xc-salesdemos/pi-utils";
+import { _resetSettingsForTest } from "../../src/config/settings";
 import { runSearchQuery } from "../../src/web/search";
 import {
 	buildExaRequestBody,
@@ -222,11 +223,13 @@ describe("searchExa", () => {
 	beforeEach(() => {
 		capturedRequestBody = null;
 		process.env.EXA_API_KEY = "test-key-123";
+		_resetSettingsForTest();
 	});
 
 	afterEach(() => {
 		vi.restoreAllMocks();
 		delete process.env.EXA_API_KEY;
+		_resetSettingsForTest();
 	});
 
 	function mockFetch(responseBody: unknown, status = 200): Disposable {
