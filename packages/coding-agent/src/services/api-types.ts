@@ -25,6 +25,11 @@ export interface ApiOperation {
 	prerequisites?: string[];
 	commonErrors?: Array<{ code: number; reason: string; solution: string }>;
 	bestPractices?: string[];
+	responseSchema?: {
+		type: string;
+		properties?: Record<string, { type: string }>;
+		required?: string[];
+	};
 }
 
 export interface ApiCategory {
