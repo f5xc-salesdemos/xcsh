@@ -3,6 +3,8 @@ import { type Static, Type } from "@sinclair/typebox";
 import type { ApiCatalogService } from "../services/api-catalog";
 import type { ApiExecutor } from "../services/api-executor";
 import type { ResolvedAuth } from "../services/api-types";
+import type { ToolSession } from ".";
+import { queueResolveHandler } from "./resolve";
 
 // ─── api_services ────────────────────────────────────────────────────────────
 
@@ -198,10 +200,12 @@ export class ApiCallTool implements AgentTool<typeof callSchema> {
 
 	#catalog: ApiCatalogService;
 	#executor: ApiExecutor;
+	#session?: ToolSession;
 
-	constructor(catalog: ApiCatalogService, executor: ApiExecutor) {
+	constructor(catalog: ApiCatalogService, executor: ApiExecutor, session?: ToolSession) {
 		this.#catalog = catalog;
 		this.#executor = executor;
+		this.#session = session;
 	}
 
 	async execute(
@@ -258,6 +262,46 @@ export class ApiCallTool implements AgentTool<typeof callSchema> {
 			};
 		}
 
+		// Gate high-danger operations behind user confirmation when session is available
+		if (op.dangerLevel === "high" && this.#session) {
+			const doExecute = async (): Promise<AgentToolResult> => {
+				const result = await this.#executor.execute(
+					resolvedAuth,
+					op,
+					resolvedParams,
+					body as Record<string, unknown> | undefined,
+					signal,
+				);
+				if (!result.ok) {
+					return { content: [{ type: "text", text: `Error: ${result.error}` }] };
+				}
+				const responseText = typeof result.data === "string" ? result.data : JSON.stringify(result.data, null, 2);
+				return { content: [{ type: "text", text: responseText }] };
+			};
+
+			queueResolveHandler(this.#session, {
+				label: `${op.method} ${op.path} — ${op.description}`,
+				sourceToolName: this.name,
+				apply: async _reason => doExecute(),
+				reject: async _reason => ({ content: [{ type: "text", text: "Operation cancelled." }] }),
+			});
+
+			const opJson = JSON.stringify(
+				{ method: op.method, path: op.path, dangerLevel: op.dangerLevel, description: op.description },
+				null,
+				2,
+			);
+			return {
+				content: [
+					{
+						type: "text",
+						text: `High-danger operation queued for confirmation:\n\n${opJson}\n\nCall \`resolve(action="apply")\` to proceed or \`resolve(action="discard")\` to cancel.`,
+					},
+				],
+			};
+		}
+
+		// Low/medium danger (or no session): execute immediately
 		const result = await this.#executor.execute(
 			resolvedAuth,
 			op,
@@ -266,13 +310,11 @@ export class ApiCallTool implements AgentTool<typeof callSchema> {
 			signal,
 		);
 
-		const prefix = op.dangerLevel === "high" ? `${DANGER_NOTICE.high}\n\n` : "";
-
 		if (!result.ok) {
-			return { content: [{ type: "text", text: `${prefix}Error: ${result.error}` }] };
+			return { content: [{ type: "text", text: `Error: ${result.error}` }] };
 		}
 
 		const responseText = typeof result.data === "string" ? result.data : JSON.stringify(result.data, null, 2);
-		return { content: [{ type: "text", text: `${prefix}${responseText}` }] };
+		return { content: [{ type: "text", text: responseText }] };
 	}
 }

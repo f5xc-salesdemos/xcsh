@@ -262,10 +262,10 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
 		return new ApiDescribeTool(catalog);
 	},
-	api_call: _s => {
+	api_call: s => {
 		const catalog = new ApiCatalogService([path.join(os.homedir(), ".claude", "plugins")]);
 		const executor = new ApiExecutor();
-		return new ApiCallTool(catalog, executor);
+		return new ApiCallTool(catalog, executor, s);
 	},
 };
 

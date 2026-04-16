@@ -276,4 +276,56 @@ describe("ApiCallTool", () => {
 		// Restore for other tests
 		process.env.TEST_NS = "default";
 	});
+
+	test("high-danger op with session returns preview without executing", async () => {
+		// Mock fetch to track if it was called
+		let fetchCalled = false;
+		globalThis.fetch = (async () => {
+			fetchCalled = true;
+			return new Response(JSON.stringify({}), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		// Create a minimal mock session with queueResolveHandler tracking
+		const mockSession = {
+			getToolChoiceQueue: () => ({
+				pushOnce: () => {},
+			}),
+			buildToolChoice: () => ({ type: "tool", name: "resolve" }),
+			steer: () => {},
+		} as unknown as import("../src/tools").ToolSession;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor, mockSession);
+
+		const result = await tool.execute("id1", {
+			service: "test-svc",
+			operation: "delete_item",
+			params: { id: "abc" },
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+
+		// Should NOT have executed the fetch
+		expect(fetchCalled).toBe(false);
+		// Should have returned a preview/confirmation message
+		expect(text.toLowerCase()).toContain("high");
+	});
+
+	test("high-danger op without session executes immediately (backwards compat)", async () => {
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ result: "ok" }), { status: 200 })) as unknown as typeof fetch;
+
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiCallTool(catalog, executor); // NO session
+
+		const result = await tool.execute("id1", {
+			service: "test-svc",
+			operation: "delete_item",
+			params: { id: "abc" },
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		// With no session, should still execute (for test compatibility)
+		expect(text).toContain("result");
+	});
 });
