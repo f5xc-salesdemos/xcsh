@@ -28,4 +28,4 @@ RUN mkdir -p /root/.local/bin && \
 ENV PATH="/root/.local/bin:$PATH"
 
 # Verify
-RUN omp --version
+RUN xcsh --version

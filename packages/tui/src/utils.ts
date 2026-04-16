@@ -1,12 +1,42 @@
-import { getDefaultTabWidth, getIndentation, sliceWithWidth } from "@f5xc-salesdemos/pi-natives";
-
-export {
-	Ellipsis,
-	extractSegments,
-	sliceWithWidth,
-	truncateToWidth,
-	wrapTextWithAnsi,
+import type { Ellipsis, ExtractSegmentsResult, SliceResult } from "@f5xc-salesdemos/pi-natives";
+import {
+	extractSegments as nativeExtractSegments,
+	sliceWithWidth as nativeSliceWithWidth,
+	truncateToWidth as nativeTruncateToWidth,
+	wrapTextWithAnsi as nativeWrapTextWithAnsi,
 } from "@f5xc-salesdemos/pi-natives";
+import { getDefaultTabWidth, getIndentation } from "@f5xc-salesdemos/pi-utils";
+
+export { Ellipsis } from "@f5xc-salesdemos/pi-natives";
+
+export { getDefaultTabWidth, getIndentation } from "@f5xc-salesdemos/pi-utils";
+
+export function sliceWithWidth(line: string, startCol: number, length: number, strict?: boolean | null): SliceResult {
+	return nativeSliceWithWidth(line, startCol, length, strict, getDefaultTabWidth());
+}
+
+export function truncateToWidth(
+	text: string,
+	maxWidth: number,
+	ellipsisKind?: Ellipsis | null,
+	pad?: boolean | null,
+): string {
+	return nativeTruncateToWidth(text, maxWidth, ellipsisKind, pad, getDefaultTabWidth());
+}
+
+export function wrapTextWithAnsi(text: string, width: number): string[] {
+	return nativeWrapTextWithAnsi(text, width, getDefaultTabWidth());
+}
+
+export function extractSegments(
+	line: string,
+	beforeEnd: number,
+	afterStart: number,
+	afterLen: number,
+	strictAfter: boolean,
+): ExtractSegmentsResult {
+	return nativeExtractSegments(line, beforeEnd, afterStart, afterLen, strictAfter, getDefaultTabWidth());
+}
 
 // Pre-allocated space buffer for padding
 const SPACE_BUFFER = " ".repeat(512);

@@ -5,7 +5,6 @@
  */
 import path from "node:path";
 import type { AgentEvent, ThinkingLevel } from "@f5xc-salesdemos/pi-agent-core";
-import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
 import { logger, prompt, untilAborted } from "@f5xc-salesdemos/pi-utils";
 import type { TSchema } from "@sinclair/typebox";
 import Ajv, { type ValidateFunction } from "ajv";
@@ -41,6 +40,9 @@ import {
 	TASK_SUBAGENT_LIFECYCLE_CHANNEL,
 	TASK_SUBAGENT_PROGRESS_CHANNEL,
 } from "./types";
+
+/** Opaque handle for the fuzzy-search database (removed from pi-natives in upstream). */
+type SearchDb = unknown;
 
 const MCP_CALL_TIMEOUT_MS = 60_000;
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false });
@@ -1057,6 +1059,10 @@ export async function runSubprocess(options: ExecutorOptions): Promise<SingleRes
 						},
 						getThinkingLevel: () => session.thinkingLevel,
 						setThinkingLevel: level => session.setThinkingLevel(level),
+						getSessionName: () => session.sessionName,
+						setSessionName: async (name: string) => {
+							await session.setSessionName(name);
+						},
 					},
 					{
 						getModel: () => session.model,

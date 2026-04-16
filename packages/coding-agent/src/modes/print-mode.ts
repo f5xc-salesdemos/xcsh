@@ -72,6 +72,10 @@ export async function runPrintMode(session: AgentSession, options: PrintModeOpti
 				},
 				getThinkingLevel: () => session.thinkingLevel,
 				setThinkingLevel: level => session.setThinkingLevel(level),
+				getSessionName: () => session.sessionManager.getSessionName?.(),
+				setSessionName: async (name: string) => {
+					session.sessionManager.setSessionName?.(name);
+				},
 			},
 			// ExtensionContextActions
 			{

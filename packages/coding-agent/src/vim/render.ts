@@ -1,4 +1,4 @@
-import { extractSegments } from "@oh-my-pi/pi-tui";
+import { extractSegments } from "@f5xc-salesdemos/pi-tui";
 import { truncateToWidth } from "../tools/render-utils";
 import type {
 	VimErrorLocation,

@@ -167,6 +167,7 @@ export class InteractiveMode implements InteractiveModeContext {
 	#pendingModelSwitch: { model: Model; thinkingLevel?: ThinkingLevel } | undefined;
 	#planModeHasEntered = false;
 	#planReviewContainer: Container | undefined;
+	lspServers?: import("../tools").LspStartupServerInfo[];
 	mcpManager?: import("../mcp").MCPManager;
 	readonly #toolUiContextSetter: (uiContext: ExtensionUIContext, hasUI: boolean) => void;
 
@@ -193,6 +194,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		version: string,
 		changelogMarkdown: string | undefined = undefined,
 		setToolUIContext: (uiContext: ExtensionUIContext, hasUI: boolean) => void = () => {},
+		lspServers?: import("../tools").LspStartupServerInfo[],
 		mcpManager?: import("../mcp").MCPManager,
 		eventBus?: EventBus,
 	) {
@@ -204,6 +206,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#version = version;
 		this.#changelogMarkdown = changelogMarkdown;
 		this.#toolUiContextSetter = setToolUIContext;
+		this.lspServers = lspServers;
 		this.mcpManager = mcpManager;
 		this.#eventBus = eventBus;
 		if (eventBus) {
@@ -1241,6 +1244,10 @@ export class InteractiveMode implements InteractiveModeContext {
 
 	handleMoveCommand(targetPath: string): Promise<void> {
 		return this.#commandController.handleMoveCommand(targetPath);
+	}
+
+	handleRenameCommand(title: string): Promise<void> {
+		return this.#commandController.handleRenameCommand(title);
 	}
 
 	handleMemoryCommand(text: string): Promise<void> {

@@ -172,7 +172,7 @@ impl MacOSPowerAssertion {
 			.as_ref()
 			.and_then(|value| value.reason.as_deref())
 			.filter(|value| !value.trim().is_empty())
-			.unwrap_or("Oh My Pi agent session");
+			.unwrap_or("xcsh agent session");
 		let display = options
 			.as_ref()
 			.and_then(|value| value.display)

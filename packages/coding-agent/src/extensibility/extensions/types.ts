@@ -7,7 +7,6 @@
  * - Register commands, keyboard shortcuts, and CLI flags
  * - Interact with the user via UI primitives
  */
-
 import type {
 	AgentMessage,
 	AgentToolResult,
@@ -27,7 +26,6 @@ import type {
 	TextContent,
 	ToolResultMessage,
 } from "@f5xc-salesdemos/pi-ai";
-import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
 import type { AutocompleteItem, Component, EditorComponent, EditorTheme, KeyId, TUI } from "@f5xc-salesdemos/pi-tui";
 import type * as piCodingAgent from "@f5xc-salesdemos/xcsh";
 import type { Static, TSchema } from "@sinclair/typebox";
@@ -238,8 +236,6 @@ export interface ExtensionContext {
 	modelRegistry: ModelRegistry;
 	/** Current model (may be undefined) */
 	model: Model | undefined;
-	/** Shared native search DB for grep/glob/fuzzyFind-backed workflows. */
-	searchDb?: SearchDb;
 	/** Whether the agent is idle (not streaming) */
 	isIdle(): boolean;
 	/** Abort the current agent operation */
@@ -1115,6 +1111,12 @@ export interface ExtensionAPI {
 	/** Set thinking level for the current session. */
 	setThinkingLevel(level: ThinkingLevel): void;
 
+	/** Get the current session name. */
+	getSessionName(): string | undefined;
+
+	/** Set the session name. Persists to the session file. */
+	setSessionName(name: string): Promise<void>;
+
 	// =========================================================================
 	// Provider Registration
 	// =========================================================================
@@ -1301,12 +1303,14 @@ export interface ExtensionActions {
 	setModel: SetModelHandler;
 	getThinkingLevel: GetThinkingLevelHandler;
 	setThinkingLevel: SetThinkingLevelHandler;
+	getSessionName: () => string | undefined;
+	setSessionName: (name: string) => Promise<void>;
 }
 
 /** Actions for ExtensionContext (ctx.* in event handlers). */
 export interface ExtensionContextActions {
 	getModel: () => Model | undefined;
-	getSearchDb?: () => SearchDb | undefined;
+	getSearchDb?: () => unknown;
 	isIdle: () => boolean;
 	abort: () => void;
 	hasPendingMessages: () => boolean;

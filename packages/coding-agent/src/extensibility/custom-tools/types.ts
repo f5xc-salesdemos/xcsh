@@ -4,10 +4,8 @@
  * Custom tools are TypeScript modules that define additional tools for the agent.
  * They can provide custom rendering for tool calls and results in the TUI.
  */
-
 import type { AgentToolResult, AgentToolUpdateCallback } from "@f5xc-salesdemos/pi-agent-core";
 import type { Model } from "@f5xc-salesdemos/pi-ai";
-import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
 import type { Component } from "@f5xc-salesdemos/pi-tui";
 import type { Static, TSchema } from "@sinclair/typebox";
 import type { Rule } from "../../capability/rule";
@@ -73,8 +71,6 @@ export interface CustomToolContext {
 	modelRegistry: ModelRegistry;
 	/** Current model (may be undefined if no model is selected yet) */
 	model: Model | undefined;
-	/** Shared native search DB for grep/glob/fuzzyFind-backed workflows. */
-	searchDb?: SearchDb;
 	/** Whether the agent is idle (not streaming) */
 	isIdle(): boolean;
 	/** Whether there are queued messages waiting to be processed */

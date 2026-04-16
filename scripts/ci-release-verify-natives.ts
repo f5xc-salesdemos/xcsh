@@ -70,4 +70,25 @@ async function main(): Promise<void> {
 	}
 }
 
+/**
+ * Detect AVX-512 markers in disassembly output lines.
+ * Flags zmm/k-register usage or EVEX-prefixed (62h) instructions that have a
+ * valid 4-byte EVEX prefix (byte-2 bit-2 set distinguishes EVEX from BOUND).
+ */
+export function hasAvx512Markers(line: string): boolean {
+	// zmm or k-register references (e.g. %zmm0, %k1, kmovw)
+	if (/\bzmm\d|%k[0-7]\b|\bk[a-z]+[bwdq]\b/.test(line)) return true;
+	// EVEX prefix: starts with 62, and second byte has bit 2 set (distinguishes from BOUND)
+	const hexMatch = line.match(/:\t((?:[0-9a-f]{2} )+)/);
+	if (hexMatch) {
+		const bytes = hexMatch[1].trim().split(" ");
+		if (bytes[0] === "62" && bytes.length >= 4) {
+			const p1 = parseInt(bytes[1], 16);
+			// Bit 2 of P1 (the R' bit inverted) is always set in valid EVEX
+			if ((p1 & 0x04) !== 0) return true;
+		}
+	}
+	return false;
+}
+
 await main();

@@ -1,6 +1,5 @@
 import type { AgentTool } from "@f5xc-salesdemos/pi-agent-core";
 import type { ToolChoice } from "@f5xc-salesdemos/pi-ai";
-import type { SearchDb } from "@f5xc-salesdemos/pi-natives";
 import { $env, $flag, isBunTestRuntime, logger } from "@f5xc-salesdemos/pi-utils";
 import type { AsyncJobManager } from "../async";
 import type { PromptTemplate } from "../config/prompt-templates";
@@ -8,7 +7,7 @@ import type { Settings } from "../config/settings";
 import { EditTool } from "../edit";
 import type { Skill } from "../extensibility/skills";
 import type { InternalUrlRouter } from "../internal-urls";
-import { getPreludeDocs, warmPythonEnvironment } from "../ipy/executor";
+import { getPreludeDocs, resetPreludeDocsCache, warmPythonEnvironment } from "../ipy/executor";
 import { checkPythonKernelAvailability } from "../ipy/kernel";
 import { LspTool } from "../lsp";
 import type { DiscoverableMCPSearchIndex, DiscoverableMCPTool } from "../mcp/discoverable-tool-metadata";
@@ -22,10 +21,8 @@ import { SearchTool } from "../web/search";
 import { AskTool } from "./ask";
 import { AstEditTool } from "./ast-edit";
 import { AstGrepTool } from "./ast-grep";
-import { AwaitTool } from "./await-tool";
 import { BashTool } from "./bash";
 import { BrowserTool } from "./browser";
-
 import { CalculatorTool } from "./calculator";
 import { CancelJobTool } from "./cancel-job";
 import { type CheckpointState, CheckpointTool, RewindTool } from "./checkpoint";
@@ -47,6 +44,7 @@ import { GrepTool } from "./grep";
 import { InspectImageTool } from "./inspect-image";
 import { NotebookTool } from "./notebook";
 import { wrapToolWithMetaNotice } from "./output-meta";
+import { PollTool } from "./poll-tool";
 import { PythonTool } from "./python";
 import { ReadTool } from "./read";
 import { RenderMermaidTool } from "./render-mermaid";
@@ -71,7 +69,6 @@ export * from "../web/search";
 export * from "./ask";
 export * from "./ast-edit";
 export * from "./ast-grep";
-export * from "./await-tool";
 export * from "./bash";
 export * from "./browser";
 export * from "./calculator";
@@ -85,6 +82,7 @@ export * from "./gh";
 export * from "./grep";
 export * from "./inspect-image";
 export * from "./notebook";
+export * from "./poll-tool";
 export * from "./python";
 export * from "./read";
 export * from "./render-mermaid";
@@ -95,6 +93,7 @@ export * from "./search-tool-bm25";
 export * from "./ssh";
 export * from "./submit-result";
 export * from "./todo-write";
+export * from "./vim";
 export * from "./write";
 
 /** Tool type (AgentTool from pi-ai) */
@@ -116,6 +115,8 @@ export interface ToolSession {
 	hasUI: boolean;
 	/** Skip Python kernel availability check and warmup */
 	skipPythonPreflight?: boolean;
+	/** Force Python prelude warmup even when test env would normally skip it */
+	forcePythonWarmup?: boolean;
 	/** Pre-loaded context files (AGENTS.md, etc) */
 	contextFiles?: ContextFileEntry[];
 	/** Pre-loaded skills */
@@ -124,7 +125,7 @@ export interface ToolSession {
 	promptTemplates?: PromptTemplate[];
 	/** Whether LSP integrations are enabled */
 	enableLsp?: boolean;
-	/** Whether the edit tool is available in this session (controls hashline output) */
+	/** Whether an edit-capable tool is available in this session (controls hashline output) */
 	hasEditTool?: boolean;
 	/** Event bus for tool/extension communication */
 	eventBus?: EventBus;
@@ -136,6 +137,14 @@ export interface ToolSession {
 	taskDepth?: number;
 	/** Get session file */
 	getSessionFile: () => string | null;
+	/** Get Python kernel owner ID for session-scoped retained-kernel cleanup */
+	getPythonKernelOwnerId?: () => string | null;
+	/** Reject new Python work once session disposal has started. */
+	assertPythonExecutionAllowed?: () => void;
+	/** Track tool-owned Python work so session disposal can await/abort it like direct session Python runs. */
+	trackPythonExecution?<T>(execution: Promise<T>, abortController: AbortController): Promise<T>;
+	/** Secret obfuscator for masking sensitive output */
+	obfuscator?: import("../secrets/obfuscator").SecretObfuscator;
 	/** Get session ID */
 	getSessionId?: () => string | null;
 	/** Get artifacts directory for artifact:// URLs */
@@ -162,10 +171,6 @@ export interface ToolSession {
 	asyncJobManager?: AsyncJobManager;
 	/** Settings instance for passing to subagents */
 	settings: Settings;
-	/** Secret obfuscator for masking sensitive env var values in tool output. */
-	obfuscator?: import("../secrets/obfuscator").SecretObfuscator;
-	/** Shared native search DB for grep/glob/fuzzyFind-backed workflows. */
-	searchDb?: SearchDb;
 	/** Plan mode state (if active) */
 	getPlanModeState?: () => PlanModeState | undefined;
 	/** Get compact conversation context for subagents (excludes tool results, system prompts) */
@@ -234,7 +239,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	rewind: RewindTool.createIf,
 	task: TaskTool.create,
 	cancel_job: CancelJobTool.createIf,
-	await: AwaitTool.createIf,
+	poll: PollTool.createIf,
 	todo_write: s => new TodoWriteTool(s),
 	web_search: s => new SearchTool(s),
 	search_tool_bm25: SearchToolBm25Tool.createIf,
@@ -299,7 +304,11 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 		!skipPythonPreflight &&
 		pythonMode !== "bash-only" &&
 		(requestedTools === undefined || requestedTools.includes("python"));
-	const skipPythonWarm = isBunTestRuntime() || $flag("PI_PYTHON_SKIP_CHECK");
+	const isTestEnv = isBunTestRuntime();
+	const forcePythonWarmup = session.forcePythonWarmup === true;
+	const skipPythonWarm = (isTestEnv && !forcePythonWarmup) || $flag("PI_PYTHON_SKIP_CHECK");
+	const cachedPreludeDocs = getPreludeDocs();
+	const shouldWarmPython = !skipPythonWarm && (forcePythonWarmup || cachedPreludeDocs.length === 0);
 	if (shouldCheckPython) {
 		const availability = await logger.time("createTools:pythonCheck", checkPythonKernelAvailability, session.cwd);
 		pythonAvailable = availability.ok;
@@ -307,18 +316,38 @@ export async function createTools(session: ToolSession, toolNames?: string[]): P
 			logger.warn("Python kernel unavailable, falling back to bash", {
 				reason: availability.reason,
 			});
-		} else if (!skipPythonWarm && getPreludeDocs().length === 0) {
+		} else if (shouldWarmPython) {
 			const sessionFile = session.getSessionFile?.() ?? undefined;
+			const kernelOwnerId = session.getPythonKernelOwnerId?.() ?? undefined;
 			const warmSessionId = sessionFile ? `session:${sessionFile}:cwd:${session.cwd}` : `cwd:${session.cwd}`;
+			const warmupAbortController = new AbortController();
 			try {
-				await logger.time(
-					"createTools:warmPython",
-					warmPythonEnvironment,
-					session.cwd,
-					warmSessionId,
-					session.settings.get("python.sharedGateway"),
-					sessionFile,
-				);
+				session.assertPythonExecutionAllowed?.();
+				if (forcePythonWarmup && cachedPreludeDocs.length > 0) {
+					resetPreludeDocsCache();
+				}
+				const warmupExecution = session.trackPythonExecution
+					? logger.time(
+							"createTools:warmPython",
+							warmPythonEnvironment,
+							session.cwd,
+							warmSessionId,
+							session.settings.get("python.sharedGateway"),
+							sessionFile,
+							kernelOwnerId,
+							warmupAbortController.signal,
+						)
+					: logger.time(
+							"createTools:warmPython",
+							warmPythonEnvironment,
+							session.cwd,
+							warmSessionId,
+							session.settings.get("python.sharedGateway"),
+							sessionFile,
+							kernelOwnerId,
+						);
+				await (session.trackPythonExecution?.(warmupExecution, warmupAbortController) ?? warmupExecution);
+				session.assertPythonExecutionAllowed?.();
 			} catch (err) {
 				logger.warn("Failed to warm Python environment", {
 					error: err instanceof Error ? err.message : String(err),

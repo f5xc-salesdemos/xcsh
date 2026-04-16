@@ -48,7 +48,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: omp version
+      label: xcsh version
       description: Output of `xcsh --version`
       placeholder: "e.g. 12.1.0"
     validations:
@@ -90,7 +90,7 @@ body:
     id: area
     attributes:
       label: Area
-      description: Which part of omp is affected?
+      description: Which part of xcsh is affected?
       options:
         - TUI / Display
         - Authentication / Login

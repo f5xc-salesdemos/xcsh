@@ -755,7 +755,7 @@ export const geminiImageTool: CustomTool<typeof geminiImageSchema, GeminiImageTo
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${apiKey.apiKey}`,
-						"X-Title": "Oh-My-Pi",
+						"X-Title": "xcsh",
 					},
 					body: JSON.stringify(requestBody),
 					signal: requestSignal,

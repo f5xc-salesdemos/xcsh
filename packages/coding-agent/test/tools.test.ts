@@ -6,14 +6,17 @@ import * as url from "node:url";
 import * as zlib from "node:zlib";
 import type { AgentToolContext } from "@f5xc-salesdemos/pi-agent-core";
 import { $which, Snowflake } from "@f5xc-salesdemos/pi-utils";
+import { AsyncJobManager } from "@f5xc-salesdemos/xcsh/async";
 import { DEFAULT_BASH_INTERCEPTOR_RULES, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
 import { EditTool } from "@f5xc-salesdemos/xcsh/edit";
 import { SessionManager } from "@f5xc-salesdemos/xcsh/session/session-manager";
 import type { ToolSession } from "@f5xc-salesdemos/xcsh/tools";
 import { BashTool } from "@f5xc-salesdemos/xcsh/tools/bash";
+import { CancelJobTool } from "@f5xc-salesdemos/xcsh/tools/cancel-job";
 import { FindTool } from "@f5xc-salesdemos/xcsh/tools/find";
 import { GrepTool } from "@f5xc-salesdemos/xcsh/tools/grep";
 import { wrapToolWithMetaNotice } from "@f5xc-salesdemos/xcsh/tools/output-meta";
+import { PollTool } from "@f5xc-salesdemos/xcsh/tools/poll-tool";
 import { ReadTool } from "@f5xc-salesdemos/xcsh/tools/read";
 import { WriteTool } from "@f5xc-salesdemos/xcsh/tools/write";
 import * as markitUtils from "@f5xc-salesdemos/xcsh/utils/markit";
@@ -171,7 +174,11 @@ function createZipArchive(entries: ArchiveFixtureEntry[]): Buffer {
 }
 
 let artifactCounter = 0;
-function createTestToolSession(cwd: string, settings: Settings = Settings.isolated()): ToolSession {
+function createTestToolSession(
+	cwd: string,
+	settings: Settings = Settings.isolated(),
+	overrides: Partial<ToolSession> = {},
+): ToolSession {
 	const sessionFile = path.join(cwd, "session.jsonl");
 	const sessionDir = path.join(cwd, "session");
 	return {
@@ -186,6 +193,7 @@ function createTestToolSession(cwd: string, settings: Settings = Settings.isolat
 			return { id, path: path.join(sessionDir, `${id}.${toolType}.log`) };
 		},
 		settings,
+		...overrides,
 	};
 }
 
@@ -659,16 +667,15 @@ describe("Coding Agent Tools", () => {
 			fs.writeFileSync(testFile, originalContent);
 
 			const result = await editTool.execute("test-call-5", {
-				path: testFile,
-				old_text: "world",
-				new_text: "testing",
+				edits: [{ path: testFile, old_text: "world", new_text: "testing" }],
 			});
+			const details = result.details as { diff?: string } | undefined;
 
 			expect(getTextOutput(result)).toContain("Successfully replaced");
-			expect(result.details).toBeDefined();
-			expect(result.details!.diff).toBeDefined();
-			expect(typeof result.details!.diff).toBe("string");
-			expect(result.details!.diff).toContain("testing");
+			expect(details).toBeDefined();
+			expect(details?.diff).toBeDefined();
+			expect(typeof details?.diff).toBe("string");
+			expect(details?.diff).toContain("testing");
 		});
 
 		it("should fail if text not found", async () => {
@@ -678,9 +685,7 @@ describe("Coding Agent Tools", () => {
 
 			await expect(
 				editTool.execute("test-call-6", {
-					path: testFile,
-					old_text: "nonexistent",
-					new_text: "testing",
+					edits: [{ path: testFile, old_text: "nonexistent", new_text: "testing" }],
 				}),
 			).rejects.toThrow(/Could not find/);
 		});
@@ -692,9 +697,7 @@ describe("Coding Agent Tools", () => {
 
 			await expect(
 				editTool.execute("test-call-7", {
-					path: testFile,
-					old_text: "foo",
-					new_text: "bar",
+					edits: [{ path: testFile, old_text: "foo", new_text: "bar" }],
 				}),
 			).rejects.toThrow(/Found 3 occurrences/);
 		});
@@ -704,10 +707,7 @@ describe("Coding Agent Tools", () => {
 			fs.writeFileSync(testFile, "foo bar foo baz foo");
 
 			const result = await editTool.execute("test-all-1", {
-				path: testFile,
-				old_text: "foo",
-				new_text: "qux",
-				all: true,
+				edits: [{ path: testFile, old_text: "foo", new_text: "qux", all: true }],
 			});
 
 			expect(getTextOutput(result)).toContain("Successfully replaced 3 occurrences");
@@ -736,10 +736,14 @@ function b() {
 			// With multiple fuzzy matches, the tool rejects for safety to avoid ambiguous replacements
 			await expect(
 				editTool.execute("test-all-fuzzy", {
-					path: testFile,
-					old_text: "if (x) {\n  doThing();\n}",
-					new_text: "if (y) {\n  doOther();\n}",
-					all: true,
+					edits: [
+						{
+							path: testFile,
+							old_text: "if (x) {\n  doThing();\n}",
+							new_text: "if (y) {\n  doOther();\n}",
+							all: true,
+						},
+					],
 				}),
 			).rejects.toThrow(/Found 2 high-confidence matches/);
 		});
@@ -750,10 +754,7 @@ function b() {
 
 			await expect(
 				editTool.execute("test-all-nomatch", {
-					path: testFile,
-					old_text: "nonexistent",
-					new_text: "bar",
-					all: true,
+					edits: [{ path: testFile, old_text: "nonexistent", new_text: "bar", all: true }],
 				}),
 			).rejects.toThrow(/Could not find/);
 		});
@@ -763,10 +764,7 @@ function b() {
 			fs.writeFileSync(testFile, "start\nfoo\nbar\nend\nstart\nfoo\nbar\nend");
 
 			const result = await editTool.execute("test-all-multiline", {
-				path: testFile,
-				old_text: "foo\nbar",
-				new_text: "replaced",
-				all: true,
+				edits: [{ path: testFile, old_text: "foo\nbar", new_text: "replaced", all: true }],
 			});
 
 			expect(getTextOutput(result)).toContain("Successfully replaced 2 occurrences");
@@ -779,10 +777,7 @@ function b() {
 			fs.writeFileSync(testFile, "hello world");
 
 			const result = await editTool.execute("test-all-single", {
-				path: testFile,
-				old_text: "world",
-				new_text: "universe",
-				all: true,
+				edits: [{ path: testFile, old_text: "world", new_text: "universe", all: true }],
 			});
 
 			expect(getTextOutput(result)).toContain("Successfully replaced text");
@@ -796,7 +791,7 @@ function b() {
 			const result = await bashTool.execute("test-call-8", { command: "echo 'test output'" });
 
 			expect(getTextOutput(result)).toContain("test output");
-			expect(result.details).toBeUndefined();
+			expect(result.details?.timeoutSeconds).toBe(300);
 		});
 
 		it("should expose built-in interceptor defaults truthfully", () => {
@@ -969,6 +964,130 @@ function b() {
 			);
 		});
 
+		it("should keep short commands inline when auto-background is enabled", async () => {
+			const deliveries: string[] = [];
+			const asyncJobManager = new AsyncJobManager({
+				onJobComplete: async (_jobId, text) => {
+					deliveries.push(text);
+				},
+			});
+			const autoBackgroundBashTool = wrapToolWithMetaNotice(
+				new BashTool(
+					createTestToolSession(
+						testDir,
+						Settings.isolated({
+							"bash.autoBackground.enabled": true,
+							"bash.autoBackground.thresholdMs": 50,
+						}),
+						{
+							asyncJobManager,
+							getSessionId: () => "test-session",
+						},
+					),
+				),
+			);
+
+			const result = await autoBackgroundBashTool.execute("test-call-9-auto-inline", { command: "echo short" });
+
+			expect(getTextOutput(result)).toContain("short");
+			expect(result.details?.timeoutSeconds).toBe(300);
+			expect(result.details?.async).toBeUndefined();
+			await Bun.sleep(150);
+			expect(deliveries).toEqual([]);
+			await asyncJobManager.dispose();
+		});
+
+		it("should auto-background long-running commands when enabled", async () => {
+			const deliveries: Array<{ jobId: string; text: string }> = [];
+			const asyncJobManager = new AsyncJobManager({
+				onJobComplete: async (jobId, text) => {
+					deliveries.push({ jobId, text });
+				},
+			});
+			const autoBackgroundBashTool = wrapToolWithMetaNotice(
+				new BashTool(
+					createTestToolSession(
+						testDir,
+						Settings.isolated({
+							"bash.autoBackground.enabled": true,
+							"bash.autoBackground.thresholdMs": 50,
+						}),
+						{
+							asyncJobManager,
+							getSessionId: () => "test-session",
+						},
+					),
+				),
+			);
+
+			const result = await autoBackgroundBashTool.execute("test-call-9-auto-running", {
+				command: "printf 'start\\n'; sleep 0.2; printf 'done\\n'",
+			});
+
+			expect(result.details?.async?.state).toBe("running");
+			expect(result.details?.async?.type).toBe("bash");
+			expect(getTextOutput(result)).toContain("Background job");
+			expect(getTextOutput(result)).toContain("start");
+
+			const jobId = result.details?.async?.jobId;
+			if (!jobId) {
+				throw new Error("expected an auto-backgrounded job id");
+			}
+			const runningJob = asyncJobManager.getJob(jobId);
+			expect(runningJob?.status).toBe("running");
+			await runningJob?.promise;
+			await Bun.sleep(50);
+			expect(deliveries).toHaveLength(1);
+			expect(deliveries[0]?.jobId).toBe(jobId);
+			expect(deliveries[0]?.text).toContain("done");
+			await asyncJobManager.dispose();
+		});
+
+		it("should background instead of timing out when auto-background wait exceeds the effective timeout", async () => {
+			const deliveries: Array<{ jobId: string; text: string }> = [];
+			const asyncJobManager = new AsyncJobManager({
+				onJobComplete: async (jobId, text) => {
+					deliveries.push({ jobId, text });
+				},
+			});
+			const autoBackgroundBashTool = wrapToolWithMetaNotice(
+				new BashTool(
+					createTestToolSession(
+						testDir,
+						Settings.isolated({
+							"bash.autoBackground.enabled": true,
+							"bash.autoBackground.thresholdMs": 60_000,
+						}),
+						{
+							asyncJobManager,
+							getSessionId: () => "test-session",
+						},
+					),
+				),
+			);
+
+			const result = await autoBackgroundBashTool.execute("test-call-9-auto-timeout-background", {
+				command: "printf 'start\\n'; sleep 1.2; printf 'done\\n'",
+				timeout: 1,
+			});
+
+			expect(result.details?.timeoutSeconds).toBe(1);
+			expect(result.details?.async?.state).toBe("running");
+			expect(getTextOutput(result)).toContain("Background job");
+			const jobId = result.details?.async?.jobId;
+			if (!jobId) {
+				throw new Error("expected an auto-backgrounded job id");
+			}
+			const runningJob = asyncJobManager.getJob(jobId);
+			expect(runningJob?.status).toBe("running");
+			await runningJob?.promise;
+			await Bun.sleep(50);
+			expect(deliveries).toHaveLength(1);
+			expect(deliveries[0]?.jobId).toBe(jobId);
+			expect(deliveries[0]?.text).toContain("Command timed out after 1 seconds");
+			await asyncJobManager.dispose();
+		});
+
 		it("should respect timeout", async () => {
 			await expect(bashTool.execute("test-call-10", { command: "sleep 5", timeout: 1 })).rejects.toThrow(
 				/timed out/i,
@@ -994,6 +1113,43 @@ function b() {
 			await expect(bashToolWithBadCwd.execute("test-call-11", { command: "echo test" })).rejects.toThrow(
 				/Working directory does not exist/,
 			);
+		});
+
+		it("should expose background-job tools when bash auto-background is enabled", () => {
+			const autoBackgroundSession = createTestToolSession(
+				testDir,
+				Settings.isolated({ "bash.autoBackground.enabled": true }),
+			);
+
+			expect(PollTool.createIf(autoBackgroundSession)).not.toBeNull();
+			expect(CancelJobTool.createIf(autoBackgroundSession)).not.toBeNull();
+		});
+	});
+
+	describe("PollTool", () => {
+		it("should wait for jobs and acknowledge deliveries to prevent race conditions", async () => {
+			const manager = new AsyncJobManager({
+				onJobComplete: async () => {},
+			});
+			const session = createTestToolSession(testDir, Settings.isolated({ "bash.autoBackground.enabled": true }), {
+				asyncJobManager: manager,
+			});
+			const pollTool = PollTool.createIf(session)!;
+
+			const jobId = manager.register("bash", "test job", async () => "success");
+
+			// Job is running, call poll
+			const resultPromise = pollTool.execute("test-call-poll-1", { jobs: [jobId] });
+
+			// Ensure poll finished
+			const result = await resultPromise;
+			expect(getTextOutput(result)).toContain("Completed");
+
+			// Wait for deliveries to be processed
+			await manager.drainDeliveries({ timeoutMs: 100 });
+
+			// If it correctly acknowledged, the delivery is suppressed.
+			expect(manager.hasPendingDeliveries()).toBe(false);
 		});
 	});
 
@@ -1269,6 +1425,34 @@ function b() {
 			expect(output).toContain("kept.txt");
 			expect(output).not.toContain("ignored.txt");
 		});
+
+		it("should sort exact recursive filename matches by mtime", async () => {
+			const olderDir = path.join(testDir, "a");
+			const newerDir = path.join(testDir, "z");
+			fs.mkdirSync(olderDir, { recursive: true });
+			fs.mkdirSync(newerDir, { recursive: true });
+
+			const olderFile = path.join(olderDir, "auth-actions.spec.ts");
+			const newerFile = path.join(newerDir, "auth-actions.spec.ts");
+			fs.writeFileSync(olderFile, "old\n");
+			fs.writeFileSync(newerFile, "new\n");
+
+			const olderTime = new Date(Date.now() - 60_000);
+			const newerTime = new Date();
+			fs.utimesSync(olderFile, olderTime, olderTime);
+			fs.utimesSync(newerFile, newerTime, newerTime);
+
+			const result = await findTool.execute("test-call-14b", {
+				pattern: `${testDir}/**/auth-actions.spec.ts`,
+			});
+
+			const outputLines = getTextOutput(result)
+				.split("\n")
+				.map(line => line.trim())
+				.filter(Boolean);
+
+			expect(outputLines).toEqual(["z/auth-actions.spec.ts", "a/auth-actions.spec.ts"]);
+		});
 	});
 });
 
@@ -1304,9 +1488,7 @@ describe("edit tool CRLF handling", () => {
 		fs.writeFileSync(testFile, "line one\r\nline two\r\nline three\r\n");
 
 		const result = await editTool.execute("test-crlf-1", {
-			path: testFile,
-			old_text: "line two\n",
-			new_text: "replaced line\n",
+			edits: [{ path: testFile, old_text: "line two\n", new_text: "replaced line\n" }],
 		});
 
 		expect(getTextOutput(result)).toContain("Successfully replaced");
@@ -1317,9 +1499,7 @@ describe("edit tool CRLF handling", () => {
 		fs.writeFileSync(testFile, "first\r\nsecond\r\nthird\r\n");
 
 		await editTool.execute("test-crlf-2", {
-			path: testFile,
-			old_text: "second\n",
-			new_text: "REPLACED\n",
+			edits: [{ path: testFile, old_text: "second\n", new_text: "REPLACED\n" }],
 		});
 
 		const content = await Bun.file(testFile).text();
@@ -1331,9 +1511,7 @@ describe("edit tool CRLF handling", () => {
 		fs.writeFileSync(testFile, "first\nsecond\nthird\n");
 
 		await editTool.execute("test-lf-1", {
-			path: testFile,
-			old_text: "second\n",
-			new_text: "REPLACED\n",
+			edits: [{ path: testFile, old_text: "second\n", new_text: "REPLACED\n" }],
 		});
 
 		const content = await Bun.file(testFile).text();
@@ -1347,9 +1525,7 @@ describe("edit tool CRLF handling", () => {
 
 		await expect(
 			editTool.execute("test-crlf-dup", {
-				path: testFile,
-				old_text: "hello\nworld\n",
-				new_text: "replaced\n",
+				edits: [{ path: testFile, old_text: "hello\nworld\n", new_text: "replaced\n" }],
 			}),
 		).rejects.toThrow(/Found 2 occurrences/);
 	});
@@ -1367,10 +1543,8 @@ describe("edit tool CRLF handling", () => {
 			const session = createTestToolSession(hashDir);
 			const hashlineEditTool = new EditTool(session);
 			const result = await hashlineEditTool.execute("hashline-delete-1", {
-				path: testFile,
-				edits: [],
-				delete: true,
-			});
+				edits: [{ path: testFile, delete: true }],
+			} as any);
 
 			expect(getTextOutput(result)).toContain("Deleted");
 			expect(fs.existsSync(testFile)).toBe(false);
@@ -1395,10 +1569,8 @@ describe("edit tool CRLF handling", () => {
 			const session = createTestToolSession(hashDir);
 			const hashlineEditTool = new EditTool(session);
 			const result = await hashlineEditTool.execute("hashline-rename-1", {
-				path: sourceFile,
-				edits: [],
-				move: targetFile,
-			});
+				edits: [{ path: sourceFile, move: targetFile }],
+			} as any);
 
 			expect(getTextOutput(result)).toContain("Moved");
 			expect(fs.existsSync(sourceFile)).toBe(false);
@@ -1426,10 +1598,8 @@ describe("edit tool CRLF handling", () => {
 			const session = createTestToolSession(hashDir);
 			const hashlineEditTool = new EditTool(session);
 			const result = await hashlineEditTool.execute("hashline-rename-binary", {
-				path: sourceFile,
-				edits: [],
-				move: targetFile,
-			});
+				edits: [{ path: sourceFile, move: targetFile }],
+			} as any);
 
 			expect(getTextOutput(result)).toContain("Moved");
 			expect(fs.existsSync(sourceFile)).toBe(false);
@@ -1448,9 +1618,7 @@ describe("edit tool CRLF handling", () => {
 		fs.writeFileSync(testFile, "\uFEFFfirst\r\nsecond\r\nthird\r\n");
 
 		await editTool.execute("test-bom", {
-			path: testFile,
-			old_text: "second\n",
-			new_text: "REPLACED\n",
+			edits: [{ path: testFile, old_text: "second\n", new_text: "REPLACED\n" }],
 		});
 
 		const content = await Bun.file(testFile).text();

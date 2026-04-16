@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { type AssistantMessageEventStream, clearCustomApis, getCustomApi } from "@oh-my-pi/pi-ai";
-import { ModelRegistry, type ProviderConfigInput } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { type AssistantMessageEventStream, clearCustomApis, getCustomApi } from "@f5xc-salesdemos/pi-ai";
+import { Snowflake } from "@f5xc-salesdemos/pi-utils";
+import { ModelRegistry, type ProviderConfigInput } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
 
 describe("ModelRegistry runtime source cleanup", () => {
 	let tempDir: string;

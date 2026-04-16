@@ -14,7 +14,7 @@ import type { Theme } from "../modes/theme/theme";
 import { formatDimensionNote, type ResizedImage } from "../utils/image-resize";
 
 export { Ellipsis } from "@f5xc-salesdemos/pi-natives";
-export { replaceTabs, truncateToWidth } from "@f5xc-salesdemos/pi-tui";
+export { replaceTabs, truncateToWidth, wrapTextWithAnsi } from "@f5xc-salesdemos/pi-tui";
 
 // =============================================================================
 // Standardized Display Constants

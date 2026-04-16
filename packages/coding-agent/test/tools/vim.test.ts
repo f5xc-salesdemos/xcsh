@@ -2,15 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { _resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { ToolExecutionComponent } from "@oh-my-pi/pi-coding-agent/modes/components/tool-execution";
-import * as themeModule from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { resetVimRendererStateForTest, VimTool, vimToolRenderer } from "@oh-my-pi/pi-coding-agent/tools/vim";
-import { VimBuffer } from "@oh-my-pi/pi-coding-agent/vim/buffer";
-import { VimEngine } from "@oh-my-pi/pi-coding-agent/vim/engine";
-import { parseKeySequences } from "@oh-my-pi/pi-coding-agent/vim/parser";
-import type { TUI } from "@oh-my-pi/pi-tui";
+import type { TUI } from "@f5xc-salesdemos/pi-tui";
+import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
+import { ToolExecutionComponent } from "@f5xc-salesdemos/xcsh/modes/components/tool-execution";
+import * as themeModule from "@f5xc-salesdemos/xcsh/modes/theme/theme";
+import type { ToolSession } from "@f5xc-salesdemos/xcsh/tools";
+import { resetVimRendererStateForTest, VimTool, vimToolRenderer } from "@f5xc-salesdemos/xcsh/tools/vim";
+import { VimBuffer } from "@f5xc-salesdemos/xcsh/vim/buffer";
+import { VimEngine } from "@f5xc-salesdemos/xcsh/vim/engine";
+import { parseKeySequences } from "@f5xc-salesdemos/xcsh/vim/parser";
 
 function textResult(result: { content: Array<{ type: string; text?: string }> }): string {
 	return result.content

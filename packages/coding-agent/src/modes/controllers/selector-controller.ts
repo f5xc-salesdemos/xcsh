@@ -15,7 +15,6 @@ import {
 	readLiteLLMConfig,
 } from "../../config/auto-config";
 import { getRoleInfo } from "../../config/model-registry";
-import { formatModelSelectorValue } from "../../config/model-resolver";
 import { settings } from "../../config/settings";
 import { DebugSelectorComponent } from "../../debug";
 import { disableProvider, enableProvider } from "../../discovery";
@@ -400,38 +399,31 @@ export class SelectorController {
 				this.ctx.settings,
 				this.ctx.session.modelRegistry,
 				this.ctx.session.scopedModels,
-				async (model, role, thinkingLevel, selector) => {
+				async (model, role, thinkingLevel) => {
 					try {
 						if (role === null) {
 							// Temporary: update agent state but don't persist to settings
 							await this.ctx.session.setModelTemporary(model);
 							this.ctx.statusLine.invalidate();
 							this.ctx.updateEditorBorderColor();
-							this.ctx.showStatus(`Temporary model: ${selector ?? model.id}`);
+							this.ctx.showStatus(`Temporary model: ${model.id}`);
 							done();
 							this.ctx.ui.requestRender();
 						} else if (role === "default") {
 							// Default: update agent state and persist
-							await this.ctx.session.setModel(model, role, {
-								selector,
-								thinkingLevel,
-							});
+							await this.ctx.session.setModel(model, role);
 							if (thinkingLevel && thinkingLevel !== ThinkingLevel.Inherit) {
 								this.ctx.session.setThinkingLevel(thinkingLevel);
 							}
 							this.ctx.statusLine.invalidate();
 							this.ctx.updateEditorBorderColor();
-							this.ctx.showStatus(`Default model: ${selector ?? model.id}`);
+							this.ctx.showStatus(`Default model: ${model.id}`);
 							// Don't call done() - selector stays open for role assignment
 						} else {
 							// Other roles (smol, slow): just update settings, not current model
-							this.ctx.settings.setModelRole(
-								role,
-								formatModelSelectorValue(selector ?? `${model.provider}/${model.id}`, thinkingLevel),
-							);
 							const roleInfo = getRoleInfo(role, settings);
 							const roleLabel = roleInfo?.name ?? role;
-							this.ctx.showStatus(`${roleLabel} model: ${selector ?? model.id}`);
+							this.ctx.showStatus(`${roleLabel} model: ${model.id}`);
 							// Don't call done() - selector stays open
 						}
 					} catch (error) {
@@ -759,9 +751,8 @@ export class SelectorController {
 		const sessionManager = this.ctx.sessionManager as {
 			getSessionName?: () => string | undefined;
 			getCwd: () => string;
-			titleSource?: "auto" | "user" | undefined;
 		};
-		setSessionTerminalTitle(sessionManager.getSessionName?.(), sessionManager.getCwd(), sessionManager.titleSource);
+		setSessionTerminalTitle(sessionManager.getSessionName?.(), sessionManager.getCwd());
 	}
 
 	async #detachActiveSessionBeforeDeletion(sessionPath: string): Promise<boolean> {
@@ -780,7 +771,6 @@ export class SelectorController {
 		this.ctx.statusLine.invalidate();
 		this.ctx.statusLine.setSessionStartTime(Date.now());
 		this.ctx.updateEditorTopBorder();
-		this.ctx.updateEditorBorderColor();
 		this.ctx.renderInitialMessages();
 		await this.ctx.reloadTodos();
 		this.ctx.ui.requestRender();
@@ -793,7 +783,6 @@ export class SelectorController {
 		// Switch session via AgentSession (emits hook and tool session events)
 		await this.ctx.session.switchSession(sessionPath);
 		this.#refreshSessionTerminalTitle();
-		this.ctx.updateEditorBorderColor();
 
 		// Clear and re-render the chat
 		this.ctx.chatContainer.clear();

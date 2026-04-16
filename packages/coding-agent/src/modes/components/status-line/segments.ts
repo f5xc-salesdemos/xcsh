@@ -5,6 +5,8 @@ import { TERMINAL } from "@f5xc-salesdemos/pi-tui";
 import { formatDuration, formatNumber, getProjectDir, relativePathWithinRoot } from "@f5xc-salesdemos/pi-utils";
 import { theme } from "../../../modes/theme/theme";
 import { shortenPath } from "../../../tools/render-utils";
+import { getSessionAccentAnsi, getSessionAccentHex } from "../../../utils/session-color";
+import { sanitizeStatusText } from "../../shared";
 import { getContextUsageBgThemeColor, getContextUsageLevel, getContextUsageThemeColor } from "./context-thresholds";
 import type { RenderedSegment, SegmentContext, StatusLineSegment, StatusLineSegmentId } from "./types";
 
@@ -425,6 +427,16 @@ export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
 	hostname: hostnameSegment,
 	cache_read: cacheReadSegment,
 	cache_write: cacheWriteSegment,
+	session_name: {
+		id: "session_name",
+		render(ctx) {
+			const sessionManager = ctx.session.sessionManager;
+			const name = sessionManager?.titleSource === "auto" ? undefined : sessionManager?.getSessionName();
+			if (!name) return { content: "", visible: false };
+			const ansi = getSessionAccentAnsi(getSessionAccentHex(name)) ?? theme.getFgAnsi("accent");
+			return { content: `${ansi}${sanitizeStatusText(name)}\x1b[39m`, visible: true };
+		},
+	},
 	profile_f5xc: {
 		id: "profile_f5xc",
 		render() {

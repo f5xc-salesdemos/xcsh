@@ -55,6 +55,7 @@ import { type CreateAgentSessionOptions, createAgentSession, discoverAuthStorage
 import type { AgentSession } from "./session/agent-session";
 import { resolveResumableSession, type SessionInfo, SessionManager } from "./session/session-manager";
 import { resolvePromptInput } from "./system-prompt";
+import type { LspStartupServerInfo } from "./tools";
 import { getChangelogPath, getNewEntries, parseChangelog } from "./utils/changelog";
 import type { EventBus } from "./utils/event-bus";
 
@@ -151,12 +152,21 @@ async function runInteractiveMode(
 	versionCheckPromise: Promise<string | undefined>,
 	initialMessages: string[],
 	setExtensionUIContext: (uiContext: ExtensionUIContext, hasUI: boolean) => void,
+	lspServers: LspStartupServerInfo[] | undefined,
 	mcpManager: MCPManager | undefined,
 	eventBus?: EventBus,
 	initialMessage?: string,
 	initialImages?: ImageContent[],
 ): Promise<void> {
-	const mode = new InteractiveMode(session, version, changelogMarkdown, setExtensionUIContext, mcpManager, eventBus);
+	const mode = new InteractiveMode(
+		session,
+		version,
+		changelogMarkdown,
+		setExtensionUIContext,
+		lspServers,
+		mcpManager,
+		eventBus,
+	);
 
 	await mode.init();
 
@@ -377,7 +387,7 @@ async function maybeAutoChdir(parsed: Args): Promise<void> {
 
 /** Discover SYSTEM.md file if no CLI system prompt was provided */
 function discoverSystemPromptFile(): string | undefined {
-	// Check project-local first (.xcsh/SYSTEM.md, .pi/SYSTEM.md legacy)
+	// Check project-local first (.omp/SYSTEM.md, .pi/SYSTEM.md legacy)
 	const projectPath = findConfigFile("SYSTEM.md", { user: false });
 	if (projectPath) {
 		return projectPath;
@@ -614,19 +624,6 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 
 	const cwd = getProjectDir();
 	await logger.time("settings:init", Settings.init, { cwd });
-
-	// F5 XC profile loading — optional, never blocks startup.
-	// NOTE: This runs in the CLI path only. SDK consumers using createAgentSession()
-	// directly must call ProfileService.init(configDir).loadActive() themselves.
-	try {
-		const { ProfileService } = await import("./services/f5xc-profile");
-		const { getF5XCConfigDir } = await import("@f5xc-salesdemos/pi-utils");
-		const profileService = ProfileService.init(getF5XCConfigDir());
-		await profileService.loadActive();
-	} catch {
-		// F5 XC auth is optional — silently continue if anything fails
-	}
-
 	if (parsedArgs.mode === "rpc") {
 		applyRpcDefaultSettingOverrides();
 	}
@@ -783,7 +780,7 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 		}
 	}
 
-	const { session, setToolUIContext, modelFallbackMessage, mcpManager, eventBus } = await logger.time(
+	const { session, setToolUIContext, modelFallbackMessage, lspServers, mcpManager, eventBus } = await logger.time(
 		"createAgentSession",
 		createAgentSession,
 		sessionOptions,
@@ -896,6 +893,7 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 			versionCheckPromise,
 			parsedArgs.messages,
 			setToolUIContext,
+			lspServers,
 			mcpManager,
 			eventBus,
 			initialMessage,

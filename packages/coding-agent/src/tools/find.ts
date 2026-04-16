@@ -6,7 +6,7 @@ import type {
 	AgentToolResult,
 	AgentToolUpdateCallback,
 } from "@f5xc-salesdemos/pi-agent-core";
-import { FileType, type GlobMatch, glob } from "@f5xc-salesdemos/pi-natives";
+import * as natives from "@f5xc-salesdemos/pi-natives";
 import type { Component } from "@f5xc-salesdemos/pi-tui";
 import { Text } from "@f5xc-salesdemos/pi-tui";
 import { isEnoent, prompt, untilAborted } from "@f5xc-salesdemos/pi-utils";
@@ -129,46 +129,15 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 				throw new ToolError("Limit must be a positive number");
 			}
 			const includeHidden = hidden ?? true;
-
-			// If custom operations provided with glob, use that instead of fd
-			if (this.#customOps?.glob) {
-				if (!(await this.#customOps.exists(searchPath))) {
-					throw new ToolError(`Path not found: ${scopePath}`);
-				}
-
-				if (!hasGlob && this.#customOps.stat) {
-					const stat = await this.#customOps.stat(searchPath);
-					if (stat.isFile()) {
-						const files = [scopePath];
-						const details: FindToolDetails = {
-							scopePath,
-							fileCount: 1,
-							files,
-							truncated: false,
-						};
-						return toolResult(details).text(files.join("\n")).done();
-					}
-				}
-
-				const results = await this.#customOps.glob(globPattern, searchPath, {
-					ignore: ["**/node_modules/**", "**/.git/**"],
-					limit: effectiveLimit,
-				});
-
-				if (results.length === 0) {
+			const timeoutSignal = AbortSignal.timeout(GLOB_TIMEOUT_MS);
+			const combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+			const buildResult = (files: string[]): AgentToolResult<FindToolDetails> => {
+				if (files.length === 0) {
 					const details: FindToolDetails = { scopePath, fileCount: 0, files: [], truncated: false };
 					return toolResult(details).text("No files found matching pattern").done();
 				}
 
-				// Relativize paths
-				const relativized = results.map(p => {
-					if (p.startsWith(searchPath)) {
-						return p.slice(searchPath.length + 1);
-					}
-					return path.relative(searchPath, p);
-				});
-
-				const listLimit = applyListLimit(relativized, { limit: effectiveLimit });
+				const listLimit = applyListLimit(files, { limit: effectiveLimit });
 				const limited = listLimit.items;
 				const limitMeta = listLimit.meta;
 				const rawOutput = limited.join("\n");
@@ -191,6 +160,32 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 				}
 
 				return resultBuilder.done();
+			};
+
+			if (this.#customOps?.glob) {
+				if (!(await this.#customOps.exists(searchPath))) {
+					throw new ToolError(`Path not found: ${scopePath}`);
+				}
+
+				if (!hasGlob && this.#customOps.stat) {
+					const stat = await this.#customOps.stat(searchPath);
+					if (stat.isFile()) {
+						return buildResult([scopePath]);
+					}
+				}
+
+				const results = await this.#customOps.glob(globPattern, searchPath, {
+					ignore: ["**/node_modules/**", "**/.git/**"],
+					limit: effectiveLimit,
+				});
+				const relativized = results.map(p => {
+					if (p.startsWith(searchPath)) {
+						return p.slice(searchPath.length + 1);
+					}
+					return path.relative(searchPath, p);
+				});
+
+				return buildResult(relativized);
 			}
 
 			let searchStat: fs.Stats;
@@ -204,20 +199,13 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 			}
 
 			if (!hasGlob && searchStat.isFile()) {
-				const files = [scopePath];
-				const details: FindToolDetails = {
-					scopePath,
-					fileCount: 1,
-					files,
-					truncated: false,
-				};
-				return toolResult(details).text(files.join("\n")).done();
+				return buildResult([scopePath]);
 			}
 			if (!searchStat.isDirectory()) {
 				throw new ToolError(`Path is not a directory: ${searchPath}`);
 			}
 
-			let matches: GlobMatch[];
+			let matches: natives.GlobMatch[];
 			const onUpdateMatches: string[] = [];
 			const updateIntervalMs = 200;
 			let lastUpdate = 0;
@@ -238,43 +226,43 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 				});
 			};
 			const onMatch = onUpdate
-				? (err: Error | null, match: GlobMatch | null) => {
+				? (err: Error | null, match: natives.GlobMatch | null) => {
 						if (err || signal?.aborted || !match) return;
 						let relativePath = match.path;
 						if (!relativePath) return;
-						if (match.fileType === FileType.Dir && !relativePath.endsWith("/")) {
+						if (match.fileType === natives.FileType.Dir && !relativePath.endsWith("/")) {
 							relativePath += "/";
 						}
 						onUpdateMatches.push(relativePath);
 						emitUpdate();
 					}
 				: undefined;
-			const timeoutSignal = AbortSignal.timeout(GLOB_TIMEOUT_MS);
-			const combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
 
 			const doGlob = async (useGitignore: boolean) =>
 				untilAborted(combinedSignal, () =>
-					glob(
+					natives.glob(
 						{
 							pattern: globPattern,
 							path: searchPath,
-							fileType: FileType.File,
+							fileType: natives.FileType.File,
 							hidden: includeHidden,
 							maxResults: effectiveLimit,
 							sortByMtime: true,
 							gitignore: useGitignore,
+							signal: combinedSignal,
 						},
 						onMatch,
-						this.session.searchDb,
 					),
 				);
 
 			try {
 				let result = await doGlob(true);
-				// If gitignore filtering yielded nothing, retry without it
-				if (result.matches.length === 0) {
+				if (result.matches.length === 0 && !timeoutSignal.aborted) {
 					result = await doGlob(false);
 				}
+				// Sort by mtime descending (most recent first) in JS instead of native.
+				// This allows native glob to early-terminate at maxResults.
+				result.matches.sort((a, b) => (b.mtime ?? 0) - (a.mtime ?? 0));
 				matches = result.matches;
 			} catch (error) {
 				if (error instanceof Error && error.name === "AbortError") {
@@ -287,12 +275,7 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 				throw error;
 			}
 
-			if (matches.length === 0) {
-				const details: FindToolDetails = { scopePath, fileCount: 0, files: [], truncated: false };
-				return toolResult(details).text("No files found matching pattern").done();
-			}
 			const relativized: string[] = [];
-
 			for (const match of matches) {
 				throwIfAborted(signal);
 				const line = match.path;
@@ -302,9 +285,7 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 
 				const hadTrailingSlash = line.endsWith("/") || line.endsWith("\\");
 				let relativePath = line;
-
-				const isDirectory = match.fileType === FileType.Dir;
-
+				const isDirectory = match.fileType === natives.FileType.Dir;
 				if ((isDirectory || hadTrailingSlash) && !relativePath.endsWith("/")) {
 					relativePath += "/";
 				}
@@ -312,39 +293,7 @@ export class FindTool implements AgentTool<typeof findSchema, FindToolDetails> {
 				relativized.push(relativePath);
 			}
 
-			if (relativized.length === 0) {
-				const details: FindToolDetails = { scopePath, fileCount: 0, files: [], truncated: false };
-				return toolResult(details).text("No files found matching pattern").done();
-			}
-
-			// Results are already sorted by mtime from native (sortByMtime: true)
-
-			const listLimit = applyListLimit(relativized, { limit: effectiveLimit });
-			const limited = listLimit.items;
-			const limitMeta = listLimit.meta;
-
-			// Apply byte truncation (no line limit since we already have result limit)
-			const rawOutput = limited.join("\n");
-			const truncation = truncateHead(rawOutput, { maxLines: Number.MAX_SAFE_INTEGER });
-
-			const resultOutput = truncation.content;
-			const details: FindToolDetails = {
-				scopePath,
-				fileCount: limited.length,
-				files: limited,
-				truncated: Boolean(limitMeta.resultLimit || truncation.truncated),
-				resultLimitReached: limitMeta.resultLimit?.reached,
-				truncation: truncation.truncated ? truncation : undefined,
-			};
-
-			const resultBuilder = toolResult(details)
-				.text(resultOutput)
-				.limits({ resultLimit: limitMeta.resultLimit?.reached });
-			if (truncation.truncated) {
-				resultBuilder.truncation(truncation, { direction: "head" });
-			}
-
-			return resultBuilder.done();
+			return buildResult(relativized);
 		});
 	}
 }
@@ -421,7 +370,7 @@ export const findToolRenderer = {
 							expanded,
 							maxCollapsed: COLLAPSED_LIST_LIMIT,
 							itemType: "file",
-							renderItem: line => uiTheme.fg("contentAccent", line),
+							renderItem: line => uiTheme.fg("accent", line),
 						},
 						uiTheme,
 					);
