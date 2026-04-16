@@ -24,24 +24,15 @@ import {
 	type ThinkingConfig,
 	unregisterCustomApis,
 	unregisterOAuthProviders,
-} from "@oh-my-pi/pi-ai";
-import { isRecord, logger } from "@oh-my-pi/pi-utils";
+} from "@f5xc-salesdemos/pi-ai";
+import { $env, isRecord, logger } from "@f5xc-salesdemos/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type ConfigError, ConfigFile } from "../config";
-import { parseModelString, resolveProviderModelReference } from "../config/model-resolver";
+import { hasLiteLLMEnv, probeAndUpgradeLiteLLMConfig, startupHealthCheck } from "../config/auto-config";
+import { parseModelString } from "../config/model-resolver";
 import { isValidThemeColor, type ThemeColor } from "../modes/theme/theme";
 import type { AuthStorage, OAuthCredential } from "../session/auth-storage";
-import {
-	buildCanonicalModelIndex,
-	type CanonicalModelIndex,
-	type CanonicalModelRecord,
-	type CanonicalModelVariant,
-	formatCanonicalVariantSelector,
-	type ModelEquivalenceConfig,
-} from "./model-equivalence";
 import { type Settings, settings } from "./settings";
-
-export type { CanonicalModelIndex, CanonicalModelRecord, CanonicalModelVariant, ModelEquivalenceConfig };
 
 export const kNoAuth = "N/A";
 
@@ -49,7 +40,7 @@ export function isAuthenticated(apiKey: string | undefined | null): apiKey is st
 	return Boolean(apiKey) && apiKey !== kNoAuth;
 }
 
-export type ModelRole = "default" | "smol" | "slow" | "vision" | "plan" | "designer" | "commit" | "task";
+export type ModelRole = "default" | "smol" | "slow" | "vision" | "plan" | "commit" | "task";
 
 export interface ModelRoleInfo {
 	tag?: string;
@@ -60,15 +51,14 @@ export interface ModelRoleInfo {
 export const MODEL_ROLES: Record<ModelRole, ModelRoleInfo> = {
 	default: { tag: "DEFAULT", name: "Default", color: "success" },
 	smol: { tag: "SMOL", name: "Fast", color: "warning" },
-	slow: { tag: "SLOW", name: "Thinking", color: "accent" },
+	slow: { tag: "SLOW", name: "Thinking", color: "contentAccent" },
 	vision: { tag: "VISION", name: "Vision", color: "error" },
 	plan: { tag: "PLAN", name: "Architect", color: "muted" },
-	designer: { tag: "DESIGNER", name: "Designer", color: "muted" },
 	commit: { tag: "COMMIT", name: "Commit", color: "dim" },
 	task: { tag: "TASK", name: "Subtask", color: "muted" },
 };
 
-export const MODEL_ROLE_IDS: ModelRole[] = ["default", "smol", "slow", "vision", "plan", "designer", "commit", "task"];
+export const MODEL_ROLE_IDS: ModelRole[] = ["default", "smol", "slow", "vision", "plan", "commit", "task"];
 
 /** Alias for ModelRoleInfo - used for both built-in and custom roles */
 export type RoleInfo = ModelRoleInfo;
@@ -160,7 +150,6 @@ const OpenAICompatSchema = Type.Object({
 	vercelGatewayRouting: Type.Optional(VercelGatewayRoutingSchema),
 	extraBody: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
 	supportsStrictMode: Type.Optional(Type.Boolean()),
-	toolStrictMode: Type.Optional(Type.Union([Type.Literal("all_strict"), Type.Literal("none")])),
 });
 
 const EffortSchema = Type.Union([
@@ -246,7 +235,12 @@ const ModelOverrideSchema = Type.Object({
 type ModelOverride = Static<typeof ModelOverrideSchema>;
 
 const ProviderDiscoverySchema = Type.Object({
-	type: Type.Union([Type.Literal("ollama"), Type.Literal("llama.cpp"), Type.Literal("lm-studio")]),
+	type: Type.Union([
+		Type.Literal("ollama"),
+		Type.Literal("llama.cpp"),
+		Type.Literal("lm-studio"),
+		Type.Literal("openai-compat"),
+	]),
 });
 
 const ProviderAuthSchema = Type.Union([Type.Literal("apiKey"), Type.Literal("none")]);
@@ -274,14 +268,9 @@ const ProviderConfigSchema = Type.Object({
 	modelOverrides: Type.Optional(Type.Record(Type.String(), ModelOverrideSchema)),
 });
 
-const EquivalenceConfigSchema = Type.Object({
-	overrides: Type.Optional(Type.Record(Type.String(), Type.String({ minLength: 1 }))),
-	exclude: Type.Optional(Type.Array(Type.String({ minLength: 1 }))),
-});
-
 const ModelsConfigSchema = Type.Object({
-	providers: Type.Optional(Type.Record(Type.String(), ProviderConfigSchema)),
-	equivalence: Type.Optional(EquivalenceConfigSchema),
+	configVersion: Type.Optional(Type.Number()),
+	providers: Type.Record(Type.String(), ProviderConfigSchema),
 });
 
 type ModelsConfig = Static<typeof ModelsConfigSchema>;
@@ -373,7 +362,7 @@ function validateProviderConfiguration(
 export const ModelsConfigFile = new ConfigFile<ModelsConfig>("models", ModelsConfigSchema).withValidation(
 	"models",
 	config => {
-		for (const [providerName, providerConfig] of Object.entries(config.providers ?? {})) {
+		for (const [providerName, providerConfig] of Object.entries(config.providers)) {
 			validateProviderConfiguration(
 				providerName,
 				{
@@ -422,11 +411,6 @@ export interface ProviderDiscoveryState {
 	error?: string;
 }
 
-export interface CanonicalModelQueryOptions {
-	availableOnly?: boolean;
-	candidates?: readonly Model<Api>[];
-}
-
 /** Result of loading custom models from models.json */
 interface CustomModelsResult {
 	models?: CustomModelOverlay[];
@@ -435,7 +419,6 @@ interface CustomModelsResult {
 	keylessProviders?: Set<string>;
 	discoverableProviders?: DiscoveryProviderConfig[];
 	configuredProviders?: Set<string>;
-	equivalence?: ModelEquivalenceConfig;
 	error?: ConfigError;
 	found: boolean;
 }
@@ -721,6 +704,31 @@ function finalizeCustomModel(model: CustomModelOverlay, options: CustomModelBuil
 	} as Model<Api>);
 }
 
+function buildCustomModel(
+	providerName: string,
+	providerBaseUrl: string,
+	providerApi: Api | undefined,
+	providerHeaders: Record<string, string> | undefined,
+	providerApiKey: string | undefined,
+	authHeader: boolean | undefined,
+	providerCompat: Model<Api>["compat"] | undefined,
+	modelDef: CustomModelDefinitionLike,
+	options: CustomModelBuildOptions,
+): Model<Api> | undefined {
+	const model = buildCustomModelOverlay(
+		providerName,
+		providerBaseUrl,
+		providerApi,
+		providerHeaders,
+		providerApiKey,
+		authHeader,
+		providerCompat,
+		modelDef,
+	);
+	if (!model) return undefined;
+	return finalizeCustomModel(model, options);
+}
+
 function normalizeSuppressedSelector(selector: string): string {
 	const trimmed = selector.trim();
 	if (!trimmed) return trimmed;
@@ -737,27 +745,17 @@ function getDisabledProviderIdsFromSettings(): Set<string> {
 	}
 }
 
-function getConfiguredProviderOrderFromSettings(): string[] {
-	try {
-		return settings.get("modelProviderOrder");
-	} catch {
-		return [];
-	}
-}
-
 /**
  * Model registry - loads and manages models, resolves API keys via AuthStorage.
  */
 export class ModelRegistry {
 	#models: Model<Api>[] = [];
-	#canonicalIndex: CanonicalModelIndex = { records: [], byId: new Map(), bySelector: new Map() };
 	#customProviderApiKeys: Map<string, string> = new Map();
 	#keylessProviders: Set<string> = new Set();
 	#discoverableProviders: DiscoveryProviderConfig[] = [];
 	#customModelOverlays: CustomModelOverlay[] = [];
 	#providerOverrides: Map<string, ProviderOverride> = new Map();
 	#modelOverrides: Map<string, Map<string, ModelOverride>> = new Map();
-	#equivalenceConfig: ModelEquivalenceConfig | undefined;
 	#configError: ConfigError | undefined = undefined;
 	#modelsConfigFile: ConfigFile<ModelsConfig>;
 	#registeredProviderSources: Set<string> = new Set();
@@ -766,12 +764,7 @@ export class ModelRegistry {
 	#suppressedSelectors: Map<string, number> = new Map();
 	#backgroundRefresh?: Promise<void>;
 	#lastDiscoveryWarnings: Map<string, string> = new Map();
-	// Runtime extension model overlays — persist across refresh() cycles so that
-	// models registered by extensions survive the model selector's offline reload.
-	#runtimeModelOverlays: CustomModelOverlay[] = [];
-	#runtimeProviderApiKeys: Map<string, string> = new Map();
-	#runtimeProvidersBySource: Map<string, Set<string>> = new Map();
-	#runtimeProviderSourceByName: Map<string, string> = new Map();
+	#hasProbed = false;
 
 	/**
 	 * @param authStorage - Auth storage for API key resolution
@@ -798,6 +791,14 @@ export class ModelRegistry {
 	 * Reload models from disk (built-in + custom from models.json).
 	 */
 	async refresh(strategy: ModelRefreshStrategy = "online-if-uncached"): Promise<void> {
+		// On first refresh, probe LiteLLM proxy and upgrade config with discovery if available
+		if (!this.#hasProbed && hasLiteLLMEnv()) {
+			this.#hasProbed = true;
+			const upgraded = await probeAndUpgradeLiteLLMConfig(this.#modelsConfigFile.path());
+			if (upgraded) {
+				this.#modelsConfigFile.invalidate();
+			}
+		}
 		this.#reloadStaticModels();
 		this.#suppressedSelectors.clear();
 		await this.#refreshRuntimeDiscoveries(strategy);
@@ -821,6 +822,29 @@ export class ModelRegistry {
 		this.#backgroundRefresh = refreshPromise;
 	}
 
+	/**
+	 * Await the in-flight background refresh if one is running.
+	 * Returns immediately if no background refresh is in progress.
+	 */
+	async awaitBackgroundRefresh(): Promise<void> {
+		if (this.#backgroundRefresh) {
+			await this.#backgroundRefresh;
+		}
+	}
+
+	/**
+	 * Check if any non-optional discoverable provider has no cached models yet.
+	 * Returns true on first run when the model cache is empty.
+	 */
+	hasUncachedDiscoverableProviders(): boolean {
+		for (const [, state] of this.#providerDiscoveryStates) {
+			if (state.status === "idle" && !state.optional) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	async refreshProvider(providerId: string, strategy: ModelRefreshStrategy = "online"): Promise<void> {
 		this.#reloadStaticModels();
 		for (const selector of this.#suppressedSelectors.keys()) {
@@ -836,14 +860,8 @@ export class ModelRegistry {
 		this.#customProviderApiKeys.clear();
 		this.#keylessProviders.clear();
 		this.#discoverableProviders = [];
-		// Restore runtime API keys before #loadModels — survives because
-		// #loadModels only calls .set() on #customProviderApiKeys, never reassigns it.
-		for (const [k, v] of this.#runtimeProviderApiKeys) {
-			this.#customProviderApiKeys.set(k, v);
-		}
 		this.#providerOverrides.clear();
 		this.#modelOverrides.clear();
-		this.#equivalenceConfig = undefined;
 		this.#configError = undefined;
 		this.#providerDiscoveryStates.clear();
 		this.#loadModels();
@@ -865,7 +883,6 @@ export class ModelRegistry {
 			keylessProviders = new Set(),
 			discoverableProviders = [],
 			configuredProviders = new Set(),
-			equivalence,
 			error: configError,
 		} = this.#loadCustomModels();
 		this.#configError = configError;
@@ -874,18 +891,14 @@ export class ModelRegistry {
 		this.#customModelOverlays = customModels;
 		this.#providerOverrides = overrides;
 		this.#modelOverrides = modelOverrides;
-		this.#equivalenceConfig = equivalence;
 
 		this.#addImplicitDiscoverableProviders(configuredProviders);
 		const builtInModels = this.#applyHardcodedModelPolicies(this.#loadBuiltInModels(overrides));
 		const cachedDiscoveries = this.#applyHardcodedModelPolicies(this.#loadCachedDiscoverableModels());
 		const resolvedDefaults = this.#mergeResolvedModels(builtInModels, cachedDiscoveries);
-		const withConfigModels = this.#mergeCustomModels(resolvedDefaults, this.#customModelOverlays);
-		// Merge runtime extension models so they survive refresh() cycles
-		const combined = this.#mergeCustomModels(withConfigModels, this.#runtimeModelOverlays);
+		const combined = this.#mergeCustomModels(resolvedDefaults, this.#customModelOverlays);
 
 		this.#models = this.#applyModelOverrides(combined, this.#modelOverrides);
-		this.#rebuildCanonicalIndex();
 	}
 
 	/** Load built-in models, applying provider-level overrides only.
@@ -1041,9 +1054,22 @@ export class ModelRegistry {
 	}
 
 	#loadCustomModels(): CustomModelsResult {
-		const { value, error, status } = this.#modelsConfigFile.tryLoad();
+		let result = this.#modelsConfigFile.tryLoad();
 
-		if (status === "error") {
+		// Self-healing: detect missing, corrupt, or drifted config and auto-repair from env vars
+		if (result.status !== "ok" || result.value) {
+			const repaired = startupHealthCheck(
+				result.status,
+				this.#modelsConfigFile.path(),
+				result.status === "ok" && result.value ? result.value.providers : undefined,
+			);
+			if (repaired) {
+				this.#modelsConfigFile.invalidate();
+				result = this.#modelsConfigFile.tryLoad();
+			}
+		}
+
+		if (result.status === "error") {
 			return {
 				models: [],
 				overrides: new Map(),
@@ -1051,10 +1077,10 @@ export class ModelRegistry {
 				keylessProviders: new Set(),
 				discoverableProviders: [],
 				configuredProviders: new Set(),
-				error,
+				error: result.error,
 				found: true,
 			};
-		} else if (status === "not-found") {
+		} else if (result.status === "not-found") {
 			return {
 				models: [],
 				overrides: new Map(),
@@ -1066,14 +1092,14 @@ export class ModelRegistry {
 			};
 		}
 
+		const value = result.value;
 		const overrides = new Map<string, ProviderOverride>();
 		const allModelOverrides = new Map<string, Map<string, ModelOverride>>();
 		const keylessProviders = new Set<string>();
 		const discoverableProviders: DiscoveryProviderConfig[] = [];
-		const providerEntries = Object.entries(value.providers ?? {});
-		const configuredProviders = new Set(Object.keys(value.providers ?? {}));
+		const configuredProviders = new Set(Object.keys(value.providers));
 
-		for (const [providerName, providerConfig] of providerEntries) {
+		for (const [providerName, providerConfig] of Object.entries(value.providers)) {
 			// Always set overrides when baseUrl/headers/apiKey/compat are present
 			if (providerConfig.baseUrl || providerConfig.headers || providerConfig.apiKey || providerConfig.compat) {
 				overrides.set(providerName, {
@@ -1123,7 +1149,6 @@ export class ModelRegistry {
 			keylessProviders,
 			discoverableProviders,
 			configuredProviders,
-			equivalence: value.equivalence,
 			found: true,
 		};
 	}
@@ -1172,11 +1197,8 @@ export class ModelRegistry {
 			}),
 		);
 		const resolved = this.#mergeResolvedModels(this.#models, discoveredModels);
-		const withConfigModels = this.#mergeCustomModels(resolved, this.#customModelOverlays);
-		// Merge runtime extension models so they survive online discovery completion
-		const combined = this.#mergeCustomModels(withConfigModels, this.#runtimeModelOverlays);
+		const combined = this.#mergeCustomModels(resolved, this.#customModelOverlays);
 		this.#models = this.#applyModelOverrides(combined, this.#modelOverrides);
-		this.#rebuildCanonicalIndex();
 	}
 
 	async #discoverProviderModels(
@@ -1260,6 +1282,8 @@ export class ModelRegistry {
 				return this.#discoverLlamaCppModels(providerConfig);
 			case "lm-studio":
 				return this.#discoverLmStudioModels(providerConfig);
+			case "openai-compat":
+				return this.#discoverOpenAICompatModels(providerConfig);
 		}
 	}
 
@@ -1282,8 +1306,28 @@ export class ModelRegistry {
 	): Promise<Model<Api>[]> {
 		// Skip providers already handled by configured discovery (e.g. user-configured ollama with discovery.type)
 		const configuredDiscoveryProviders = new Set(this.#discoverableProviders.map(p => p.provider));
+
+		// When a LiteLLM proxy is configured, providers whose baseUrl points to the
+		// LiteLLM proxy are proxied through it. Their built-in discovery would query
+		// the proxy's model listing endpoint, which may return model IDs the proxy
+		// can't serve for chat. Skip them — the litellm discovery provider handles
+		// model listing instead. Providers with other custom baseUrls (not LiteLLM)
+		// still need built-in discovery to discover new models at their endpoint.
+		const liteLLMBaseUrl = hasLiteLLMEnv() ? $env.LITELLM_BASE_URL?.trim().replace(/\/+$/, "") : undefined;
+		const proxiedProviders = liteLLMBaseUrl
+			? new Set(
+					[...this.#providerOverrides.keys()].filter(id => {
+						const override = this.#providerOverrides.get(id);
+						return override?.baseUrl?.startsWith(liteLLMBaseUrl);
+					}),
+				)
+			: new Set<string>();
+
 		const managerOptions = (await this.#collectBuiltInModelManagerOptions()).filter(opts => {
 			if (configuredDiscoveryProviders.has(opts.providerId)) {
+				return false;
+			}
+			if (proxiedProviders.has(opts.providerId)) {
 				return false;
 			}
 			return providerFilter ? providerFilter.has(opts.providerId) : true;
@@ -1601,6 +1645,53 @@ export class ModelRegistry {
 		return this.#applyProviderModelOverrides(providerConfig.provider, discovered);
 	}
 
+	async #discoverOpenAICompatModels(providerConfig: DiscoveryProviderConfig): Promise<Model<Api>[]> {
+		const baseUrl = (providerConfig.baseUrl ?? "").replace(/\/+$/, "");
+		if (!baseUrl) {
+			throw new Error("openai-compat discovery requires a baseUrl");
+		}
+
+		const headers: Record<string, string> = { ...(providerConfig.headers ?? {}) };
+		const apiKey =
+			this.#customProviderApiKeys.get(providerConfig.provider) ??
+			(await this.#peekApiKeyForProvider(providerConfig.provider));
+		if (apiKey && apiKey !== DEFAULT_LOCAL_TOKEN && apiKey !== kNoAuth) {
+			headers.Authorization = `Bearer ${apiKey}`;
+		}
+
+		const modelsUrl = `${baseUrl}/models`;
+		const response = await fetch(modelsUrl, {
+			headers: { Accept: "application/json", ...headers },
+			signal: AbortSignal.timeout(3000),
+		});
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status} from ${modelsUrl}`);
+		}
+		const payload = (await response.json()) as { data?: Array<{ id: string }> };
+		const items = payload.data ?? [];
+		const discovered: Model<Api>[] = [];
+		for (const item of items) {
+			const id = item.id;
+			if (!id) continue;
+			discovered.push(
+				enrichModelThinking({
+					id,
+					name: id,
+					api: providerConfig.api,
+					provider: providerConfig.provider,
+					baseUrl,
+					reasoning: false,
+					input: ["text"],
+					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+					contextWindow: 128000,
+					maxTokens: 8192,
+					headers,
+				}),
+			);
+		}
+		return this.#applyProviderModelOverrides(providerConfig.provider, discovered);
+	}
+
 	#normalizeLlamaCppBaseUrl(baseUrl?: string): string {
 		const defaultBaseUrl = "http://127.0.0.1:8080";
 		const raw = baseUrl || defaultBaseUrl;
@@ -1683,14 +1774,10 @@ export class ModelRegistry {
 		});
 	}
 
-	#rebuildCanonicalIndex(): void {
-		this.#canonicalIndex = buildCanonicalModelIndex(this.#models, this.#equivalenceConfig);
-	}
-
 	#parseModels(config: ModelsConfig): CustomModelOverlay[] {
 		const models: CustomModelOverlay[] = [];
 
-		for (const [providerName, providerConfig] of Object.entries(config.providers ?? {})) {
+		for (const [providerName, providerConfig] of Object.entries(config.providers)) {
 			const modelDefs = providerConfig.models ?? [];
 			if (modelDefs.length === 0) continue; // Override-only, no custom models
 			if (providerConfig.apiKey) {
@@ -1722,139 +1809,17 @@ export class ModelRegistry {
 		return this.#models;
 	}
 
-	#isModelAvailable(model: Model<Api>): boolean {
-		const disabledProviders = getDisabledProviderIdsFromSettings();
-		return (
-			!disabledProviders.has(model.provider) &&
-			(this.#keylessProviders.has(model.provider) || this.authStorage.hasAuth(model.provider))
-		);
-	}
-
-	#filterCanonicalVariants(
-		record: CanonicalModelRecord,
-		options: CanonicalModelQueryOptions | undefined,
-	): CanonicalModelVariant[] {
-		const candidateKeys = options?.candidates
-			? new Set(options.candidates.map(candidate => formatCanonicalVariantSelector(candidate)))
-			: undefined;
-		return record.variants.filter(variant => {
-			if (candidateKeys && !candidateKeys.has(variant.selector)) {
-				return false;
-			}
-			if (options?.availableOnly && !this.#isModelAvailable(variant.model)) {
-				return false;
-			}
-			return true;
-		});
-	}
-
-	#providerRank(models: readonly Model<Api>[]): Map<string, number> {
-		const configuredProviders = getConfiguredProviderOrderFromSettings();
-		const result = new Map<string, number>();
-		let nextRank = 0;
-		for (const provider of configuredProviders) {
-			const normalized = provider.trim().toLowerCase();
-			if (!normalized || result.has(normalized)) {
-				continue;
-			}
-			result.set(normalized, nextRank);
-			nextRank += 1;
-		}
-		for (const model of models) {
-			const normalized = model.provider.toLowerCase();
-			if (result.has(normalized)) {
-				continue;
-			}
-			result.set(normalized, nextRank);
-			nextRank += 1;
-		}
-		return result;
-	}
-
-	#resolveCanonicalVariant(
-		variants: readonly CanonicalModelVariant[],
-		allCandidates: readonly Model<Api>[],
-	): CanonicalModelVariant | undefined {
-		if (variants.length === 0) {
-			return undefined;
-		}
-		const providerRank = this.#providerRank(allCandidates);
-		const modelOrder = new Map<string, number>();
-		for (let index = 0; index < allCandidates.length; index += 1) {
-			modelOrder.set(formatCanonicalVariantSelector(allCandidates[index]!), index);
-		}
-		const sourceRank: Record<CanonicalModelVariant["source"], number> = {
-			override: 1,
-			bundled: 1,
-			heuristic: 2,
-			fallback: 3,
-		};
-		return [...variants].sort((left, right) => {
-			const leftProviderRank = providerRank.get(left.model.provider.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
-			const rightProviderRank = providerRank.get(right.model.provider.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
-			if (leftProviderRank !== rightProviderRank) {
-				return leftProviderRank - rightProviderRank;
-			}
-			const leftExact = left.model.id === left.canonicalId ? 0 : 1;
-			const rightExact = right.model.id === right.canonicalId ? 0 : 1;
-			if (leftExact !== rightExact) {
-				return leftExact - rightExact;
-			}
-			if (sourceRank[left.source] !== sourceRank[right.source]) {
-				return sourceRank[left.source] - sourceRank[right.source];
-			}
-			if (left.model.id.length !== right.model.id.length) {
-				return left.model.id.length - right.model.id.length;
-			}
-			const leftOrder = modelOrder.get(left.selector) ?? Number.MAX_SAFE_INTEGER;
-			const rightOrder = modelOrder.get(right.selector) ?? Number.MAX_SAFE_INTEGER;
-			return leftOrder - rightOrder;
-		})[0];
-	}
-
-	getCanonicalModels(options?: CanonicalModelQueryOptions): CanonicalModelRecord[] {
-		const records: CanonicalModelRecord[] = [];
-		for (const record of this.#canonicalIndex.records) {
-			const variants = this.#filterCanonicalVariants(record, options);
-			if (variants.length === 0) {
-				continue;
-			}
-			records.push({
-				id: record.id,
-				name: record.name,
-				variants,
-			});
-		}
-		return records;
-	}
-
-	getCanonicalVariants(canonicalId: string, options?: CanonicalModelQueryOptions): CanonicalModelVariant[] {
-		const record = this.#canonicalIndex.byId.get(canonicalId.trim().toLowerCase());
-		if (!record) {
-			return [];
-		}
-		return this.#filterCanonicalVariants(record, options);
-	}
-
-	resolveCanonicalModel(canonicalId: string, options?: CanonicalModelQueryOptions): Model<Api> | undefined {
-		const variants = this.getCanonicalVariants(canonicalId, options);
-		if (variants.length === 0) {
-			return undefined;
-		}
-		const candidates = options?.candidates ?? (options?.availableOnly ? this.getAvailable() : this.getAll());
-		return this.#resolveCanonicalVariant(variants, candidates)?.model;
-	}
-
-	getCanonicalId(model: Model<Api>): string | undefined {
-		return this.#canonicalIndex.bySelector.get(formatCanonicalVariantSelector(model).toLowerCase());
-	}
-
 	/**
 	 * Get only models that have auth configured.
 	 * This is a fast check that doesn't refresh OAuth tokens.
 	 */
 	getAvailable(): Model<Api>[] {
-		return this.#models.filter(model => this.#isModelAvailable(model));
+		const disabledProviders = getDisabledProviderIdsFromSettings();
+		return this.#models.filter(
+			m =>
+				!disabledProviders.has(m.provider) &&
+				(this.#keylessProviders.has(m.provider) || this.authStorage.hasAuth(m.provider)),
+		);
 	}
 
 	getDiscoverableProviders(): string[] {
@@ -1872,7 +1837,7 @@ export class ModelRegistry {
 	 * Find a model by provider and ID.
 	 */
 	find(provider: string, modelId: string): Model<Api> | undefined {
-		return resolveProviderModelReference(provider, modelId, this.#models);
+		return this.#models.find(m => m.provider === provider && m.id === modelId);
 	}
 
 	/**
@@ -1922,21 +1887,6 @@ export class ModelRegistry {
 	clearSourceRegistrations(sourceId: string): void {
 		unregisterCustomApis(sourceId);
 		unregisterOAuthProviders(sourceId);
-		const sourceProviders = this.#runtimeProvidersBySource.get(sourceId);
-		if (!sourceProviders || sourceProviders.size === 0) {
-			return;
-		}
-		this.#runtimeProvidersBySource.delete(sourceId);
-		for (const providerName of sourceProviders) {
-			if (this.#runtimeProviderSourceByName.get(providerName) !== sourceId) {
-				continue;
-			}
-			this.#runtimeProviderSourceByName.delete(providerName);
-			this.#runtimeProviderApiKeys.delete(providerName);
-			this.#runtimeModelOverlays = this.#runtimeModelOverlays.filter(overlay => overlay.provider !== providerName);
-		}
-		this.#reloadStaticModels();
-		this.#rebuildCanonicalIndex();
 	}
 
 	/**
@@ -1995,30 +1945,15 @@ export class ModelRegistry {
 
 		if (sourceId) {
 			this.#registeredProviderSources.add(sourceId);
-			const previousSourceId = this.#runtimeProviderSourceByName.get(providerName);
-			if (previousSourceId && previousSourceId !== sourceId) {
-				const previousProviders = this.#runtimeProvidersBySource.get(previousSourceId);
-				previousProviders?.delete(providerName);
-				if (previousProviders && previousProviders.size === 0) {
-					this.#runtimeProvidersBySource.delete(previousSourceId);
-				}
-			}
-			const sourceProviders = this.#runtimeProvidersBySource.get(sourceId) ?? new Set<string>();
-			sourceProviders.add(providerName);
-			this.#runtimeProvidersBySource.set(sourceId, sourceProviders);
-			this.#runtimeProviderSourceByName.set(providerName, sourceId);
 		}
 		if (config.apiKey) {
 			this.#customProviderApiKeys.set(providerName, config.apiKey);
-			// Persist runtime API keys so they survive #reloadStaticModels() cycles
-			this.#runtimeProviderApiKeys.set(providerName, config.apiKey);
 		}
 
 		if (config.models && config.models.length > 0) {
-			// Build model overlays that persist across refresh() cycles
-			const newOverlays: CustomModelOverlay[] = [];
+			const nextModels = this.#models.filter(m => m.provider !== providerName);
 			for (const modelDef of config.models) {
-				const overlay = buildCustomModelOverlay(
+				const model = buildCustomModel(
 					providerName,
 					config.baseUrl!,
 					config.api,
@@ -2027,33 +1962,23 @@ export class ModelRegistry {
 					config.authHeader,
 					config.compat,
 					modelDef as CustomModelDefinitionLike,
+					{ useDefaults: true },
 				);
-				if (!overlay) {
+				if (!model) {
 					throw new Error(`Provider ${providerName}, model ${modelDef.id}: no "api" specified.`);
 				}
-				newOverlays.push(overlay);
-			}
-			// Store as runtime overlays so they survive #reloadStaticModels()
-			this.#runtimeModelOverlays = this.#runtimeModelOverlays.filter(m => m.provider !== providerName);
-			this.#runtimeModelOverlays.push(...newOverlays);
-
-			// Also update #models immediately for the current cycle
-			const nextModels = this.#models.filter(m => m.provider !== providerName);
-			for (const overlay of newOverlays) {
-				nextModels.push(finalizeCustomModel(overlay, { useDefaults: true }));
+				nextModels.push(model);
 			}
 
 			if (config.oauth?.modifyModels) {
 				const credential = this.authStorage.getOAuthCredential(providerName);
 				if (credential) {
 					this.#models = config.oauth.modifyModels(nextModels, credential);
-					this.#rebuildCanonicalIndex();
 					return;
 				}
 			}
 
 			this.#models = nextModels;
-			this.#rebuildCanonicalIndex();
 			return;
 		}
 
@@ -2066,7 +1991,6 @@ export class ModelRegistry {
 					headers: config.headers ? { ...m.headers, ...config.headers } : m.headers,
 				};
 			});
-			this.#rebuildCanonicalIndex();
 		}
 	}
 
