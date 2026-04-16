@@ -23,11 +23,11 @@ import {
 	prompt,
 	Snowflake,
 } from "@f5xc-salesdemos/pi-utils";
-import chalk from "chalk";
 import { AsyncJobManager, isBackgroundJobSupportEnabled } from "./async";
 import { createAutoresearchExtension } from "./autoresearch";
 import { loadCapability } from "./capability";
 import { type Rule, ruleCapability } from "./capability/rule";
+import { hasLiteLLMEnv } from "./config/auto-config";
 import { ModelRegistry } from "./config/model-registry";
 import { formatModelString, parseModelPattern, parseModelString, resolveModelRoleValue } from "./config/model-resolver";
 import { loadPromptTemplates as loadPromptTemplatesInternal, type PromptTemplate } from "./config/prompt-templates";
@@ -780,6 +780,13 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	const modelMatchPreferences = {
 		usageOrder: settings.getStorage()?.getModelUsageOrder(),
 	};
+	// When LiteLLM is configured and no model cache exists yet (first run),
+	// await the background refresh so model discovery from the proxy completes
+	// before we select a default model. Bounded by the 3s probe timeout.
+	if (!options.modelRegistry && hasLiteLLMEnv() && modelRegistry.hasUncachedDiscoverableProviders()) {
+		await logger.time("awaitLiteLLMDiscovery", () => modelRegistry.awaitBackgroundRefresh());
+	}
+
 	const defaultRoleSpec = logger.time("resolveDefaultModelRole", () =>
 		resolveModelRoleValue(settings.getModelRole("default"), modelRegistry.getAvailable(), {
 			settings,
@@ -1069,8 +1076,8 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		if (enableMCP) {
 			const mcpResult = await logger.time("discoverAndLoadMCPTools", discoverAndLoadMCPTools, cwd, {
 				onConnecting: serverNames => {
-					if (options.hasUI && serverNames.length > 0) {
-						process.stderr.write(`${chalk.gray(`Connecting to MCP servers: ${serverNames.join(", ")}…`)}\n`);
+					if (serverNames.length > 0) {
+						logger.debug("Connecting to MCP servers", { servers: serverNames });
 					}
 				},
 				enableProjectConfig: settings.get("mcp.enableProjectConfig") ?? true,
