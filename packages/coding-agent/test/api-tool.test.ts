@@ -605,3 +605,115 @@ describe("ApiBatchTool — danger-level gate", () => {
 		}
 	});
 });
+
+describe("ApiBatchTool — edge cases", () => {
+	let tmpDir: string;
+	let origFetch: typeof fetch;
+
+	const EDGE_CATALOG = {
+		service: "edge",
+		displayName: "Edge Service",
+		version: "1.0.0",
+		auth: {
+			type: "api_token",
+			headerName: "Authorization",
+			headerTemplate: "APIToken {token}",
+			tokenSource: "TEST_TOKEN",
+			baseUrlSource: "TEST_BASE_URL",
+		},
+		defaults: {},
+		categories: [
+			{
+				name: "items",
+				displayName: "Items",
+				operations: [
+					{
+						name: "list_items",
+						description: "List items",
+						method: "GET",
+						path: "/api/items",
+						dangerLevel: "low",
+						parameters: [],
+					},
+					{
+						name: "get_item",
+						description: "Get item",
+						method: "GET",
+						path: "/api/items/{id}",
+						dangerLevel: "low",
+						parameters: [{ name: "id", in: "path", required: true, type: "string" }],
+					},
+				],
+			},
+		],
+	};
+
+	beforeEach(async () => {
+		origFetch = globalThis.fetch;
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-batch-edge-"));
+		await Bun.write(path.join(tmpDir, "api-catalog.json"), JSON.stringify(EDGE_CATALOG));
+		process.env.TEST_TOKEN = "edge-token";
+		process.env.TEST_BASE_URL = "https://api.example.com";
+	});
+
+	afterEach(async () => {
+		globalThis.fetch = origFetch;
+		await fs.rm(tmpDir, { recursive: true, force: true });
+		delete process.env.TEST_TOKEN;
+		delete process.env.TEST_BASE_URL;
+	});
+
+	test("strict mode stops after first API failure", async () => {
+		let callCount = 0;
+		globalThis.fetch = (async () => {
+			callCount++;
+			if (callCount === 1) return new Response(JSON.stringify({ error: "fail" }), { status: 500 });
+			return new Response(JSON.stringify({ items: [] }), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+		const result = await tool.execute("id", {
+			service: "edge",
+			operations: [{ operation: "list_items" }, { operation: "list_items" }],
+			mode: "strict",
+		});
+		expect(callCount).toBe(1);
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text).toContain("0/1");
+	});
+
+	test("batch returns error for missing required parameter", async () => {
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+		const result = await tool.execute("id", {
+			service: "edge",
+			operations: [{ operation: "get_item" }],
+		});
+		const text = (result.content[0] as { type: "text"; text: string }).text;
+		expect(text.toLowerCase()).toContain("missing");
+		expect(text).toContain("id");
+	});
+
+	test("batch applies inter-operation delay of at least 200ms", async () => {
+		globalThis.fetch = (async () =>
+			new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+
+		const { ApiBatchTool } = await import("../src/tools/api-tool");
+		const catalog = new ApiCatalogService([tmpDir]);
+		const executor = new ApiExecutor();
+		const tool = new ApiBatchTool(catalog, executor);
+
+		const start = performance.now();
+		await tool.execute("id", {
+			service: "edge",
+			operations: [{ operation: "list_items" }, { operation: "list_items" }],
+		});
+		const elapsed = performance.now() - start;
+		expect(elapsed).toBeGreaterThanOrEqual(180);
+	});
+});

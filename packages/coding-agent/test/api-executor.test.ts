@@ -332,3 +332,118 @@ describe("ApiExecutor — response caching", () => {
 		}
 	});
 });
+
+describe("ApiExecutor — cache edge cases", () => {
+	const auth: ResolvedAuth = { headers: { Authorization: "APIToken test" }, baseUrl: "https://api.example.com" };
+
+	let origFetch: typeof fetch;
+	let origDateNow: typeof Date.now;
+
+	beforeEach(() => {
+		origFetch = globalThis.fetch;
+		origDateNow = Date.now;
+	});
+
+	afterEach(() => {
+		globalThis.fetch = origFetch;
+		Date.now = origDateNow;
+	});
+
+	test("cache entry expires after TTL", async () => {
+		const getOp: ApiOperation = {
+			name: "list_things",
+			description: "List things",
+			method: "GET",
+			path: "/api/things",
+			dangerLevel: "low",
+			parameters: [],
+		};
+		let callCount = 0;
+		globalThis.fetch = (async () => {
+			callCount++;
+			return new Response(JSON.stringify({ items: [] }), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const executor = new ApiExecutor();
+		const baseTime = Date.now();
+
+		await executor.execute(auth, getOp, {});
+		expect(callCount).toBe(1);
+
+		await executor.execute(auth, getOp, {});
+		expect(callCount).toBe(1);
+
+		Date.now = () => baseTime + 61_000;
+
+		await executor.execute(auth, getOp, {});
+		expect(callCount).toBe(2);
+	});
+
+	test("LRU eviction when cache exceeds 100 entries", async () => {
+		let callCount = 0;
+		globalThis.fetch = (async () => {
+			callCount++;
+			return new Response(JSON.stringify({}), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const executor = new ApiExecutor();
+
+		for (let i = 0; i < 101; i++) {
+			const op: ApiOperation = {
+				name: `get_item_${i}`,
+				description: `Get item ${i}`,
+				method: "GET",
+				path: `/api/items/${i}`,
+				dangerLevel: "low",
+				parameters: [],
+			};
+			await executor.execute(auth, op, {});
+		}
+		expect(callCount).toBe(101);
+
+		const firstOp: ApiOperation = {
+			name: "get_item_0",
+			description: "Get item 0",
+			method: "GET",
+			path: "/api/items/0",
+			dangerLevel: "low",
+			parameters: [],
+		};
+		await executor.execute(auth, firstOp, {});
+		expect(callCount).toBe(102);
+	});
+
+	test("POST to collection invalidates cached GET for same path", async () => {
+		const listOp: ApiOperation = {
+			name: "list_resources",
+			description: "List resources",
+			method: "GET",
+			path: "/api/resources",
+			dangerLevel: "low",
+			parameters: [],
+		};
+		const createOp: ApiOperation = {
+			name: "create_resource",
+			description: "Create a resource",
+			method: "POST",
+			path: "/api/resources",
+			dangerLevel: "medium",
+			parameters: [],
+		};
+		let callCount = 0;
+		globalThis.fetch = (async () => {
+			callCount++;
+			return new Response(JSON.stringify({ items: [] }), { status: 200 });
+		}) as unknown as typeof fetch;
+
+		const executor = new ApiExecutor();
+		await executor.execute(auth, listOp, {});
+		expect(callCount).toBe(1);
+
+		await executor.execute(auth, createOp, {}, { name: "new" });
+		expect(callCount).toBe(2);
+
+		await executor.execute(auth, listOp, {});
+		expect(callCount).toBe(3);
+	});
+});

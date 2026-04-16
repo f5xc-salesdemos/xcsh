@@ -300,3 +300,61 @@ describe("ApiCatalogService — indexed lookups", () => {
 		expect(results).toHaveLength(0);
 	});
 });
+
+describe("ApiCatalogService — collision and rescan", () => {
+	test("same service from two directories — last-scanned wins", async () => {
+		const dir1 = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-collision-1-"));
+		const dir2 = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-collision-2-"));
+		try {
+			const base = {
+				service: "svc",
+				version: "1.0.0",
+				auth: { type: "bearer", tokenSource: "T", baseUrlSource: "U" },
+				categories: [],
+			};
+			await Bun.write(path.join(dir1, "api-catalog.json"), JSON.stringify({ ...base, displayName: "First" }));
+			await Bun.write(path.join(dir2, "api-catalog.json"), JSON.stringify({ ...base, displayName: "Second" }));
+
+			const svc = new ApiCatalogService([dir1, dir2]);
+			const services = await svc.getServices();
+			const match = services.find(s => s.service === "svc");
+			expect(match).toBeDefined();
+			expect(match!.displayName).toBe("Second");
+		} finally {
+			await fs.rm(dir1, { recursive: true });
+			await fs.rm(dir2, { recursive: true });
+		}
+	});
+
+	test("getServices skips disk re-scan on second call", async () => {
+		const dir = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-rescan-"));
+		try {
+			const catalog = {
+				service: "original",
+				displayName: "Original",
+				version: "1.0.0",
+				auth: { type: "bearer", tokenSource: "T", baseUrlSource: "U" },
+				categories: [],
+			};
+			await Bun.write(path.join(dir, "api-catalog.json"), JSON.stringify(catalog));
+
+			const svc = new ApiCatalogService([dir]);
+			const first = await svc.getServices();
+			expect(first).toHaveLength(1);
+			expect(first[0].service).toBe("original");
+
+			// Write a new catalog after first scan
+			await fs.mkdir(path.join(dir, "sub"), { recursive: true });
+			await Bun.write(
+				path.join(dir, "sub", "api-catalog.json"),
+				JSON.stringify({ ...catalog, service: "sneaky-new" }),
+			);
+
+			const second = await svc.getServices();
+			expect(second).toHaveLength(1);
+			expect(second[0].service).toBe("original");
+		} finally {
+			await fs.rm(dir, { recursive: true });
+		}
+	});
+});
