@@ -161,10 +161,14 @@ export async function runSearchCommand(cmd: SearchCommandArgs): Promise<void> {
 	process.stdout.write(`${component.render(width).join("\n")}\n`);
 
 	if (cmd.synthesize && result.details?.response && result.details.response.sources.length > 0) {
-		process.stderr.write(chalk.dim("\nSynthesizing response...\n"));
-		const synthesized = await synthesizeResponse(cmd.query, result.details.response, cmd.synthesizeModel);
-		if (synthesized) {
-			process.stdout.write(`\n${chalk.bold("Synthesized Answer:")}\n\n${synthesized}\n`);
+		try {
+			process.stderr.write(chalk.dim("\nSynthesizing response...\n"));
+			const synthesized = await synthesizeResponse(cmd.query, result.details.response, cmd.synthesizeModel);
+			if (synthesized) {
+				process.stdout.write(`\n${chalk.bold("Synthesized Answer:")}\n\n${synthesized}\n`);
+			}
+		} catch {
+			process.stderr.write(chalk.dim("Synthesis unavailable — showing raw search results only.\n"));
 		}
 	}
 
