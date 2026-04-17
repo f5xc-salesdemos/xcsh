@@ -331,6 +331,8 @@ export class AnthropicProvider extends SearchProvider {
 			temperature: params.temperature,
 			allowed_domains: params.allowedDomains,
 			blocked_domains: params.blockedDomains,
+			max_uses: params.maxUses,
+			user_location: params.userLocation,
 		});
 	}
 }

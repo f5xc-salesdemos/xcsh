@@ -12,6 +12,14 @@ export interface SearchParams {
 	temperature?: number;
 	allowedDomains?: string[];
 	blockedDomains?: string[];
+	maxUses?: number;
+	userLocation?: {
+		type: "approximate";
+		city?: string;
+		region?: string;
+		country?: string;
+		timezone?: string;
+	};
 	googleSearch?: Record<string, unknown>;
 	codeExecution?: Record<string, unknown>;
 	urlContext?: Record<string, unknown>;
