@@ -4,7 +4,13 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { Effort, type Model, type OpenAICompat, type ThinkingConfig, writeModelCache } from "@f5xc-salesdemos/pi-ai";
 import { hookFetch, Snowflake } from "@f5xc-salesdemos/pi-utils";
-import { kNoAuth, MODEL_ROLES, ModelRegistry } from "@f5xc-salesdemos/xcsh/config/model-registry";
+import {
+	kNoAuth,
+	MODEL_ROLES,
+	ModelRegistry,
+	resolveApiKeyConfig,
+	resolveYamlApiKeyConfig,
+} from "@f5xc-salesdemos/xcsh/config/model-registry";
 import { _resetSettingsForTest, Settings } from "@f5xc-salesdemos/xcsh/config/settings";
 import { AuthStorage } from "@f5xc-salesdemos/xcsh/session/auth-storage";
 
@@ -1823,5 +1829,96 @@ describe("ModelRegistry", () => {
 			expect(registry.find("litellm", "claude-3.5-sonnet")).toBeDefined();
 			expect(registry.find("litellm", "gpt-4o")).toBeDefined();
 		});
+	});
+});
+
+// =========================================================================
+// resolveApiKeyConfig() — generic resolver (always falls back to literal)
+// =========================================================================
+
+describe("resolveApiKeyConfig()", () => {
+	const savedEnv: Record<string, string | undefined> = {};
+
+	beforeEach(() => {
+		savedEnv.LITELLM_API_KEY = process.env.LITELLM_API_KEY;
+		delete process.env.LITELLM_API_KEY;
+	});
+
+	afterEach(() => {
+		for (const [key, val] of Object.entries(savedEnv)) {
+			if (val !== undefined) process.env[key] = val;
+			else delete process.env[key];
+		}
+	});
+
+	test("returns env var value when env var is set", () => {
+		process.env.LITELLM_API_KEY = "sk-real-token-abc123";
+		expect(resolveApiKeyConfig("LITELLM_API_KEY")).toBe("sk-real-token-abc123");
+	});
+
+	test("returns literal string when env var is not set (for runtime/extension keys)", () => {
+		delete process.env.LITELLM_API_KEY;
+		expect(resolveApiKeyConfig("LITELLM_API_KEY")).toBe("LITELLM_API_KEY");
+	});
+
+	test("returns literal value for mixed-case strings", () => {
+		expect(resolveApiKeyConfig("sk-abc123-mixed")).toBe("sk-abc123-mixed");
+	});
+});
+
+// =========================================================================
+// resolveYamlApiKeyConfig() — YAML-specific resolver (PR #104 regression fix)
+// =========================================================================
+
+describe("resolveYamlApiKeyConfig()", () => {
+	const savedEnv: Record<string, string | undefined> = {};
+
+	beforeEach(() => {
+		savedEnv.LITELLM_API_KEY = process.env.LITELLM_API_KEY;
+		savedEnv.MY_CUSTOM_KEY = process.env.MY_CUSTOM_KEY;
+		delete process.env.LITELLM_API_KEY;
+		delete process.env.MY_CUSTOM_KEY;
+	});
+
+	afterEach(() => {
+		for (const [key, val] of Object.entries(savedEnv)) {
+			if (val !== undefined) process.env[key] = val;
+			else delete process.env[key];
+		}
+	});
+
+	test("returns env var value when env var is set", () => {
+		process.env.LITELLM_API_KEY = "sk-real-token-abc123";
+		expect(resolveYamlApiKeyConfig("LITELLM_API_KEY")).toBe("sk-real-token-abc123");
+	});
+
+	test("returns undefined for ALL_CAPS env var name when env var is not set", () => {
+		delete process.env.LITELLM_API_KEY;
+		expect(resolveYamlApiKeyConfig("LITELLM_API_KEY")).toBeUndefined();
+	});
+
+	test("returns undefined for 2-segment ALL_CAPS name when env var is not set", () => {
+		expect(resolveYamlApiKeyConfig("DEMO_KEY")).toBeUndefined();
+	});
+
+	test("returns undefined for 3-segment ALL_CAPS name when env var is not set", () => {
+		delete process.env.MY_CUSTOM_KEY;
+		expect(resolveYamlApiKeyConfig("MY_CUSTOM_KEY")).toBeUndefined();
+	});
+
+	test("returns literal value for mixed-case strings (real API keys)", () => {
+		expect(resolveYamlApiKeyConfig("sk-abc123-mixed")).toBe("sk-abc123-mixed");
+	});
+
+	test("returns literal value for lowercase strings", () => {
+		expect(resolveYamlApiKeyConfig("abc")).toBe("abc");
+	});
+
+	test("returns literal value for strings with special characters", () => {
+		expect(resolveYamlApiKeyConfig("sk-ant-api03-xyz")).toBe("sk-ant-api03-xyz");
+	});
+
+	test("returns literal value for strings starting with lowercase", () => {
+		expect(resolveYamlApiKeyConfig("myKey123")).toBe("myKey123");
 	});
 });

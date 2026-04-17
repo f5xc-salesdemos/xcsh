@@ -461,9 +461,23 @@ type LlamaCppDiscoveredServerMetadata = {
  * Resolve an API key config value to an actual key.
  * Checks environment variable first, then treats as literal.
  */
-function resolveApiKeyConfig(keyConfig: string): string | undefined {
+export function resolveApiKeyConfig(keyConfig: string): string | undefined {
 	const envValue = Bun.env[keyConfig];
 	if (envValue) return envValue;
+	return keyConfig;
+}
+
+const ENV_VAR_NAME_RE = /^[A-Z][A-Z0-9]*(?:_[A-Z][A-Z0-9]*)+$/;
+
+/**
+ * Resolve an API key that came from YAML config (models.yml).
+ * Unlike resolveApiKeyConfig, this returns undefined for unresolved env var
+ * names to prevent sending literal names like "LITELLM_API_KEY" as Bearer tokens.
+ */
+export function resolveYamlApiKeyConfig(keyConfig: string): string | undefined {
+	const envValue = Bun.env[keyConfig];
+	if (envValue) return envValue;
+	if (ENV_VAR_NAME_RE.test(keyConfig)) return undefined;
 	return keyConfig;
 }
 

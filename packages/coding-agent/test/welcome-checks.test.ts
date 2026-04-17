@@ -40,6 +40,10 @@ describe("runWelcomeChecks", () => {
 		const r = await runWelcomeChecks(mockModel({ baseUrl: "" }), mockAuth({ hasAuth: true, peekApiKey: "k" }));
 		expect(r.model.state).toBe("auth_error");
 	});
+	it("returns auth_error when peekApiKey returns an unresolved env var name", async () => {
+		const r = await runWelcomeChecks(mockModel(), mockAuth({ hasAuth: true, peekApiKey: "LITELLM_API_KEY" }));
+		expect(r.model.state).toBe("auth_error");
+	});
 	it("never includes profile when model fails", async () => {
 		const r = await runWelcomeChecks(mockModel(), mockAuth({ hasAuth: false }));
 		expect(r.profile).toBeUndefined();

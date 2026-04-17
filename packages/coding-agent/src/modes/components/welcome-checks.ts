@@ -67,6 +67,11 @@ async function validateModelConnection(model: Model | undefined, authStorage: Au
 			return { state: "auth_error", provider };
 		}
 
+		// Detect unresolved env var names (e.g. "LITELLM_API_KEY" sent as literal)
+		if (/^[A-Z][A-Z0-9]*(?:_[A-Z][A-Z0-9]*)+$/.test(rawApiKey)) {
+			return { state: "auth_error", provider };
+		}
+
 		const baseUrl = model?.baseUrl;
 		if (!baseUrl) {
 			return { state: "auth_error", provider };
