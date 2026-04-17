@@ -6,6 +6,7 @@
 
 import type { Component } from "@f5xc-salesdemos/pi-tui";
 import { Text, visibleWidth, wrapTextWithAnsi } from "@f5xc-salesdemos/pi-tui";
+import { Settings } from "../../config/settings";
 import type { RenderResultOptions } from "../../extensibility/custom-tools/types";
 import type { Theme } from "../../modes/theme/theme";
 import {
@@ -24,6 +25,14 @@ import { renderStatusLine, renderTreeList } from "../../tui";
 import { CachedOutputBlock } from "../../tui/output-block";
 import { getSearchProvider } from "./provider";
 import type { SearchResponse } from "./types";
+
+function getVerboseSetting(): boolean {
+	try {
+		return Settings.instance.get("web_search.verbose");
+	} catch {
+		return false;
+	}
+}
 
 const MAX_COLLAPSED_ANSWER_LINES = PREVIEW_LIMITS.COLLAPSED_LINES;
 const MAX_EXPANDED_ANSWER_LINES = PREVIEW_LIMITS.EXPANDED_LINES;
@@ -90,6 +99,20 @@ export function renderSearchResult(
 	const response = details?.response;
 	if (!response) {
 		return renderFallbackText(rawText, options.expanded, theme);
+	}
+
+	const verbose = getVerboseSetting();
+	if (!verbose) {
+		const searches = response.usage?.searchRequests ?? 1;
+		const plural = searches !== 1 ? "es" : "";
+		const dur =
+			response.durationMs !== undefined
+				? response.durationMs >= 1000
+					? `${Math.round(response.durationMs / 1000)}s`
+					: `${Math.round(response.durationMs)}ms`
+				: "";
+		const line = `  \u23BF  Did ${searches} search${plural}${dur ? ` in ${dur}` : ""}`;
+		return new Text(theme.fg("dim", line), 0, 0);
 	}
 
 	const sources = Array.isArray(response.sources) ? response.sources : [];
@@ -288,6 +311,10 @@ export function renderSearchCall(
 	theme: Theme,
 ): Component {
 	const query = truncateToWidth(args.query ?? "", 80);
+	const verbose = getVerboseSetting();
+	if (!verbose) {
+		return new Text(`${theme.fg("text", `Web Search("${query}")`)}`, 0, 0);
+	}
 	const text = renderStatusLine({ icon: "pending", title: "Web Search", description: query }, theme);
 	return new Text(text, 0, 0);
 }

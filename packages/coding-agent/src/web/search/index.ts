@@ -192,6 +192,7 @@ async function executeSearch(
 	for (const provider of providers) {
 		lastProvider = provider;
 		try {
+			const searchStart = performance.now();
 			const response = await provider.search({
 				query: params.query.replace(/202\d/g, String(new Date().getFullYear())), // LUL
 				limit: params.limit,
@@ -205,6 +206,7 @@ async function executeSearch(
 				maxUses: params.max_uses,
 				userLocation: params.user_location,
 			});
+			response.durationMs = performance.now() - searchStart;
 
 			const text = formatForLLM(response);
 
