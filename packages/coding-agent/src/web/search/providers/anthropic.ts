@@ -30,6 +30,14 @@ const DEFAULT_MAX_TOKENS = 4096;
 const WEB_SEARCH_TOOL_NAME = "web_search";
 const WEB_SEARCH_TOOL_TYPE = "web_search_20250305";
 
+export interface AnthropicUserLocation {
+	type: "approximate";
+	city?: string;
+	region?: string;
+	country?: string;
+	timezone?: string;
+}
+
 export interface AnthropicSearchParams {
 	query: string;
 	system_prompt?: string;
@@ -38,6 +46,31 @@ export interface AnthropicSearchParams {
 	max_tokens?: number;
 	/** Sampling temperature (0–1). Lower = more focused/factual. */
 	temperature?: number;
+	allowed_domains?: string[];
+	blocked_domains?: string[];
+	max_uses?: number;
+	user_location?: AnthropicUserLocation;
+}
+
+interface WebSearchToolConfig {
+	allowed_domains?: string[];
+	blocked_domains?: string[];
+	max_uses?: number;
+	user_location?: AnthropicUserLocation;
+}
+
+export function extractSiteOperators(query: string): { cleanQuery: string; domains: string[] } {
+	const sitePattern = /\bsite:(\S+)/gi;
+	const domains: string[] = [];
+	const cleanQuery = query
+		.replace(sitePattern, (_, domain) => {
+			domains.push(domain);
+			return "";
+		})
+		.replace(/\s{2,}/g, " ")
+		.trim();
+	const fallback = domains.length > 0 ? domains.join(" ") : query;
+	return { cleanQuery: cleanQuery || fallback, domains };
 }
 
 /**
@@ -86,22 +119,27 @@ async function callSearch(
 	systemPrompt?: string,
 	maxTokens?: number,
 	temperature?: number,
+	toolConfig?: WebSearchToolConfig,
 ): Promise<AnthropicApiResponse> {
 	const url = buildAnthropicUrl(auth);
 	const headers = buildAnthropicSearchHeaders(auth);
 
 	const systemBlocks = buildSystemBlocks(auth, model, systemPrompt);
 
+	const tool: Record<string, unknown> = {
+		type: WEB_SEARCH_TOOL_TYPE,
+		name: WEB_SEARCH_TOOL_NAME,
+	};
+	if (toolConfig?.allowed_domains?.length) tool.allowed_domains = toolConfig.allowed_domains;
+	if (toolConfig?.blocked_domains?.length) tool.blocked_domains = toolConfig.blocked_domains;
+	if (toolConfig?.max_uses) tool.max_uses = toolConfig.max_uses;
+	if (toolConfig?.user_location) tool.user_location = toolConfig.user_location;
+
 	const body: Record<string, unknown> = {
 		model,
 		max_tokens: maxTokens ?? DEFAULT_MAX_TOKENS,
 		messages: [{ role: "user", content: query }],
-		tools: [
-			{
-				type: WEB_SEARCH_TOOL_TYPE,
-				name: WEB_SEARCH_TOOL_NAME,
-			},
-		],
+		tools: [tool],
 	};
 
 	if (temperature !== undefined) {
@@ -246,13 +284,23 @@ export async function searchAnthropic(params: AnthropicSearchParams): Promise<Se
 	}
 
 	const model = getModel();
+
+	const { cleanQuery, domains: siteDomains } = extractSiteOperators(params.query);
+	const allAllowedDomains = [...(params.allowed_domains ?? []), ...siteDomains];
+
 	const response = await callSearch(
 		auth,
 		model,
-		params.query,
+		cleanQuery,
 		params.system_prompt,
 		params.max_tokens,
 		params.temperature,
+		{
+			allowed_domains: allAllowedDomains.length > 0 ? allAllowedDomains : undefined,
+			blocked_domains: params.blocked_domains,
+			max_uses: params.max_uses,
+			user_location: params.user_location,
+		},
 	);
 
 	const result = parseResponse(response);
@@ -281,6 +329,8 @@ export class AnthropicProvider extends SearchProvider {
 			num_results: params.numSearchResults ?? params.limit,
 			max_tokens: params.maxOutputTokens,
 			temperature: params.temperature,
+			allowed_domains: params.allowedDomains,
+			blocked_domains: params.blockedDomains,
 		});
 	}
 }

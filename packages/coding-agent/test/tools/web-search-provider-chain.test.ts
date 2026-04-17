@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
+import { hookFetch } from "@f5xc-salesdemos/pi-utils";
+import { runSearchQuery } from "../../src/web/search/index";
 import { getSearchProvider, resolveProviderChain, SEARCH_PROVIDER_ORDER } from "../../src/web/search/provider";
 
 afterEach(() => {
@@ -56,5 +58,81 @@ describe("resolveProviderChain resilience", () => {
 		// Should not reject even when the preferred provider throws
 		const providers = await resolveProviderChain("anthropic");
 		expect(Array.isArray(providers)).toBe(true);
+	});
+});
+
+describe("domain filter provider routing", () => {
+	const originalSearchApiKey = process.env.ANTHROPIC_SEARCH_API_KEY;
+	const originalSearchBaseUrl = process.env.ANTHROPIC_SEARCH_BASE_URL;
+	const originalApiKey = process.env.ANTHROPIC_API_KEY;
+	const originalBaseUrl = process.env.ANTHROPIC_BASE_URL;
+
+	afterEach(() => {
+		if (originalSearchApiKey === undefined) delete process.env.ANTHROPIC_SEARCH_API_KEY;
+		else process.env.ANTHROPIC_SEARCH_API_KEY = originalSearchApiKey;
+		if (originalSearchBaseUrl === undefined) delete process.env.ANTHROPIC_SEARCH_BASE_URL;
+		else process.env.ANTHROPIC_SEARCH_BASE_URL = originalSearchBaseUrl;
+		if (originalApiKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+		else process.env.ANTHROPIC_API_KEY = originalApiKey;
+		if (originalBaseUrl === undefined) delete process.env.ANTHROPIC_BASE_URL;
+		else process.env.ANTHROPIC_BASE_URL = originalBaseUrl;
+	});
+
+	it("routes to anthropic when allowed_domains is set and provider is auto", async () => {
+		process.env.ANTHROPIC_SEARCH_API_KEY = "sk-ant-api-test";
+		process.env.ANTHROPIC_SEARCH_BASE_URL = "https://api.anthropic.com";
+		delete process.env.ANTHROPIC_API_KEY;
+		delete process.env.ANTHROPIC_BASE_URL;
+
+		let capturedUrl = "";
+		using _hook = hookFetch((url, init) => {
+			capturedUrl = typeof url === "string" ? url : url.toString();
+			return new Response(
+				JSON.stringify({
+					id: "msg_test",
+					model: "claude-haiku-4-5",
+					content: [{ type: "text", text: "Test" }],
+					usage: { input_tokens: 10, output_tokens: 5, server_tool_use: { web_search_requests: 1 } },
+				}),
+				{ status: 200, headers: { "Content-Type": "application/json" } },
+			);
+		});
+
+		const result = await runSearchQuery({
+			query: "test",
+			allowed_domains: ["example.com"],
+		});
+
+		expect(capturedUrl).toContain("api.anthropic.com");
+		expect(result.details.response.provider).toBe("anthropic");
+	});
+
+	it("routes to anthropic when blocked_domains is set and provider is auto", async () => {
+		process.env.ANTHROPIC_SEARCH_API_KEY = "sk-ant-api-test";
+		process.env.ANTHROPIC_SEARCH_BASE_URL = "https://api.anthropic.com";
+		delete process.env.ANTHROPIC_API_KEY;
+		delete process.env.ANTHROPIC_BASE_URL;
+
+		let capturedUrl = "";
+		using _hook = hookFetch((url, init) => {
+			capturedUrl = typeof url === "string" ? url : url.toString();
+			return new Response(
+				JSON.stringify({
+					id: "msg_test",
+					model: "claude-haiku-4-5",
+					content: [{ type: "text", text: "Test" }],
+					usage: { input_tokens: 10, output_tokens: 5, server_tool_use: { web_search_requests: 1 } },
+				}),
+				{ status: 200, headers: { "Content-Type": "application/json" } },
+			);
+		});
+
+		const result = await runSearchQuery({
+			query: "test",
+			blocked_domains: ["spam.com"],
+		});
+
+		expect(capturedUrl).toContain("api.anthropic.com");
+		expect(result.details.response.provider).toBe("anthropic");
 	});
 });

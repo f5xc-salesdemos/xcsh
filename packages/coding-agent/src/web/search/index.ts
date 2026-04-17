@@ -38,6 +38,8 @@ export const webSearchSchema = Type.Object({
 	max_tokens: Type.Optional(Type.Number({ description: "Maximum output tokens" })),
 	temperature: Type.Optional(Type.Number({ description: "Sampling temperature" })),
 	num_search_results: Type.Optional(Type.Number({ description: "Number of search results to retrieve" })),
+	allowed_domains: Type.Optional(Type.Array(Type.String(), { description: "Only return results from these domains" })),
+	blocked_domains: Type.Optional(Type.Array(Type.String(), { description: "Exclude results from these domains" })),
 });
 
 export type SearchToolParams = {
@@ -50,6 +52,8 @@ export type SearchToolParams = {
 	temperature?: number;
 	/** Number of search results to retrieve. Defaults to 10. */
 	num_search_results?: number;
+	allowed_domains?: string[];
+	blocked_domains?: string[];
 };
 
 export interface SearchQueryParams extends SearchToolParams {
@@ -143,10 +147,13 @@ async function executeSearch(
 	_toolCallId: string,
 	params: SearchQueryParams,
 ): Promise<{ content: Array<{ type: "text"; text: string }>; details: SearchRenderDetails }> {
+	const hasDomainFilter = params.allowed_domains?.length || params.blocked_domains?.length;
+	const effectiveProvider =
+		hasDomainFilter && (!params.provider || params.provider === "auto") ? "anthropic" : params.provider;
 	const providers =
-		params.provider && params.provider !== "auto"
-			? (await getSearchProvider(params.provider).isAvailable())
-				? [getSearchProvider(params.provider)]
+		effectiveProvider && effectiveProvider !== "auto"
+			? (await getSearchProvider(effectiveProvider).isAvailable())
+				? [getSearchProvider(effectiveProvider)]
 				: await resolveProviderChain("auto")
 			: await resolveProviderChain();
 	if (providers.length === 0) {
@@ -171,6 +178,8 @@ async function executeSearch(
 				maxOutputTokens: params.max_tokens,
 				numSearchResults: params.num_search_results,
 				temperature: params.temperature,
+				allowedDomains: params.allowed_domains,
+				blockedDomains: params.blocked_domains,
 			});
 
 			const text = formatForLLM(response);
