@@ -35,6 +35,7 @@ export default class Search extends Command {
 			recency: flags.recency as SearchCommandArgs["recency"],
 			limit: flags.limit,
 			expanded: !flags.compact,
+			synthesize: true,
 		};
 
 		await runSearchCommand(cmd);

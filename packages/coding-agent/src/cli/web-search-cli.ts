@@ -4,13 +4,14 @@
  * Handles `xcsh q`/`xcsh web-search` subcommands for testing web search providers.
  */
 
-import { APP_NAME } from "@f5xc-salesdemos/pi-utils";
+import { buildAnthropicSearchHeaders, buildAnthropicUrl, findAnthropicAuth } from "@f5xc-salesdemos/pi-ai";
+import { $env, APP_NAME } from "@f5xc-salesdemos/pi-utils";
 import chalk from "chalk";
 import { initTheme, theme } from "../modes/theme/theme";
 import { runSearchQuery, type SearchQueryParams } from "../web/search/index";
 import { SEARCH_PROVIDER_ORDER } from "../web/search/provider";
 import { renderSearchResult } from "../web/search/render";
-import type { SearchProviderId } from "../web/search/types";
+import type { SearchProviderId, SearchResponse } from "../web/search/types";
 
 export interface SearchCommandArgs {
 	query: string;
@@ -18,6 +19,8 @@ export interface SearchCommandArgs {
 	recency?: "day" | "week" | "month" | "year";
 	limit?: number;
 	expanded: boolean;
+	synthesize: boolean;
+	synthesizeModel?: string;
 }
 
 const PROVIDERS: Array<SearchProviderId | "auto"> = ["auto", ...SEARCH_PROVIDER_ORDER];
@@ -36,6 +39,7 @@ export function parseSearchArgs(args: string[]): SearchCommandArgs | undefined {
 	const result: SearchCommandArgs = {
 		query: "",
 		expanded: true,
+		synthesize: true,
 	};
 
 	const positional: string[] = [];
@@ -50,6 +54,10 @@ export function parseSearchArgs(args: string[]): SearchCommandArgs | undefined {
 			result.limit = Number.parseInt(args[++i], 10);
 		} else if (arg === "--compact") {
 			result.expanded = false;
+		} else if (arg === "--no-synthesize") {
+			result.synthesize = false;
+		} else if (arg === "--model") {
+			result.synthesizeModel = args[++i];
 		} else if (!arg.startsWith("-")) {
 			positional.push(arg);
 		}
@@ -60,6 +68,54 @@ export function parseSearchArgs(args: string[]): SearchCommandArgs | undefined {
 	}
 
 	return result;
+}
+
+async function synthesizeResponse(
+	query: string,
+	searchResponse: SearchResponse,
+	model?: string,
+): Promise<string | undefined> {
+	const auth = await findAnthropicAuth();
+	if (!auth) return undefined;
+
+	const sourcesContext = searchResponse.sources
+		.map((s, i) => `[${i + 1}] ${s.title}\n    ${s.url}${s.snippet ? `\n    ${s.snippet}` : ""}`)
+		.join("\n");
+
+	const citationsContext =
+		searchResponse.citations?.map((c, i) => `[${i + 1}] ${c.title}: "${c.citedText}"`).join("\n") ?? "";
+
+	const synthesisPrompt = `Based on the following web search results for the query "${query}", provide a comprehensive, well-structured answer. Cite sources by number.
+
+## Search Results
+${searchResponse.answer ? `### Initial Answer\n${searchResponse.answer}\n` : ""}
+### Sources
+${sourcesContext}
+${citationsContext ? `\n### Citations\n${citationsContext}` : ""}
+
+Provide a thorough answer with key facts, numbers, and source citations.`;
+
+	const url = buildAnthropicUrl(auth);
+	const headers = buildAnthropicSearchHeaders(auth);
+	const selectedModel = model ?? $env.ANTHROPIC_SEARCH_MODEL ?? "claude-haiku-4-5";
+
+	const response = await fetch(url, {
+		method: "POST",
+		headers,
+		body: JSON.stringify({
+			model: selectedModel,
+			max_tokens: 4096,
+			messages: [{ role: "user", content: synthesisPrompt }],
+		}),
+	});
+
+	if (!response.ok) return undefined;
+
+	const data = (await response.json()) as { content?: Array<{ type: string; text?: string }> };
+	return data.content
+		?.filter(b => b.type === "text" && b.text)
+		.map(b => b.text)
+		.join("\n\n");
 }
 
 export async function runSearchCommand(cmd: SearchCommandArgs): Promise<void> {
@@ -104,6 +160,14 @@ export async function runSearchCommand(cmd: SearchCommandArgs): Promise<void> {
 	const width = Math.max(60, process.stdout.columns ?? 100);
 	process.stdout.write(`${component.render(width).join("\n")}\n`);
 
+	if (cmd.synthesize && result.details?.response && result.details.response.sources.length > 0) {
+		process.stderr.write(chalk.dim("\nSynthesizing response...\n"));
+		const synthesized = await synthesizeResponse(cmd.query, result.details.response, cmd.synthesizeModel);
+		if (synthesized) {
+			process.stdout.write(`\n${chalk.bold("Synthesized Answer:")}\n\n${synthesized}\n`);
+		}
+	}
+
 	if (result.details?.error) {
 		process.exitCode = 1;
 	}
@@ -124,6 +188,8 @@ ${chalk.bold("Options:")}
   --recency <value>   Recency filter (Brave/Perplexity): ${RECENCY_OPTIONS.join(", ")}
   -l, --limit <n>     Max results to return
   --compact           Render condensed output
+  --no-synthesize     Skip synthesis step (raw search only)
+  --model <name>      Model for synthesis (default: ANTHROPIC_SEARCH_MODEL or claude-haiku-4-5)
   -h, --help          Show this help
 
 ${chalk.bold("Examples:")}
