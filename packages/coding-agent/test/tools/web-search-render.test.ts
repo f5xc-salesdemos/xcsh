@@ -114,6 +114,40 @@ describe("web search render — compact mode (verbose=false)", () => {
 			expect(text).toContain("Did 1 search");
 			expect(text).not.toContain("in ");
 		});
+
+		it("includes Web Search call header in compact result (mergeCallAndResult)", () => {
+			const response = makeSearchResponse({ durationMs: 4000 });
+			const component = renderSearchResult(makeResult(response), { expanded: false, isPartial: false }, theme!, {
+				query: "FFIV stock price",
+			});
+			const text = stripAnsi(component.render(100).join("\n"));
+			expect(text).toContain('Web Search("FFIV stock price")');
+			expect(text).toContain("Did 1 search in 4s");
+		});
+
+		it("uses searchQueries for header when args.query is absent", () => {
+			const response = makeSearchResponse({
+				durationMs: 2000,
+				searchQueries: ["FFIV F5 stock price today"],
+			});
+			const component = renderSearchResult(makeResult(response), { expanded: false, isPartial: false }, theme!);
+			const text = stripAnsi(component.render(100).join("\n"));
+			expect(text).toContain('Web Search("FFIV F5 stock price today")');
+		});
+
+		it("renders header and summary on separate lines", () => {
+			const response = makeSearchResponse({ durationMs: 3000 });
+			const component = renderSearchResult(makeResult(response), { expanded: false, isPartial: false }, theme!, {
+				query: "test",
+			});
+			const lines = component.render(100);
+			const stripped = lines.map(l => stripAnsi(l));
+			const headerLine = stripped.find(l => l.includes("Web Search"));
+			const summaryLine = stripped.find(l => l.includes("Did 1 search"));
+			expect(headerLine).toBeDefined();
+			expect(summaryLine).toBeDefined();
+			expect(headerLine).not.toBe(summaryLine);
+		});
 	});
 });
 

@@ -101,6 +101,10 @@ export function renderSearchResult(
 		return renderFallbackText(rawText, options.expanded, theme);
 	}
 
+	const searchQueries = Array.isArray(response.searchQueries)
+		? response.searchQueries.filter(item => typeof item === "string")
+		: [];
+
 	const verbose = getVerboseSetting();
 	if (!verbose) {
 		const searches = response.usage?.searchRequests ?? 1;
@@ -111,17 +115,20 @@ export function renderSearchResult(
 					? `${Math.round(response.durationMs / 1000)}s`
 					: `${Math.round(response.durationMs)}ms`
 				: "";
-		const line = `  \u23BF  Did ${searches} search${plural}${dur ? ` in ${dur}` : ""}`;
-		return new Text(theme.fg("dim", line), 0, 0);
+		const queryPreview = args?.query
+			? truncateToWidth(args.query, 80)
+			: searchQueries[0]
+				? truncateToWidth(searchQueries[0], 80)
+				: undefined;
+		const header = queryPreview ? `Web Search("${queryPreview}")` : "Web Search";
+		const summary = `  \u23BF  Did ${searches} search${plural}${dur ? ` in ${dur}` : ""}`;
+		return new Text(`${theme.fg("text", header)}\n${theme.fg("dim", summary)}`, 0, 0);
 	}
 
 	const sources = Array.isArray(response.sources) ? response.sources : [];
 	const sourceCount = sources.length;
 	const citations = Array.isArray(response.citations) ? response.citations : [];
 	const citationCount = citations.length;
-	const searchQueries = Array.isArray(response.searchQueries)
-		? response.searchQueries.filter(item => typeof item === "string")
-		: [];
 	const provider = response.provider;
 
 	// Get answer text
