@@ -27,6 +27,7 @@ import { SearchProvider } from "./base";
 
 const DEFAULT_MODEL = "claude-haiku-4-5";
 const DEFAULT_MAX_TOKENS = 4096;
+const DEFAULT_MAX_USES = 8;
 const WEB_SEARCH_TOOL_NAME = "web_search";
 const WEB_SEARCH_TOOL_TYPE = "web_search_20250305";
 
@@ -132,7 +133,7 @@ async function callSearch(
 	};
 	if (toolConfig?.allowed_domains?.length) tool.allowed_domains = toolConfig.allowed_domains;
 	if (toolConfig?.blocked_domains?.length) tool.blocked_domains = toolConfig.blocked_domains;
-	if (toolConfig?.max_uses) tool.max_uses = toolConfig.max_uses;
+	tool.max_uses = toolConfig?.max_uses ?? DEFAULT_MAX_USES;
 	if (toolConfig?.user_location) tool.user_location = toolConfig.user_location;
 
 	const body: Record<string, unknown> = {

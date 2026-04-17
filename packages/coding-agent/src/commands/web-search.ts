@@ -23,6 +23,8 @@ export default class Search extends Command {
 		recency: Flags.string({ description: "Recency filter", options: RECENCY }),
 		limit: Flags.integer({ char: "l", description: "Max results to return" }),
 		compact: Flags.boolean({ description: "Render condensed output" }),
+		"no-synthesize": Flags.boolean({ description: "Skip synthesis step (raw search only)" }),
+		model: Flags.string({ description: "Model for synthesis (default: claude-haiku-4-5)" }),
 	};
 
 	async run(): Promise<void> {
@@ -35,6 +37,8 @@ export default class Search extends Command {
 			recency: flags.recency as SearchCommandArgs["recency"],
 			limit: flags.limit,
 			expanded: !flags.compact,
+			synthesize: !flags["no-synthesize"],
+			synthesizeModel: flags.model,
 		};
 
 		await runSearchCommand(cmd);

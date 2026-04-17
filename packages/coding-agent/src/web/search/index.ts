@@ -168,9 +168,10 @@ async function executeSearch(
 	_toolCallId: string,
 	params: SearchQueryParams,
 ): Promise<{ content: Array<{ type: "text"; text: string }>; details: SearchRenderDetails }> {
-	const hasDomainFilter = params.allowed_domains?.length || params.blocked_domains?.length;
+	const hasAnthropicOnlyParams =
+		params.allowed_domains?.length || params.blocked_domains?.length || params.max_uses || params.user_location;
 	const effectiveProvider =
-		hasDomainFilter && (!params.provider || params.provider === "auto") ? "anthropic" : params.provider;
+		hasAnthropicOnlyParams && (!params.provider || params.provider === "auto") ? "anthropic" : params.provider;
 	const providers =
 		effectiveProvider && effectiveProvider !== "auto"
 			? (await getSearchProvider(effectiveProvider).isAvailable())

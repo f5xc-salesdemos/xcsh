@@ -114,7 +114,7 @@ describe("searchAnthropic headers", () => {
 		expect(getHeaderCaseInsensitive(capturedRequest?.headers, "anthropic-beta")).toContain(WEB_SEARCH_BETA);
 		expect(getHeaderCaseInsensitive(capturedRequest?.headers, "x-api-key")).toBe("sk-ant-api-test");
 		expect(getHeaderCaseInsensitive(capturedRequest?.headers, "authorization")).toBeUndefined();
-		expect(capturedRequest?.body?.tools).toEqual([{ type: "web_search_20250305", name: "web_search" }]);
+		expect(capturedRequest?.body?.tools).toEqual([{ type: "web_search_20250305", name: "web_search", max_uses: 8 }]);
 	});
 
 	it("includes web-search beta header and sends OAuth token in Authorization mode", async () => {
@@ -140,6 +140,7 @@ describe("searchAnthropic headers", () => {
 				type: "web_search_20250305",
 				name: "web_search",
 				allowed_domains: ["example.com", "docs.example.com"],
+				max_uses: 8,
 			},
 		]);
 	});
@@ -155,6 +156,7 @@ describe("searchAnthropic headers", () => {
 				type: "web_search_20250305",
 				name: "web_search",
 				blocked_domains: ["spam.com"],
+				max_uses: 8,
 			},
 		]);
 	});
@@ -219,13 +221,13 @@ describe("searchAnthropic headers", () => {
 		expect((capturedRequest?.body?.tools as any[])?.[0]?.user_location).toEqual(location);
 	});
 
-	it("omits optional tool fields when no extra params provided", async () => {
+	it("sends default max_uses of 8 when no extra params provided", async () => {
 		process.env.ANTHROPIC_SEARCH_API_KEY = "sk-ant-api-test";
 		using _hook = mockFetch(makeAnthropicResponse());
 
 		await searchAnthropic({ query: "plain query" });
 
-		expect(capturedRequest?.body?.tools).toEqual([{ type: "web_search_20250305", name: "web_search" }]);
+		expect(capturedRequest?.body?.tools).toEqual([{ type: "web_search_20250305", name: "web_search", max_uses: 8 }]);
 	});
 
 	it("sends both allowed_domains and blocked_domains together", async () => {
@@ -249,7 +251,7 @@ describe("searchAnthropic headers", () => {
 
 		await searchAnthropic({ query: "test query", allowed_domains: [] });
 
-		expect(capturedRequest?.body?.tools).toEqual([{ type: "web_search_20250305", name: "web_search" }]);
+		expect(capturedRequest?.body?.tools).toEqual([{ type: "web_search_20250305", name: "web_search", max_uses: 8 }]);
 	});
 
 	it("does not send blocked_domains when array is empty", async () => {
@@ -258,7 +260,7 @@ describe("searchAnthropic headers", () => {
 
 		await searchAnthropic({ query: "test query", blocked_domains: [] });
 
-		expect(capturedRequest?.body?.tools).toEqual([{ type: "web_search_20250305", name: "web_search" }]);
+		expect(capturedRequest?.body?.tools).toEqual([{ type: "web_search_20250305", name: "web_search", max_uses: 8 }]);
 	});
 });
 
