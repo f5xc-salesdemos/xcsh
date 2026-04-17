@@ -40,6 +40,19 @@ export const webSearchSchema = Type.Object({
 	num_search_results: Type.Optional(Type.Number({ description: "Number of search results to retrieve" })),
 	allowed_domains: Type.Optional(Type.Array(Type.String(), { description: "Only return results from these domains" })),
 	blocked_domains: Type.Optional(Type.Array(Type.String(), { description: "Exclude results from these domains" })),
+	max_uses: Type.Optional(Type.Number({ description: "Maximum number of web searches per request" })),
+	user_location: Type.Optional(
+		Type.Object(
+			{
+				type: Type.Literal("approximate"),
+				city: Type.Optional(Type.String()),
+				region: Type.Optional(Type.String()),
+				country: Type.Optional(Type.String()),
+				timezone: Type.Optional(Type.String()),
+			},
+			{ description: "Approximate user location for localized results" },
+		),
+	),
 });
 
 export type SearchToolParams = {
@@ -54,6 +67,14 @@ export type SearchToolParams = {
 	num_search_results?: number;
 	allowed_domains?: string[];
 	blocked_domains?: string[];
+	max_uses?: number;
+	user_location?: {
+		type: "approximate";
+		city?: string;
+		region?: string;
+		country?: string;
+		timezone?: string;
+	};
 };
 
 export interface SearchQueryParams extends SearchToolParams {
@@ -180,6 +201,8 @@ async function executeSearch(
 				temperature: params.temperature,
 				allowedDomains: params.allowed_domains,
 				blockedDomains: params.blocked_domains,
+				maxUses: params.max_uses,
+				userLocation: params.user_location,
 			});
 
 			const text = formatForLLM(response);
