@@ -10,6 +10,8 @@ export interface SearchParams {
 	maxOutputTokens?: number;
 	numSearchResults?: number;
 	temperature?: number;
+	allowedDomains?: string[];
+	blockedDomains?: string[];
 	googleSearch?: Record<string, unknown>;
 	codeExecution?: Record<string, unknown>;
 	urlContext?: Record<string, unknown>;

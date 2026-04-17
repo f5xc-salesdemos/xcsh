@@ -29,6 +29,8 @@ Fork: `@f5xc-salesdemos/xcsh` | Upstream: `can1357/oh-my-pi`
 | gh    | 2.x             | `gh auth status`      |
 | cargo | nightly         | `cargo --version`     |
 
+> **Package manager: bun only.** This monorepo uses bun workspaces. Never use `npm`, `yarn`, or `pnpm` — they cannot resolve `workspace:` protocol references and will produce broken `node_modules` in worktrees.
+
 ---
 
 ## Project Structure
@@ -97,46 +99,51 @@ gh issue create --title "<type>: <imperative description>" --label "<label>"
 
 Note the returned issue number **N**.
 
-### 2. Create a branch and worktree
+### 2. Create a development worktree
 
-Never commit directly to `main`.
+Never commit directly to `main`. All work happens in worktrees under `.worktrees/`.
 
 **Branch naming:** `<type>/issue-<N>-<short-description>` (lowercase, hyphen-separated, 3-5 words).
 
+Run the following block after setting your branch variable. Every step is required and must succeed before proceeding to the next:
+
 ```bash
-git fetch origin
+# Set your branch (from the issue created in step 1)
 BRANCH="<type>/issue-<N>-<short-description>"
+
+# Create worktree from latest origin/main
+git fetch origin
 git worktree add ".worktrees/${BRANCH}" -b "${BRANCH}" origin/main
 cd ".worktrees/${BRANCH}"
-```
 
-### 3. Install and build
-
-```bash
-# Install deps + link internal workspace packages
+# Install dependencies (MUST use bun — see Prerequisites)
+# Runs the prepare script automatically: configures git hooks + generates docs index
 bun install
-bun --cwd=packages/coding-agent link
-bun --cwd=packages/ai link
 
-# Build all workspace packages including Rust native modules (~2-3 min)
-bun run build:ws
+# Capture test baseline (MUST include --max-concurrency to avoid OOM)
+bun test --max-concurrency 2 2>&1 | tee .worktree-test-baseline.txt
 ```
 
-The link steps resolve Bun `workspace:` protocol references. `build:ws` compiles native Rust modules required by tests.
+**Expected result:** ~3500 tests pass, 0 failures. If any tests fail, they are pre-existing — record them and move on. Your work must never increase the failure count beyond this baseline.
 
-### 4. Capture test baseline
+**What each step does:**
 
-Run immediately after setup, before writing any code:
+| Step | Purpose |
+|------|---------|
+| `bun install` | Resolves `workspace:` package references, installs all deps, runs `prepare` script (git hooks + docs index generation) |
+| `bun test --max-concurrency 2` | Runs TypeScript and Rust test suites with bounded concurrency; native Rust modules compile on-demand during the first test run (~2-3 min cold) |
 
-```bash
-bun test --max-concurrency 4 2>&1 | tee .worktree-test-baseline.txt
-```
+> **OOM warning:** Never run `bun test` without `--max-concurrency`. The default concurrency (20) exhausts container RAM and CPU. Use `--max-concurrency 2` as the safe default. See [Resource-constrained environments](#resource-constrained-environments) for tuning.
 
-This records pre-existing failures (e.g., missing ARM64 native modules). **Your work must never increase the failure count beyond this baseline.**
+#### Worktree troubleshooting
 
-> **OOM warning:** Never run the baseline capture without `--max-concurrency`.
-> The full suite (~3200 tests) at default concurrency (20) will exhaust RAM
-> and crash the container.
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `Cannot find module '@f5xc-salesdemos/pi-*'` | `npm install` was used instead of `bun install` | `rm -rf node_modules && bun install` |
+| `Cannot find package 'linkedom'` | Stale `node_modules` from main repo | `rm -rf node_modules && bun install` |
+| Tests OOM-killed (SIGKILL) | Concurrency too high | Halve `--max-concurrency` value |
+| `check:rs` fails in worktree | Cargo resolves paths relative to repo root | Run `bun run check:rs` from `/workspace/xcsh` instead |
+| Flaky test on first run, passes on retry | Native module cold-compile race | Ignore; baseline file captures the stable result |
 
 ---
 
@@ -249,9 +256,9 @@ the container (no swap is configured). Always limit concurrency:
 
 ```bash
 # Recommended defaults by available RAM
-bun test --max-concurrency 2    # <= 8 GB RAM (safe minimum)
-bun test --max-concurrency 4    # 8-16 GB RAM
-bun test --max-concurrency 8    # > 16 GB RAM
+bun test --max-concurrency 1    # <= 4 GB RAM (sequential, lowest resource usage)
+bun test --max-concurrency 2    # 4-16 GB RAM (safe default)
+bun test --max-concurrency 4    # > 16 GB RAM
 
 # Low-memory mode: reduces GC pressure at the cost of throughput
 bun --smol test --max-concurrency 2
@@ -260,7 +267,7 @@ bun --smol test --max-concurrency 2
 bun --smol test --max-concurrency 1
 
 # Bail on first failure to avoid wasting resources on a broken run
-bun test --max-concurrency 4 --bail 1
+bun test --max-concurrency 2 --bail 1
 ```
 
 **Rules for AI agents and CI:**
@@ -274,7 +281,7 @@ bun test --max-concurrency 4 --bail 1
 ### Comparing against baseline
 
 ```bash
-bun test --max-concurrency 4 2>&1 | tee /tmp/current-test-results.txt
+bun test --max-concurrency 2 2>&1 | tee /tmp/current-test-results.txt
 
 BASELINE_FAILS=$(grep -o '[0-9]* fail' .worktree-test-baseline.txt | grep -o '[0-9]*' || echo 0)
 CURRENT_FAILS=$(grep -o '[0-9]* fail' /tmp/current-test-results.txt | grep -o '[0-9]*' || echo 0)
@@ -597,10 +604,11 @@ No assertions without output. No skipping steps. No ignoring new failures.
 # --- Setup ---
 gh issue create --title "<type>: <desc>" --label "<label>"
 BRANCH="<type>/issue-<N>-<desc>"
+git fetch origin
 git worktree add ".worktrees/${BRANCH}" -b "${BRANCH}" origin/main
 cd ".worktrees/${BRANCH}"
-bun install && bun --cwd=packages/coding-agent link && bun --cwd=packages/ai link && bun run build:ws
-bun test --max-concurrency 4 2>&1 | tee .worktree-test-baseline.txt
+bun install
+bun test --max-concurrency 2 2>&1 | tee .worktree-test-baseline.txt
 
 # --- TDD Cycle ---
 bun test --cwd packages/<pkg> --filter <test>    # red
