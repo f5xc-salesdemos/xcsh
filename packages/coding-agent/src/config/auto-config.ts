@@ -159,6 +159,7 @@ export function generateConfigYml(): string {
 		"",
 		"providers:",
 		"  image: openai",
+		"  webSearch: anthropic",
 		"",
 		"generate_image:",
 		"  enabled: true",

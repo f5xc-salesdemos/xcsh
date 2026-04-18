@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "bun:test";
+import * as fs from "node:fs";
+import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import { AuthCredentialStore } from "../src/auth-storage";
 import { findAnthropicAuth } from "../src/utils/anthropic-auth";
 
@@ -26,6 +27,19 @@ async function withEnv(overrides: Record<string, string | undefined>, fn: () => 
 		}
 	}
 }
+
+beforeEach(() => {
+	// Stub fs.readFileSync so tier 6 (models.yml) never fires during these tests.
+	// Without this, a developer with real models.yml on disk would have tier 6
+	// resolve before the litellm/error tiers are tested.
+	const originalReadFileSync = fs.readFileSync.bind(fs);
+	vi.spyOn(fs, "readFileSync").mockImplementation((...args: Parameters<typeof fs.readFileSync>) => {
+		if (typeof args[0] === "string" && args[0].endsWith("models.yml")) {
+			throw new Error("ENOENT: mocked for test isolation");
+		}
+		return originalReadFileSync(...args);
+	});
+});
 
 afterEach(() => {
 	vi.restoreAllMocks();

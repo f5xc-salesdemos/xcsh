@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import { AuthCredentialStore } from "../src/auth-storage";
 import { buildAnthropicUrl, findAnthropicAuth } from "../src/utils/anthropic-auth";
@@ -30,13 +31,24 @@ async function withEnv(overrides: Record<string, string | undefined>, fn: () => 
 beforeEach(() => {
 	// Stub the credential store so tiers 3-4 never fire during these tests.
 	// Without this, a developer with real Anthropic credentials in agent.db
-	// would have tiers 3/4 win before the litellm tier (tier 6) is reached.
+	// would have tiers 3/4 win before the litellm tier (tier 7) is reached.
 	vi.spyOn(AuthCredentialStore, "open").mockResolvedValue({
 		getApiKey: () => undefined,
 		listAuthCredentials: () => [],
 		replaceAuthCredentialsForProvider: () => {},
 		close: () => {},
 	} as unknown as AuthCredentialStore);
+
+	// Stub fs.readFileSync so tier 6 (models.yml) never fires during these tests.
+	// Without this, a developer with real models.yml on disk would have tier 6
+	// win before the litellm tier (tier 7) is reached.
+	const originalReadFileSync = fs.readFileSync.bind(fs);
+	vi.spyOn(fs, "readFileSync").mockImplementation((...args: Parameters<typeof fs.readFileSync>) => {
+		if (typeof args[0] === "string" && args[0].endsWith("models.yml")) {
+			throw new Error("ENOENT: mocked for test isolation");
+		}
+		return originalReadFileSync(...args);
+	});
 });
 
 afterEach(() => {
