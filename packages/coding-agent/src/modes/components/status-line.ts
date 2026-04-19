@@ -1,13 +1,14 @@
 import * as fs from "node:fs";
 import type { AssistantMessage } from "@f5xc-salesdemos/pi-ai";
 import { type Component, truncateToWidth, visibleWidth } from "@f5xc-salesdemos/pi-tui";
-import { formatCount, getProjectDir } from "@f5xc-salesdemos/pi-utils";
+import { formatCount, getShellPwd } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import { settings } from "../../config/settings";
 import type { StatusLinePreset, StatusLineSegmentId, StatusLineSeparatorStyle } from "../../config/settings-schema";
 import { theme } from "../../modes/theme/theme";
 import type { AgentSession } from "../../session/agent-session";
 import { calculatePromptTokens } from "../../session/compaction/compaction";
+import type { EventBus } from "../../utils/event-bus";
 import * as git from "../../utils/git";
 import { queryGitStatus } from "../../utils/gitstatus";
 import { sanitizeStatusText } from "../shared";
@@ -52,6 +53,7 @@ export class StatusLineComponent implements Component {
 	#cachedBranch: string | null | undefined = undefined;
 	#cachedBranchRepoId: string | null | undefined = undefined;
 	#gitWatcher: fs.FSWatcher | null = null;
+	#cwdUnsubscribe: (() => void) | null = null;
 	#onBranchChange: (() => void) | null = null;
 	#onStatusChanged: (() => void) | null = null;
 	#autoCompactEnabled: boolean = true;
@@ -130,13 +132,22 @@ export class StatusLineComponent implements Component {
 		this.#setupGitWatcher();
 	}
 
+	watchCwd(eventBus: EventBus): void {
+		this.#cwdUnsubscribe?.();
+		this.#cwdUnsubscribe = eventBus.on("cwd:changed", () => {
+			this.#invalidateGitCaches();
+			this.#setupGitWatcher();
+			this.#onStatusChanged?.();
+		});
+	}
+
 	#setupGitWatcher(): void {
 		if (this.#gitWatcher) {
 			this.#gitWatcher.close();
 			this.#gitWatcher = null;
 		}
 
-		const gitHeadPath = git.repo.resolveSync(getProjectDir())?.headPath ?? null;
+		const gitHeadPath = git.repo.resolveSync(getShellPwd())?.headPath ?? null;
 		if (!gitHeadPath) return;
 
 		try {
@@ -156,6 +167,10 @@ export class StatusLineComponent implements Component {
 			this.#gitWatcher.close();
 			this.#gitWatcher = null;
 		}
+		if (this.#cwdUnsubscribe) {
+			this.#cwdUnsubscribe();
+			this.#cwdUnsubscribe = null;
+		}
 	}
 
 	invalidate(): void {
@@ -168,7 +183,7 @@ export class StatusLineComponent implements Component {
 		this.#cachedPrContext = undefined;
 	}
 	#getCurrentBranch(): string | null {
-		const head = git.head.resolveSync(getProjectDir());
+		const head = git.head.resolveSync(getShellPwd());
 		const gitHeadPath = head?.headPath ?? null;
 		if (this.#cachedBranch !== undefined && this.#cachedBranchRepoId === gitHeadPath) {
 			return this.#cachedBranch;
@@ -189,7 +204,7 @@ export class StatusLineComponent implements Component {
 		if (this.#defaultBranch === undefined) {
 			this.#defaultBranch = "main";
 			(async () => {
-				const resolved = await git.branch.default(getProjectDir());
+				const resolved = await git.branch.default(getShellPwd());
 				if (resolved) {
 					this.#defaultBranch = resolved;
 					if (this.#onBranchChange) {
@@ -220,7 +235,7 @@ export class StatusLineComponent implements Component {
 		(async () => {
 			try {
 				// Prefer gitstatusd daemon (10x faster than git CLI)
-				const gsResult = await queryGitStatus(getProjectDir());
+				const gsResult = await queryGitStatus(getShellPwd());
 				if (gsResult) {
 					this.#cachedGitStatus = {
 						staged: gsResult.staged,
@@ -234,7 +249,7 @@ export class StatusLineComponent implements Component {
 					};
 				} else {
 					// Fallback to git CLI
-					const summary = await git.status.summary(getProjectDir());
+					const summary = await git.status.summary(getShellPwd());
 					this.#cachedGitStatus = summary
 						? { ...summary, conflicted: 0, ahead: 0, behind: 0, stashes: 0, action: "" }
 						: null;
@@ -284,7 +299,7 @@ export class StatusLineComponent implements Component {
 			};
 			try {
 				// Requires `gh repo set-default` to be configured; fails gracefully if not
-				const result = await $`gh pr view --json number,url`.quiet().nothrow();
+				const result = await $`gh pr view --json number,url`.cwd(getShellPwd()).quiet().nothrow();
 				if (result.exitCode !== 0) {
 					setCachedPr(null);
 					return;
@@ -368,6 +383,7 @@ export class StatusLineComponent implements Component {
 		return {
 			session: this.session,
 			width,
+			cwd: getShellPwd(),
 			options: this.#resolveSettings().segmentOptions ?? {},
 			planMode: this.#planModeStatus,
 			usageStats,

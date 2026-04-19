@@ -408,6 +408,10 @@ export class InteractiveMode implements InteractiveModeContext {
 			this.ui.requestRender();
 		});
 
+		if (this.#eventBus) {
+			this.statusLine.watchCwd(this.#eventBus);
+		}
+
 		// Initial top border update
 		this.updateEditorTopBorder();
 	}
