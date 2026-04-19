@@ -1,5 +1,5 @@
-import * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
+import * as fs from "node:fs";
 import { AuthCredentialStore } from "../src/auth-storage";
 import { buildAnthropicUrl, findAnthropicAuth } from "../src/utils/anthropic-auth";
 
