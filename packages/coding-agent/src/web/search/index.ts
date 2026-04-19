@@ -21,6 +21,7 @@ import webSearchSystemPrompt from "../../prompts/system/web-search.md" with { ty
 import webSearchDescription from "../../prompts/tools/web-search.md" with { type: "text" };
 import type { ToolSession } from "../../tools";
 import { formatAge } from "../../tools/render-utils";
+import { normalizeUserLocation, validateWebSearchParams, type WebSearchParams } from "./params";
 import { getSearchProvider, resolveProviderChain, type SearchProvider } from "./provider";
 import { renderSearchCall, renderSearchResult, type SearchRenderDetails } from "./render";
 import type { SearchProviderId, SearchResponse } from "./types";
@@ -47,7 +48,13 @@ export const webSearchSchema = Type.Object({
 				type: Type.Literal("approximate"),
 				city: Type.Optional(Type.String()),
 				region: Type.Optional(Type.String()),
-				country: Type.Optional(Type.String()),
+				country: Type.Optional(
+					Type.String({
+						minLength: 2,
+						maxLength: 2,
+						description: "ISO 3166-1 alpha-2 country code (e.g. US, JP, GB)",
+					}),
+				),
 				timezone: Type.Optional(Type.String()),
 			},
 			{ description: "Approximate user location for localized results" },
@@ -168,6 +175,19 @@ async function executeSearch(
 	_toolCallId: string,
 	params: SearchQueryParams,
 ): Promise<{ content: Array<{ type: "text"; text: string }>; details: SearchRenderDetails }> {
+	const validation = validateWebSearchParams(params as WebSearchParams);
+	if (!validation.valid) {
+		const message = `web_search invalid parameter: ${validation.error}`;
+		return {
+			content: [{ type: "text" as const, text: `Error: ${message}` }],
+			details: { response: { provider: "none", sources: [] }, error: message },
+		};
+	}
+	const normalizedLocation = normalizeUserLocation(params.user_location);
+	const normalizedParams: SearchQueryParams = normalizedLocation
+		? { ...params, user_location: normalizedLocation }
+		: params;
+	params = normalizedParams;
 	const hasAnthropicOnlyParams =
 		params.allowed_domains?.length || params.blocked_domains?.length || params.max_uses || params.user_location;
 	const effectiveProvider =
