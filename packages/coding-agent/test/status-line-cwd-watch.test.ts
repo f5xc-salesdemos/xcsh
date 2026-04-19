@@ -60,14 +60,16 @@ describe("StatusLineComponent.watchCwd", () => {
 		expect(changed).toBe(0);
 	});
 
-	it("renders the new shellPwd in the top border after cwd:changed", () => {
-		// Regression for #118: setShellPwd + cwd:changed must propagate through
-		// #buildSegmentContext so the next getTopBorder() reflects the new cwd.
+	it("renders the cwd from the cwd:changed event payload, not getShellPwd()", () => {
+		// Regression for #118: the statusline must track the cwd carried by the
+		// cwd:changed event (the assistant's working directory), not the global
+		// shellPwd. The event payload and shellPwd can diverge when a user !cd
+		// command updates shellPwd but the assistant's cwd stays unchanged.
 		//
 		// Use persistent, pid-scoped directories rather than mkdtempSync with
 		// cleanup. getTopBorder() kicks off fire-and-forget async IIFEs inside
 		// the component (#getGitStatus, #isDefaultBranch) that spawn `git` with
-		// cwd=getShellPwd(); if the dir is rm'd before those subprocesses run,
+		// the tracked cwd; if the dir is rm'd before those subprocesses run,
 		// posix_spawn fails with ENOENT and the rejection surfaces in whatever
 		// test happens to run next. Persistent dirs let those queries spawn
 		// cleanly, return "not a repository," and be handled by the existing
@@ -84,8 +86,35 @@ describe("StatusLineComponent.watchCwd", () => {
 			const bus = new EventBus();
 			component.watchCwd(bus);
 
-			setShellPwd(dirB);
+			// Only emit the event -- do NOT call setShellPwd(dirB).
+			// This proves the statusline reads the event payload, not the global.
 			bus.emit("cwd:changed", dirB);
+
+			const rendered = component.getTopBorder(200).content;
+			const stripped = rendered.replace(/\u001b\[[0-9;]*m/g, "");
+
+			expect(stripped).toContain(path.basename(dirB));
+			expect(stripped).not.toContain(path.basename(dirA));
+
+			component.dispose();
+		} finally {
+			setShellPwd(originalShellPwd);
+		}
+	});
+
+	it("setCwd updates the displayed directory without an event bus", () => {
+		const originalShellPwd = getShellPwd();
+		const dirA = path.join(os.tmpdir(), `xcsh-cwd-setcwd-a-${process.pid}`);
+		const dirB = path.join(os.tmpdir(), `xcsh-cwd-setcwd-b-${process.pid}`);
+		fs.mkdirSync(dirA, { recursive: true });
+		fs.mkdirSync(dirB, { recursive: true });
+
+		try {
+			setShellPwd(dirA);
+			const component = new StatusLineComponent(makeSession());
+
+			// setCwd should update the displayed path without eventBus.
+			component.setCwd(dirB);
 
 			const rendered = component.getTopBorder(200).content;
 			const stripped = rendered.replace(/\u001b\[[0-9;]*m/g, "");
