@@ -1,7 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "bun:test";
 import { hookFetch } from "@f5xc-salesdemos/pi-utils";
 import { _resetSettingsForTest } from "../../src/config/settings";
 import { runSearchQuery } from "../../src/web/search";
+
+// Reset Settings singleton to ensure exa.isAvailable() doesn't see stale state
+// from other test files (e.g., vim.test.ts initializes Settings with inMemory defaults
+// where exa.enabled=false, causing isAvailable() to return false and the test to
+// fall back to a different provider).
+beforeAll(() => {
+	_resetSettingsForTest();
+});
+
 import {
 	buildExaRequestBody,
 	normalizeSearchType,

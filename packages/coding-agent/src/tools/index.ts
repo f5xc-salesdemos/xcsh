@@ -1,3 +1,5 @@
+import * as os from "node:os";
+import * as path from "node:path";
 import type { AgentTool } from "@f5xc-salesdemos/pi-agent-core";
 import type { ToolChoice } from "@f5xc-salesdemos/pi-ai";
 import { $env, $flag, isBunTestRuntime, logger } from "@f5xc-salesdemos/pi-utils";
@@ -5,6 +7,7 @@ import type { AsyncJobManager } from "../async";
 import type { PromptTemplate } from "../config/prompt-templates";
 import type { Settings } from "../config/settings";
 import { EditTool } from "../edit";
+import { getEnabledPlugins } from "../extensibility/plugins/loader";
 import type { Skill } from "../extensibility/skills";
 import type { InternalUrlRouter } from "../internal-urls";
 import { getPreludeDocs, resetPreludeDocsCache, warmPythonEnvironment } from "../ipy/executor";
@@ -12,12 +15,15 @@ import { checkPythonKernelAvailability } from "../ipy/kernel";
 import { LspTool } from "../lsp";
 import type { DiscoverableMCPSearchIndex, DiscoverableMCPTool } from "../mcp/discoverable-tool-metadata";
 import type { PlanModeState } from "../plan-mode/state";
+import { ApiCatalogService } from "../services/api-catalog";
+import { ApiExecutor } from "../services/api-executor";
 import type { CustomMessage } from "../session/messages";
 import type { ToolChoiceQueue } from "../session/tool-choice-queue";
 import { TaskTool } from "../task";
 import type { AgentOutputManager } from "../task/output-manager";
 import type { EventBus } from "../utils/event-bus";
 import { SearchTool } from "../web/search";
+import { ApiBatchTool, ApiCallTool, ApiDescribeTool, ApiDiscoverTool, ApiServicesTool } from "./api-tool";
 import { AskTool } from "./ask";
 import { AstEditTool } from "./ast-edit";
 import { AstGrepTool } from "./ast-grep";
@@ -66,6 +72,7 @@ export * from "../lsp";
 export * from "../session/streaming-output";
 export * from "../task";
 export * from "../web/search";
+export * from "./api-tool";
 export * from "./ask";
 export * from "./ast-edit";
 export * from "./ast-grep";
@@ -244,6 +251,53 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	web_search: s => new SearchTool(s),
 	search_tool_bm25: SearchToolBm25Tool.createIf,
 	write: s => new WriteTool(s),
+	api_services: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
+			...installed.map(p => p.path),
+		]);
+		return new ApiServicesTool(catalog);
+	},
+	api_discover: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
+			...installed.map(p => p.path),
+		]);
+		return new ApiDiscoverTool(catalog);
+	},
+	api_describe: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
+			...installed.map(p => p.path),
+		]);
+		return new ApiDescribeTool(catalog);
+	},
+	api_call: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
+			...installed.map(p => p.path),
+		]);
+		const executor = new ApiExecutor();
+		return new ApiCallTool(catalog, executor, s);
+	},
+	api_batch: async s => {
+		const installed = await getEnabledPlugins(s.cwd).catch(() => []);
+		const catalog = new ApiCatalogService([
+			path.join(os.homedir(), ".claude", "plugins"),
+			path.join(os.homedir(), ".xcsh", "plugins", "cache", "plugins"),
+			...installed.map(p => p.path),
+		]);
+		const executor = new ApiExecutor();
+		return new ApiBatchTool(catalog, executor);
+	},
 };
 
 export const HIDDEN_TOOLS: Record<string, ToolFactory> = {
