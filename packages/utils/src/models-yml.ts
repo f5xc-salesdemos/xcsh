@@ -56,7 +56,7 @@ export function readProviderFromModelsYml(providerName: string, modelsYmlPath?: 
 
 	let inProviders = false;
 	let providersChildIndent = -1;
-	let providerIndent = -1;
+	let _providerIndent = -1;
 	let fieldIndent = -1;
 	let inTargetBlock = false;
 	let baseUrl: string | undefined;
@@ -72,7 +72,7 @@ export function readProviderFromModelsYml(providerName: string, modelsYmlPath?: 
 			inProviders = /^providers\s*:/.test(line);
 			inTargetBlock = false;
 			providersChildIndent = -1;
-			providerIndent = -1;
+			_providerIndent = -1;
 			fieldIndent = -1;
 			continue;
 		}
@@ -86,7 +86,7 @@ export function readProviderFromModelsYml(providerName: string, modelsYmlPath?: 
 		// and it ends the previous target block (if any).
 		if (indent === providersChildIndent) {
 			inTargetBlock = providerHeaderRe.test(line);
-			providerIndent = inTargetBlock ? indent : -1;
+			_providerIndent = inTargetBlock ? indent : -1;
 			fieldIndent = -1;
 			continue;
 		}

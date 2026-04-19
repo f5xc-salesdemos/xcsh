@@ -85,7 +85,7 @@ describe("domain filter provider routing", () => {
 		delete process.env.ANTHROPIC_BASE_URL;
 
 		let capturedUrl = "";
-		using _hook = hookFetch((url, init) => {
+		using _hook = hookFetch((url, _init) => {
 			capturedUrl = typeof url === "string" ? url : url.toString();
 			return new Response(
 				JSON.stringify({
@@ -114,7 +114,7 @@ describe("domain filter provider routing", () => {
 		delete process.env.ANTHROPIC_BASE_URL;
 
 		let capturedUrl = "";
-		using _hook = hookFetch((url, init) => {
+		using _hook = hookFetch((url, _init) => {
 			capturedUrl = typeof url === "string" ? url : url.toString();
 			return new Response(
 				JSON.stringify({
