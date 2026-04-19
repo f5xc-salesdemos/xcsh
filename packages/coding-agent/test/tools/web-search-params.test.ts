@@ -242,17 +242,17 @@ describe("validateWebSearchParams — user_location fields", () => {
 describe("normalizeUserLocation", () => {
 	it("passes valid uppercase ISO codes unchanged", () => {
 		const loc = normalizeUserLocation({ type: "approximate", country: "US" });
-		expect(loc.country).toBe("US");
+		expect(loc?.country).toBe("US");
 	});
 
 	it("uppercases a lowercase ISO code", () => {
 		const loc = normalizeUserLocation({ type: "approximate", country: "jp" });
-		expect(loc.country).toBe("JP");
+		expect(loc?.country).toBe("JP");
 	});
 
 	it("uppercases a mixed-case ISO code", () => {
 		const loc = normalizeUserLocation({ type: "approximate", country: "gB" });
-		expect(loc.country).toBe("GB");
+		expect(loc?.country).toBe("GB");
 	});
 
 	it("preserves city / region / timezone verbatim during normalization", () => {
@@ -263,10 +263,10 @@ describe("normalizeUserLocation", () => {
 			country: "jp",
 			timezone: "Asia/Tokyo",
 		});
-		expect(loc.city).toBe("Tokyo");
-		expect(loc.region).toBe("Kantō");
-		expect(loc.timezone).toBe("Asia/Tokyo");
-		expect(loc.country).toBe("JP");
+		expect(loc?.city).toBe("Tokyo");
+		expect(loc?.region).toBe("Kantō");
+		expect(loc?.timezone).toBe("Asia/Tokyo");
+		expect(loc?.country).toBe("JP");
 	});
 
 	it("returns undefined when input is undefined", () => {
