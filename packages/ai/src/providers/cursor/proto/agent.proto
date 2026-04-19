@@ -729,7 +729,7 @@ message RequestedModel {
 
 message RequestedModel_ModelParameterbytes {
    string id = 1;
-   // All paramters are encoded as strings. For boolean parameters, the value is either "true" or "false". For enum parameters, the value is one of the values in the enum.
+   // All parameters are encoded as strings. For boolean parameters, the value is either "true" or "false". For enum parameters, the value is one of the values in the enum.
    string value = 2;
 }
 

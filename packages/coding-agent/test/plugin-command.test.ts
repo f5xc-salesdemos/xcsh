@@ -16,7 +16,7 @@ describe("Plugin command scope parsing", () => {
 	});
 
 	it("rejects invalid scope values", async () => {
-		const command = new Plugin(["install", "--scope", "porject"], TEST_CONFIG);
+		const command = new Plugin(["install", "--scope", "porject-INVALID"], TEST_CONFIG);
 		await expect(command.parse(Plugin)).rejects.toThrow(/Expected --scope to be one of: user, project/);
 	});
 });
