@@ -13,7 +13,7 @@ beforeAll(async () => {
 	await initTheme();
 });
 
-function createPathContext(): SegmentContext {
+function createPathContext(overrides: { cwd?: string } = {}): SegmentContext {
 	return {
 		session: {
 			state: {},
@@ -22,6 +22,7 @@ function createPathContext(): SegmentContext {
 			sessionManager: undefined,
 		} as unknown as SegmentContext["session"],
 		width: 120,
+		cwd: overrides.cwd ?? getProjectDir(),
 		options: {
 			path: {
 				abbreviate: false,
@@ -75,7 +76,7 @@ describe("status line path segment", () => {
 			const aliasedDir = path.join(homeAlias, "Projects", path.basename(realProjectDir), "nested");
 			setProjectDir(aliasedDir);
 
-			const rendered = renderSegment("path", createPathContext());
+			const rendered = renderSegment("path", createPathContext({ cwd: aliasedDir }));
 			const expectedRelative = `${path.basename(realProjectDir)}${path.sep}nested`;
 
 			expect(rendered.visible).toBe(true);
@@ -85,6 +86,30 @@ describe("status line path segment", () => {
 		} finally {
 			fs.rmSync(aliasRoot, { recursive: true, force: true });
 			fs.rmSync(realProjectDir, { recursive: true, force: true });
+		}
+	});
+
+	it("renders the cwd supplied in the SegmentContext, not the process projectDir", () => {
+		// Regression for issue #118: when the assistant changes its working directory
+		// via bash, #buildSegmentContext populates ctx.cwd from getShellPwd(). The path
+		// segment must read that value so the statusline reflects the live cwd instead of
+		// the stale initial projectDir.
+		const stalePath = path.join(os.tmpdir(), "xcsh-stale-project-dir");
+		const livePath = path.join(os.tmpdir(), "xcsh-live-shell-pwd");
+		fs.mkdirSync(stalePath, { recursive: true });
+		fs.mkdirSync(livePath, { recursive: true });
+
+		try {
+			setProjectDir(stalePath);
+
+			const rendered = renderSegment("path", createPathContext({ cwd: livePath }));
+
+			expect(rendered.visible).toBe(true);
+			expect(rendered.content).toContain(path.basename(livePath));
+			expect(rendered.content).not.toContain(path.basename(stalePath));
+		} finally {
+			fs.rmSync(stalePath, { recursive: true, force: true });
+			fs.rmSync(livePath, { recursive: true, force: true });
 		}
 	});
 });
