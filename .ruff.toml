@@ -1,0 +1,9 @@
+# See ruff.toml — same content, mirrored to satisfy tools that look for
+# either filename. xcsh is opted out of docs-control's strict ruff rules
+# (managed_files.skip_files.xcsh) to preserve fork fidelity to upstream
+# badlogic/pi-mono.
+line-length = 120
+
+[lint]
+select = ["E", "W", "F"]
+ignore = ["E501"]
