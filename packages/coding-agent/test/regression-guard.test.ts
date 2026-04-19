@@ -393,3 +393,46 @@ describe("Provider registration: env var fallback must not send literal name (PR
 		expect(probeSection).toContain("apiKeyLiteral");
 	});
 });
+
+// ─── Statusline CWD Tracking (#118, #120) ─────────────────────────────────
+
+describe("statusline tracks assistant cwd, not global shellPwd (PR #120 regression, #118)", () => {
+	it("status-line.ts owns a #cwd field instead of reading getShellPwd() in #buildSegmentContext", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/modes/components/status-line.ts"), "utf8");
+		// The component must track cwd internally, not read the global
+		expect(src).toContain("#cwd: string = getShellPwd()");
+		// #buildSegmentContext must use the instance field, not the global
+		expect(src).toContain("cwd: this.#cwd");
+	});
+
+	it("status-line.ts exposes setCwd for callers without an event bus", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/modes/components/status-line.ts"), "utf8");
+		expect(src).toContain("setCwd(cwd: string): void");
+	});
+
+	it("watchCwd captures the cwd:changed event payload into #cwd", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/modes/components/status-line.ts"), "utf8");
+		// The handler must read the event value and store it
+		expect(src).toContain('eventBus.on("cwd:changed", newCwd =>');
+		expect(src).toContain("this.#cwd = newCwd");
+	});
+
+	it("command-controller.ts uses setCwd instead of invalidate for cwd changes", async () => {
+		const src = await fs.readFile(
+			path.join(import.meta.dir, "../src/modes/controllers/command-controller.ts"),
+			"utf8",
+		);
+		expect(src).toContain("this.ctx.statusLine.setCwd(result.newCwd)");
+	});
+
+	it("status-line.ts git queries resolve against this.#cwd, not getShellPwd()", async () => {
+		const src = await fs.readFile(path.join(import.meta.dir, "../src/modes/components/status-line.ts"), "utf8");
+		// All git call sites must use the instance cwd, not the global
+		expect(src).toContain("git.repo.resolveSync(this.#cwd)");
+		expect(src).toContain("git.head.resolveSync(this.#cwd)");
+		expect(src).toContain("git.branch.default(this.#cwd)");
+		expect(src).toContain("queryGitStatus(this.#cwd)");
+		expect(src).toContain("git.status.summary(this.#cwd)");
+		expect(src).toContain(".cwd(this.#cwd)");
+	});
+});
