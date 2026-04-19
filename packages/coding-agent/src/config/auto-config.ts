@@ -15,7 +15,7 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { $env, logger } from "@f5xc-salesdemos/pi-utils";
+import { $env, logger, readProviderFromModelsYml } from "@f5xc-salesdemos/pi-utils";
 
 /** Current config schema version. Bump when the generated format changes. */
 export const CURRENT_CONFIG_VERSION = 2;
@@ -89,60 +89,28 @@ export interface LiteLLMConfig {
  * Read existing models.yml and extract the anthropic provider's base URL and API key.
  *
  * - baseUrl: strips `/anthropic` suffix to recover the root proxy URL
- * - apiKey: if it matches /^[A-Z][A-Z0-9_]+$/ (env var name pattern), resolves via
- *   process.env; otherwise uses the literal value
- * - Falls back to getLiteLLMBaseUrl() for baseUrl and $env.LITELLM_API_KEY for apiKey
- *   when the file is missing or the anthropic block is incomplete
+ * - apiKey: env var name → process.env lookup; shell-backed → fall back to env;
+ *   otherwise literal
+ * - Falls back to getLiteLLMBaseUrl() and $env.LITELLM_API_KEY when the file is
+ *   missing or the anthropic block is incomplete
  */
 export function readLiteLLMConfig(modelsPath: string): LiteLLMConfig | undefined {
 	if (!fs.existsSync(modelsPath)) return undefined;
 
-	let rawBaseUrl: string | undefined;
-	let rawApiKey: string | undefined;
+	const block = readProviderFromModelsYml("anthropic", modelsPath);
 
-	// Line-by-line state machine: locate the anthropic provider block
-	const content = fs.readFileSync(modelsPath, "utf8");
-	const lines = content.split("\n");
-	let inAnthropicBlock = false;
+	const resolvedBaseUrl = block?.baseUrl ? block.baseUrl.replace(/\/anthropic\/?$/, "") : getLiteLLMBaseUrl();
 
-	for (const line of lines) {
-		// Detect entry into anthropic provider block
-		if (/^\s{2}anthropic\s*:/.test(line)) {
-			inAnthropicBlock = true;
-			continue;
-		}
-		// Detect leaving the block: a new sibling provider key (2-space indent, non-empty)
-		if (inAnthropicBlock && /^\s{2}\S/.test(line)) {
-			inAnthropicBlock = false;
-		}
-
-		if (inAnthropicBlock) {
-			const baseUrlMatch = line.match(/^\s+baseUrl\s*:\s*"?([^"]+)"?\s*$/);
-			if (baseUrlMatch) {
-				rawBaseUrl = baseUrlMatch[1].trim();
-			}
-			const apiKeyMatch = line.match(/^\s+apiKey\s*:\s*(.+)\s*$/);
-			if (apiKeyMatch) {
-				rawApiKey = apiKeyMatch[1].trim().replace(/^["']|["']$/g, "");
-			}
-		}
-	}
-
-	// Resolve base URL: strip /anthropic suffix
-	const resolvedBaseUrl = rawBaseUrl ? rawBaseUrl.replace(/\/anthropic\/?$/, "") : getLiteLLMBaseUrl();
-
-	// Resolve API key: env var name → process.env lookup; command-backed → skip; otherwise literal
 	let resolvedApiKey: string | undefined;
-	if (!rawApiKey) {
+	const apiKey = block?.apiKey;
+	if (!apiKey) {
 		resolvedApiKey = $env.LITELLM_API_KEY;
-	} else if (/^[A-Z][A-Z0-9_]+$/.test(rawApiKey)) {
-		// Looks like an env var name — resolve it
-		resolvedApiKey = process.env[rawApiKey] ?? $env.LITELLM_API_KEY;
-	} else if (rawApiKey.startsWith("!")) {
-		// Command-backed secrets (e.g. "!command ...") can't be resolved here — fall back to env
+	} else if (apiKey.kind === "envVar") {
+		resolvedApiKey = process.env[apiKey.name] ?? $env.LITELLM_API_KEY;
+	} else if (apiKey.kind === "shellSecret") {
 		resolvedApiKey = $env.LITELLM_API_KEY;
 	} else {
-		resolvedApiKey = rawApiKey;
+		resolvedApiKey = apiKey.value;
 	}
 
 	if (!resolvedBaseUrl || !resolvedApiKey) return undefined;
@@ -201,31 +169,18 @@ export function healConfigYmlModelRoles(configPath: string): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Extract a quoted literal API key from an existing models.yml file.
- * Only looks within the anthropic or litellm provider blocks to avoid
- * accidentally picking up keys from unrelated providers.
- * Returns undefined if the file uses an env var reference (unquoted) or doesn't exist.
+ * Extract a double-quoted literal API key from an existing models.yml file.
+ * Checks the anthropic and litellm provider blocks; returns undefined if
+ * neither has a literal (e.g., both use env var references) or the file is
+ * missing.
  */
 export function readApiKeyLiteral(modelsPath: string): string | undefined {
-	try {
-		const content = fs.readFileSync(modelsPath, "utf-8");
-		const lines = content.split("\n");
-		let inTargetBlock = false;
-
-		for (const line of lines) {
-			if (/^\s{2}(?:anthropic|litellm)\s*:/.test(line)) {
-				inTargetBlock = true;
-				continue;
-			}
-			if (inTargetBlock && /^\s{2}\S/.test(line)) {
-				inTargetBlock = false;
-			}
-			if (inTargetBlock) {
-				const match = line.match(/^\s+apiKey:\s*"([^"]+)"/);
-				if (match) return match[1].replace(/\\"/g, '"').replace(/\\\\/g, "\\");
-			}
+	for (const name of ["anthropic", "litellm"]) {
+		const block = readProviderFromModelsYml(name, modelsPath);
+		if (block?.apiKey?.kind === "literal" && block.apiKey.wasQuoted) {
+			return block.apiKey.value;
 		}
-	} catch {}
+	}
 	return undefined;
 }
 

@@ -10,9 +10,7 @@
  *   6. Anthropic provider credentials from models.yml
  *   7. LiteLLM passthrough (LITELLM_BASE_URL / LITELLM_API_KEY)
  */
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { $env, getAgentDbPath } from "@f5xc-salesdemos/pi-utils";
+import { $env, getAgentDbPath, readProviderFromModelsYml } from "@f5xc-salesdemos/pi-utils";
 import { type AuthCredential, AuthCredentialStore } from "../auth-storage";
 import {
 	buildAnthropicHeaders as buildProviderAnthropicHeaders,
@@ -110,95 +108,44 @@ async function readAnthropicOAuthCredentials(store?: AuthCredentialStore): Promi
 }
 
 /**
- * Reads Anthropic provider credentials from models.yml (written by LiteLLM auto-config).
- * Uses a simple line-by-line parser — no YAML library dependency.
+ * Resolves Anthropic provider credentials from models.yml (written by LiteLLM auto-config).
+ * Skips shell-backed secrets, which this tier cannot resolve.
  * @returns AnthropicAuthConfig or null if unavailable
  */
-export function readModelsYmlAnthropicAuth(): AnthropicAuthConfig | null {
-	let filePath: string;
-	try {
-		filePath = path.join(path.dirname(getAgentDbPath()), "models.yml");
-	} catch {
-		return null;
-	}
+function readAnthropicAuthFromModelsYml(): AnthropicAuthConfig | null {
+	const block = readProviderFromModelsYml("anthropic");
+	if (!block?.baseUrl || !block.apiKey) return null;
 
-	let content: string;
-	try {
-		content = fs.readFileSync(filePath, "utf-8");
-	} catch {
-		return null;
-	}
-
-	const lines = content.split("\n");
-	let inProviders = false;
-	let inAnthropic = false;
-	let baseUrl: string | undefined;
-	let rawApiKey: string | undefined;
-
-	for (const line of lines) {
-		const trimmed = line.trimEnd();
-		if (trimmed === "" || trimmed.startsWith("#")) continue;
-
-		const indent = line.length - line.trimStart().length;
-
-		// Top-level key
-		if (indent === 0) {
-			inProviders = /^providers\s*:/.test(trimmed);
-			inAnthropic = false;
-			continue;
-		}
-
-		if (!inProviders) continue;
-
-		// Second-level key under providers:
-		if (indent > 0 && indent <= 4 && /^\s*anthropic\s*:/.test(trimmed)) {
-			inAnthropic = true;
-			continue;
-		}
-		// Another second-level key — end of anthropic block
-		if (indent > 0 && indent <= 4 && /^\s*\w+\s*:/.test(trimmed) && !inAnthropic) {
-			continue;
-		}
-		if (indent > 0 && indent <= 4 && /^\s*\w+\s*:/.test(trimmed) && inAnthropic && !/^\s*(baseUrl|apiKey)\s*:/.test(trimmed)) {
-			inAnthropic = false;
-			continue;
-		}
-
-		if (!inAnthropic) continue;
-
-		// Third-level keys under anthropic:
-		const kvMatch = trimmed.match(/^\s*(baseUrl|apiKey)\s*:\s*(.+)$/);
-		if (kvMatch) {
-			const [, key, rawValue] = kvMatch;
-			const value = rawValue.trim();
-			if (key === "baseUrl") {
-				baseUrl = value.replace(/^["']/, "").replace(/["']$/, "");
-			} else if (key === "apiKey") {
-				rawApiKey = value;
-			}
-		}
-	}
-
-	if (!baseUrl || !rawApiKey) return null;
-
-	// Resolve apiKey: env var reference, command-backed, or literal
 	let apiKey: string | undefined;
-	const stripped = rawApiKey.replace(/^["']/, "").replace(/["']$/, "");
-
-	if (rawApiKey.startsWith("!")) {
-		// Command-backed secret — not supported here
-		return null;
-	} else if (/^[A-Z][A-Z0-9_]+$/.test(stripped)) {
-		// Env var name
-		apiKey = process.env[stripped];
-	} else {
-		// Literal value (possibly quoted)
-		apiKey = stripped;
+	switch (block.apiKey.kind) {
+		case "envVar":
+			apiKey = process.env[block.apiKey.name];
+			break;
+		case "literal":
+			apiKey = block.apiKey.value;
+			break;
+		case "shellSecret":
+			return null;
 	}
 
 	if (!apiKey) return null;
+	return { apiKey, baseUrl: block.baseUrl, isOAuth: false };
+}
 
-	return { apiKey, baseUrl, isOAuth: false };
+/**
+ * Strips known suffixes (`/` repeats, `/anthropic`, `/api/v1`, `/v1`) from a
+ * LiteLLM base URL until no further suffix matches. Handles inputs like
+ * `https://proxy/api/v1/anthropic` in any order.
+ */
+function normalizeLitellmBase(url: string): string {
+	const suffixes = [/\/+$/, /\/anthropic$/, /\/api\/v\d+$/, /\/v\d+$/];
+	let prev: string;
+	let current = url;
+	do {
+		prev = current;
+		for (const re of suffixes) current = current.replace(re, "");
+	} while (current !== prev);
+	return current;
 }
 
 /**
@@ -291,18 +238,19 @@ export async function findAnthropicAuth(store?: AuthCredentialStore): Promise<An
 
 	// 6. Anthropic provider credentials from models.yml
 	try {
-		const modelsYmlAuth = readModelsYmlAnthropicAuth();
+		const modelsYmlAuth = readAnthropicAuthFromModelsYml();
 		if (modelsYmlAuth) return modelsYmlAuth;
-	} catch { /* Best-effort — don't block env-var fallback */ }
+	} catch {
+		/* Best-effort — don't block env-var fallback */
+	}
 
 	// 7. Derive from litellm passthrough credentials
 	const litellmBaseUrl = $env.LITELLM_BASE_URL;
 	const litellmApiKey = $env.LITELLM_API_KEY;
 	if (litellmBaseUrl && litellmApiKey) {
-		const normalized = litellmBaseUrl.replace(/\/+$/, "").replace(/\/anthropic$/, "").replace(/\/api\/v\d+$/, "").replace(/\/v\d+$/, "");
 		return {
 			apiKey: litellmApiKey,
-			baseUrl: `${normalized}/anthropic`,
+			baseUrl: `${normalizeLitellmBase(litellmBaseUrl)}/anthropic`,
 			isOAuth: false,
 		};
 	}
