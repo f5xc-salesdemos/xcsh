@@ -136,8 +136,10 @@ function readAnthropicAuthFromModelsYml(): AnthropicAuthConfig | null {
  * Strips known suffixes (`/` repeats, `/anthropic`, `/api/v1`, `/v1`) from a
  * LiteLLM base URL until no further suffix matches. Handles inputs like
  * `https://proxy/api/v1/anthropic` in any order.
+ *
+ * Exported for contract testing — see packages/ai/test/litellm-url-normalization.test.ts.
  */
-function normalizeLitellmBase(url: string): string {
+export function normalizeLitellmBase(url: string): string {
 	const suffixes = [/\/+$/, /\/anthropic$/, /\/api\/v\d+$/, /\/v\d+$/];
 	let prev: string;
 	let current = url;
