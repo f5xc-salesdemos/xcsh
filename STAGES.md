@@ -1,11 +1,13 @@
 # ChunkState Migration — Parallelization Stages
 
 ## Stage 0: Types (sequential, ~5 min)
+
 **Owner:** main agent
 
 Write the shared type definitions that all subsequent stages depend on.
 
 **File:** `crates/pi-natives/src/chunk/types.rs`
+
 - Remove `#[napi(object)]` from `ChunkNode` and `ChunkTree` (become Rust-internal)
 - Remove `RenderChunkTreeParams` napi object (replaced by method params)
 - Add `ChunkInfo` — lightweight `#[napi(object)]` returned to JS from queries
@@ -23,9 +25,11 @@ Write the shared type definitions that all subsequent stages depend on.
 All agents receive the finalized types from Stage 0 in their prompt. Each writes a single new file.
 
 ### Agent 1A: `resolve.rs` — Selector resolution
+
 **File:** `crates/pi-natives/src/chunk/resolve.rs` (new)
 
 Port from `chunk-tree.ts` lines 875–990:
+
 - `sanitize_selector(sel) -> Option<String>` — strip filename prefix, leading colon, trailing #XXXX
 - `resolve_exact(chunks, path) -> Option<usize>` — index lookup
 - `resolve_suffix(chunks, sel) -> Result<usize>` — suffix match ("fn_foo" → "class_Bar.fn_foo")
@@ -39,9 +43,11 @@ Port from `chunk-tree.ts` lines 875–990:
 **Reads:** `chunk-tree.ts` (resolveAnchorChunk, sanitizeChunkSelector, sanitizeCrc, chunkPathSimilarity, suggestChunkPaths, CHUNK_NAME_PREFIXES, CONTAINER_NAME_PREFIXES)
 
 ### Agent 1B: `indent.rs` — Indentation & content normalization
+
 **File:** `crates/pi-natives/src/chunk/indent.rs` (new)
 
 Port from `chunk-tree.ts` lines 217–410:
+
 - `detect_common_indent(text) -> (String, usize)`
 - `dedent_python_style(text) -> String`
 - `indent_non_empty_lines(text, prefix) -> String`
@@ -55,9 +61,11 @@ Port from `chunk-tree.ts` lines 217–410:
 **Reads:** `chunk-tree.ts` (all indentation helpers, stripContentPrefixes, CHUNK_GUTTER_CODE_ROW_RE)
 
 ### Agent 1C: `edit.rs` — Edit engine
+
 **File:** `crates/pi-natives/src/chunk/edit.rs` (new)
 
 Port from `chunk-tree.ts` lines 1040–1850. Assumes `resolve.rs` and `indent.rs` exist with the signatures above.
+
 - `validate_crc(chunk, crc) -> Result<()>`
 - `validate_line_range(chunk, line, end_line) -> Result<()>`
 - `compute_insert_indent(state, anchor, inside) -> String`
@@ -72,9 +80,11 @@ Port from `chunk-tree.ts` lines 1040–1850. Assumes `resolve.rs` and `indent.rs
 **Reads:** `chunk-tree.ts` (applyChunkEdits and everything it calls: validateCrc, validateLineRange, computeInsertIndent, getInsertionPoint, getInsertionPointForPosition, computeInsertSpacing, normalizeInsertionBoundaryContent, cleanupBlankLineArtifactsAtOffset, goTypeAppendChildInsertionPoint, isContainerLikeChunk, renderChangedHunks)
 
 ### Agent 1D: `state.rs` — ChunkState napi class
+
 **File:** `crates/pi-natives/src/chunk/state.rs` (new)
 
 The napi class that ties everything together. Assumes `resolve.rs`, `indent.rs`, `edit.rs` exist.
+
 - `ChunkState` struct with `Arc<ChunkStateInner>`
 - `ChunkStateInner` struct (source, language, checksum, line_count, parse_errors, chunks, chunk_index)
 - `#[napi(factory)] fn parse(source, language) -> Result<ChunkState>`
@@ -97,7 +107,9 @@ The napi class that ties everything together. Assumes `resolve.rs`, `indent.rs`,
 ## Stage 2: Parallel wiring (2 agents)
 
 ### Agent 2A: Rust integration
+
 **Files:** `crates/pi-natives/src/chunk/mod.rs`, `crates/pi-natives/src/chunk/render.rs`
+
 - Add `mod state; mod resolve; mod indent; mod edit;` to mod.rs
 - Remove old napi function exports (parseChunkTree, resolveChunkPath, etc)
 - Export `ChunkState` from mod.rs
@@ -105,7 +117,9 @@ The napi class that ties everything together. Assumes `resolve.rs`, `indent.rs`,
 - `cargo check -p pi-natives`
 
 ### Agent 2B: TS rewrite
+
 **Files:** `packages/natives/src/chunk/{types.ts, index.ts}`, `packages/coding-agent/src/tools/chunk-tree.ts`, `packages/coding-agent/src/tools/read.ts`, `packages/coding-agent/src/patch/index.ts`
+
 - New `types.ts`: `ChunkState` class interface, `ChunkInfo`, `EditParams`, `EditResult`, etc
 - New `index.ts`: export `ChunkState` class from native
 - Gut `chunk-tree.ts` to ~200 lines: LRU cache of `ChunkState` instances, thin async wrappers
@@ -115,6 +129,7 @@ The napi class that ties everything together. Assumes `resolve.rs`, `indent.rs`,
 ---
 
 ## Stage 3: Test & fix (sequential)
+
 **Owner:** main agent
 
 - `cargo check -p pi-natives` + `cargo test`

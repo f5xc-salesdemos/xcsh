@@ -96,7 +96,7 @@ import { $ } from "bun";
 // Capture output
 const result = await $`git status`.cwd(dir).quiet().nothrow();
 if (result.exitCode === 0) {
-	const text = result.text();
+ const text = result.text();
 }
 
 // Fire and forget
@@ -190,17 +190,17 @@ const entries = await fs.readdir(path);
 ```typescript
 // BAD: Two syscalls, race condition
 if (await Bun.file(path).exists()) {
-	return await Bun.file(path).json();
+ return await Bun.file(path).json();
 }
 
 // GOOD: One syscall, atomic, type-safe error handling
 import { isEnoent } from "@f5xc-salesdemos/pi-utils";
 
 try {
-	return await Bun.file(path).json();
+ return await Bun.file(path).json();
 } catch (err) {
-	if (isEnoent(err)) return null;
-	throw err;
+ if (isEnoent(err)) return null;
+ throw err;
 }
 ```
 
@@ -209,15 +209,15 @@ try {
 ```typescript
 // BAD: Creates two file handles
 if (await Bun.file(path).exists()) {
-	const content = await Bun.file(path).text();
+ const content = await Bun.file(path).text();
 }
 
 // BAD: Still wasteful even in separate functions
 async function checkConfig() {
-	return await Bun.file(configPath).exists();
+ return await Bun.file(configPath).exists();
 }
 async function loadConfig() {
-	return await Bun.file(configPath).json(); // second handle
+ return await Bun.file(configPath).json(); // second handle
 }
 ```
 
@@ -237,19 +237,19 @@ const buffer = await fs.readFile(path);
 ```typescript
 // BAD: Existence check is pointless when you have try-catch
 if (await file.exists()) {
-	try {
-		return await file.json();
-	} catch {
-		return null;
-	}
+ try {
+  return await file.json();
+ } catch {
+  return null;
+ }
 }
 
 // GOOD: Let try-catch handle missing files
 try {
-	return await Bun.file(path).json();
+ return await Bun.file(path).json();
 } catch (err) {
-	if (isEnoent(err)) return null;
-	throw err;
+ if (isEnoent(err)) return null;
+ throw err;
 }
 ```
 
@@ -265,7 +265,7 @@ const text = await readStream(child.stdout);
 
 // Line-by-line iteration
 for await (const line of readLines(stream)) {
-	// process line
+ // process line
 }
 ```
 
@@ -308,7 +308,7 @@ const entries = Bun.JSONL.parse(text);
 // BAD: External dependency or custom implementation
 import { getWidth } from "get-east-asian-width";
 function visibleWidth(str: string) {
-	/* custom logic */
+ /* custom logic */
 }
 
 // GOOD: Bun builtin (handles ANSI, emoji, CJK)
@@ -321,14 +321,14 @@ const widthNoAnsi = Bun.stringWidth(text, { countAnsiEscapeCodes: false });
 ```typescript
 // BAD: Custom ANSI-aware wrapping
 function wrapTextWithAnsi(text: string, width: number) {
-	/* complex SGR tracking */
+ /* complex SGR tracking */
 }
 
 // GOOD: Bun builtin
 const wrapped = Bun.wrapAnsi(text, width, {
-	wordWrap: true,
-	hard: false,
-	trim: true,
+ wordWrap: true,
+ hard: false,
+ trim: true,
 });
 ```
 
@@ -337,7 +337,7 @@ const wrapped = Bun.wrapAnsi(text, width, {
 | Operation       | Use                                   | Not                             |
 | --------------- | ------------------------------------- | ------------------------------- |
 | File read/write | `Bun.file()`, `Bun.write()`           | `readFileSync`, `writeFileSync` |
-| Spawn process   | `$\`cmd\``, `Bun.spawn()`             | `child_process`                 |
+| Spawn process   | `$\`cmd\``,`Bun.spawn()`             | `child_process`                 |
 | Sleep           | `Bun.sleep(ms)`                       | `setTimeout` promise            |
 | Binary lookup   | `$which("git")` from `@f5xc-salesdemos/pi-utils` | `spawnSync(["which", "git"])`   |
 | HTTP server     | `Bun.serve()`                         | `http.createServer()`           |
@@ -419,6 +419,7 @@ A common mistake is sanitizing the happy path but forgetting error paths. If a m
 Streaming tool-call previews can have **multiple render paths**. If you add preview-only fields or depend on partially streamed arguments, update every path — not just the final renderer.
 
 For the bash tool specifically:
+
 - The pending preview may need raw `partialJson`, not just parsed `arguments`. Parsed tool-call args can lag until a JSON object closes, which makes inline env assignments appear only at the end.
 - Preserve any preview-only fields (for example `__partialJson`) when tool-call args flow through `event-controller.ts`, transcript rebuilds in `ui-helpers.ts`, and merged call/result rendering in `tool-execution.ts`. Missing one path causes inconsistent previews.
 - `ToolExecutionComponent.#buildRenderContext()` for bash must work even before a result exists. The bash renderer uses call args plus render context to show the command preview while streaming, not only after output arrives.
@@ -522,6 +523,7 @@ Use these sections under `## [Unreleased]`:
 1. **Update CHANGELOGs**: Ensure all changes since last release are documented in the `[Unreleased]` section of each affected package's CHANGELOG.md
 
 2. **Run release script**:
+
    ```bash
    bun run release
    ```
