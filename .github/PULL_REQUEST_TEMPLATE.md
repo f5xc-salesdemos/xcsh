@@ -1,17 +1,17 @@
-## What
+## Summary
 
-<!-- Brief description of the change -->
+Brief description of the changes in this PR.
 
-## Why
+## Related Issue
 
-<!-- Motivation, context, or link to issue (fixes #N) -->
+Closes #
 
-## Testing
+## Changes
 
-<!-- How was this tested? -->
+-
 
----
+## Checklist
 
-- [ ] `bun check` passes
+- [ ] Linked to a GitHub issue (required — CI will block merge without it)
 - [ ] Tested locally
-- [ ] CHANGELOG updated (if user-facing)
+- [ ] Follows project conventions
