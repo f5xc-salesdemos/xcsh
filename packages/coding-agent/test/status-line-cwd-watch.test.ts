@@ -1,10 +1,14 @@
 import { beforeAll, describe, expect, it } from "bun:test";
-import { StatusLineComponent } from "@f5xc-salesdemos/xcsh/modes/components/status-line";
-import { initTheme } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
-import type { AgentSession } from "@f5xc-salesdemos/xcsh/session/agent-session";
-import { EventBus } from "@f5xc-salesdemos/xcsh/utils/event-bus";
+import * as os from "node:os";
+import { _resetSettingsForTest, Settings } from "../src/config/settings";
+import { StatusLineComponent } from "../src/modes/components/status-line";
+import { initTheme } from "../src/modes/theme/theme";
+import type { AgentSession } from "../src/session/agent-session";
+import { EventBus } from "../src/utils/event-bus";
 
 beforeAll(async () => {
+	_resetSettingsForTest();
+	await Settings.init({ inMemory: true, cwd: os.tmpdir() });
 	await initTheme();
 });
 
