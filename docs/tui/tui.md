@@ -150,7 +150,6 @@ async execute(toolCallId, params, onUpdate, ctx, signal) {
 }
 ```
 
-
 ## 3) Custom tool call/result renderers
 
 Custom tools and extension tools can return components from:

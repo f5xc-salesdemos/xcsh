@@ -98,7 +98,6 @@ What the LLM sees:
     prompt   from cmp          messages from firstKeptEntryId
 ```
 
-
 ### Overflow-retry vs threshold compaction
 
 The two automatic paths are intentionally different:
@@ -268,7 +267,6 @@ After navigation with summary:
     A ───┤
          └─ E ─ F (new leaf)
 ```
-
 
 ### Preparation and token budget
 

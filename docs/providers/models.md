@@ -163,6 +163,7 @@ Canonical ids are official upstream ids only, for example:
 - `claude-opus-4-6`
 - `claude-haiku-4-5`
 - `gpt-5.3-codex`
+
 ### `models.yml` equivalence config
 
 Example:

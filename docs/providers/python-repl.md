@@ -264,6 +264,7 @@ Behavior differences from local shared gateway:
 - **Kernel availability errors**
   - Local mode requires both `kernel_gateway` and `ipykernel` importable in resolved Python runtime.
   - Install with:
+
     ```bash
     python -m pip install jupyter_kernel_gateway ipykernel
     ```

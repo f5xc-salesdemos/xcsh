@@ -229,7 +229,7 @@ SSE JSON parsing errors bubble out of `readSseJson` and reject request/listener.
 
 Notable differences from `HttpTransport`:
 
-- parses entire response text first, then extracts first `data: ` line (`parseSSE`), with JSON fallback
+- parses entire response text first, then extracts first `data:` line (`parseSSE`), with JSON fallback
 - no request timeout management, no abort API, no session-id handling, no transport lifecycle
 - returns raw JSON-RPC envelope object
 

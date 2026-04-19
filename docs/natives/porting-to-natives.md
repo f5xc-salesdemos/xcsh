@@ -132,19 +132,19 @@ Keep it simple and owned. `String`, `Vec<String>`, and `Uint8Array` work. Avoid 
 const ITERATIONS = 2000;
 
 function bench(name: string, fn: () => void): number {
-	const start = Bun.nanoseconds();
-	for (let i = 0; i < ITERATIONS; i++) fn();
-	const elapsed = (Bun.nanoseconds() - start) / 1e6;
-	console.log(`${name}: ${elapsed.toFixed(2)}ms total (${(elapsed / ITERATIONS).toFixed(6)}ms/op)`);
-	return elapsed;
+ const start = Bun.nanoseconds();
+ for (let i = 0; i < ITERATIONS; i++) fn();
+ const elapsed = (Bun.nanoseconds() - start) / 1e6;
+ console.log(`${name}: ${elapsed.toFixed(2)}ms total (${(elapsed / ITERATIONS).toFixed(6)}ms/op)`);
+ return elapsed;
 }
 
 bench("feature/js", () => {
-	jsImpl(sample);
+ jsImpl(sample);
 });
 
 bench("feature/native", () => {
-	nativeImpl(sample);
+ nativeImpl(sample);
 });
 ```
 

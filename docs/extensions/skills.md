@@ -54,7 +54,6 @@ Provider-discovered layout (non-recursive under skills/):
 Custom-directory scanning is also non-recursive, so nested paths are ignored unless you point `customDirectories` at that nested parent.
 ```
 
-
 ### `SKILL.md` frontmatter
 
 Supported frontmatter fields on the skill type:

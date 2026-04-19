@@ -10,6 +10,7 @@ sidebar:
 This document maps the `@f5xc-salesdemos/pi-natives` text/search surface (`grep`, `glob`, `text`, `highlight`) from TypeScript wrappers to Rust N-API exports and back to JS result objects.
 
 Terminology follows `docs/natives-architecture.md`:
+
 - **Wrapper**: TS API in `packages/natives/src/*`
 - **Rust module layer**: N-API exports in `crates/pi-natives/src/*`
 - **Shared scan cache**: `fs_cache`-backed directory-entry cache used by discovery/search flows
@@ -107,6 +108,7 @@ Terminology follows `docs/natives-architecture.md`:
 ### Malformed regex handling
 
 `grep.rs` sanitizes braces before regex compile:
+
 - Invalid repetition-like braces are escaped (`{`/`}` -> `\{`/`\}`) when they cannot form `{N}`, `{N,}`, `{N,M}`.
 - This prevents common literal-template fragments (for example `${platform}`) from failing as malformed repetition.
 - Remaining invalid regex syntax still returns a regex error.
@@ -150,6 +152,7 @@ Terminology follows `docs/natives-architecture.md`:
 ### Malformed glob handling
 
 `glob_util::build_glob_pattern` is tolerant:
+
 - Normalizes `\` to `/`.
 - Auto-prefixes simple recursive patterns with `**/` when `recursive=true`.
 - Auto-closes unbalanced `{...` alternation groups before compile.
@@ -157,6 +160,7 @@ Terminology follows `docs/natives-architecture.md`:
 ## 3) Shared scan/cache lifecycle (`fs_cache`)
 
 `fs_cache` stores scan results as normalized relative entries (`path`, `fileType`, optional `mtime`) keyed by:
+
 - canonical search root
 - `include_hidden`
 - `use_gitignore`

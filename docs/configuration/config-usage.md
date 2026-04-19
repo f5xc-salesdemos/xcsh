@@ -57,7 +57,6 @@ Key integration points:
    (settings, skills, hooks, tools, extensions)
 ```
 
-
 ## 1) Config roots and source order
 
 ## Canonical roots

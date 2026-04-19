@@ -29,7 +29,7 @@ This document describes operator-visible behavior for session export/share/fork/
 | `/fork` | Interactive slash command | Yes (active session identity changes) | Creates new session file and switches current session to it (persistent mode only) | Copies artifact directory to new session namespace when present |
 | `/resume` | Interactive slash command | Yes (active in-memory state replaced) | Switches to selected existing session file | None |
 | `--resume` | CLI startup (picker) | Yes after session creation | Opens selected existing session file | None |
-| `--resume <id|path>` | CLI startup | Yes after session creation | Opens existing session; cross-project case can fork into current project | None |
+| `--resume <id\|path>` | CLI startup | Yes after session creation | Opens existing session; cross-project case can fork into current project | None |
 | `--continue` | CLI startup | Yes after session creation | Opens terminal breadcrumb or most-recent session; creates new one if none exists | None |
 
 ## Export and dump

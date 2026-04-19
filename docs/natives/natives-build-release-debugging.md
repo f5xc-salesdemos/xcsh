@@ -10,6 +10,7 @@ sidebar:
 This runbook describes how the `@f5xc-salesdemos/pi-natives` build pipeline produces `.node` addons, how compiled distributions load them, and how to debug loader/build failures.
 
 It follows the architecture terms from `docs/natives-architecture.md`:
+
 - **build-time artifact production** (`scripts/build-native.ts`)
 - **embedded addon manifest generation** (`scripts/embed-native.ts`)
 - **runtime addon loading + validation gate** (`src/native.ts`)
@@ -51,10 +52,12 @@ After Cargo completes, `build-native.ts` scans candidate output directories in o
 3. `crates/pi-natives/target`
 
 For each root it checks profile directories:
+
 - cross build: `<root>/<crossTarget>/<profile>` then `<root>/<profile>`
 - native build: `<root>/<profile>`
 
 Then it looks for one of:
+
 - `libpi_natives.so`
 - `libpi_natives.dylib`
 - `pi_natives.dll`
@@ -73,6 +76,7 @@ Both build and runtime use platform tag:
 ## Variant model (x64 only)
 
 x64 supports CPU variants:
+
 - `modern` (AVX2-capable path)
 - `baseline` (fallback)
 
@@ -81,13 +85,16 @@ Non-x64 uses a single default artifact (no variant suffix).
 ### Output filenames
 
 Release builds:
+
 - x64: `pi_natives.<platform>-<arch>-modern.node` or `...-baseline.node`
 - non-x64: `pi_natives.<platform>-<arch>.node`
 
 Dev build (`--dev`):
+
 - Uses debug profile flags but keeps standard platform-tagged output naming
 
 Runtime loader candidate order in `native.ts`:
+
 - release candidates
 - compiled mode prepends extracted/cache candidates before package-local files
 

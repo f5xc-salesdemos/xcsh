@@ -62,11 +62,11 @@ The capability type defines this manifest shape:
 
 ```ts
 interface ExtensionManifest {
-	name?: string;
-	description?: string;
-	mcpServers?: Record<string, Omit<MCPServer, "name" | "_source">>;
-	tools?: unknown[];
-	context?: unknown;
+ name?: string;
+ description?: string;
+ mcpServers?: Record<string, Omit<MCPServer, "name" | "_source">>;
+ tools?: unknown[];
+ context?: unknown;
 }
 ```
 
@@ -93,16 +93,16 @@ A valid parsed manifest creates one `Extension` capability item:
 
 ```ts
 {
-	name: manifest.name ?? <directory-name>,
-	path: <extension-directory>,
-	manifest: <parsed-json>,
-	level: "user" | "project",
-	_source: {
-		provider: "gemini",
-		providerName: "Gemini CLI" // attached by capability registry
-		path: <absolute-manifest-path>,
-		level: "user" | "project"
-	}
+ name: manifest.name ?? <directory-name>,
+ path: <extension-directory>,
+ manifest: <parsed-json>,
+ level: "user" | "project",
+ _source: {
+  provider: "gemini",
+  providerName: "Gemini CLI" // attached by capability registry
+  path: <absolute-manifest-path>,
+  level: "user" | "project"
+ }
 }
 ```
 

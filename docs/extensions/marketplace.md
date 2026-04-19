@@ -141,11 +141,13 @@ A marketplace catalog lives at `.claude-plugin/marketplace.json` in the reposito
 The `source` field supports several formats:
 
 **Relative path** (within the marketplace repo):
+
 ```json
 "source": "./plugins/my-plugin"
 ```
 
 **Git repository URL**:
+
 ```json
 "source": {
   "source": "url",
@@ -155,6 +157,7 @@ The `source` field supports several formats:
 ```
 
 **GitHub shorthand**:
+
 ```json
 "source": {
   "source": "github",
@@ -165,6 +168,7 @@ The `source` field supports several formats:
 ```
 
 **Git subdirectory** (monorepo):
+
 ```json
 "source": {
   "source": "git-subdir",
@@ -176,6 +180,7 @@ The `source` field supports several formats:
 ```
 
 **npm package**:
+
 ```json
 "source": {
   "source": "npm",

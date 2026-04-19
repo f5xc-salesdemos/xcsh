@@ -60,9 +60,9 @@ Each module adds its own fields by declaration merging:
 ```ts
 // packages/natives/src/<module>/types.ts
 declare module "../bindings" {
-	interface NativeBindings {
-		grep(options: GrepOptions, onMatch?: TsFunc<GrepMatch>): Promise<GrepResult>;
-	}
+ interface NativeBindings {
+  grep(options: GrepOptions, onMatch?: TsFunc<GrepMatch>): Promise<GrepResult>;
+ }
 }
 ```
 

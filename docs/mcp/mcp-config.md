@@ -450,7 +450,7 @@ Run `/mcp list`. OMP discovers many third-party MCP files, but project-level loa
 
 ## References
 
-- MCP transport spec: https://modelcontextprotocol.io/specification/2025-03-26/basic/transports
-- Filesystem server package: https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem
-- GitHub MCP server: https://github.com/github/github-mcp-server
-- Slack MCP server docs: https://docs.slack.dev/ai/slack-mcp-server/
+- MCP transport spec: <https://modelcontextprotocol.io/specification/2025-03-26/basic/transports>
+- Filesystem server package: <https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem>
+- GitHub MCP server: <https://github.com/github/github-mcp-server>
+- Slack MCP server docs: <https://docs.slack.dev/ai/slack-mcp-server/>

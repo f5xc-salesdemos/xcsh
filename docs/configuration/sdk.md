@@ -41,13 +41,13 @@ import { createAgentSession } from "@f5xc-salesdemos/xcsh";
 const { session, modelFallbackMessage } = await createAgentSession();
 
 if (modelFallbackMessage) {
-	process.stderr.write(`${modelFallbackMessage}\n`);
+ process.stderr.write(`${modelFallbackMessage}\n`);
 }
 
 const unsubscribe = session.subscribe(event => {
-	if (event.type === "message_update" && event.assistantMessageEvent.type === "text_delta") {
-		process.stdout.write(event.assistantMessageEvent.delta);
-	}
+ if (event.type === "message_update" && event.assistantMessageEvent.type === "text_delta") {
+  process.stdout.write(event.assistantMessageEvent.delta);
+ }
 });
 
 await session.prompt("Summarize this repository in 3 bullets.");
@@ -78,10 +78,10 @@ Typically you must provide only what you want to control:
 
 - **Must provide**: nothing for a minimal session
 - **Usually provide explicitly** in embedders:
-	- `sessionManager` (if you need in-memory or custom location)
-	- `authStorage` + `modelRegistry` (if you own credential/model lifecycle)
-	- `model` or `modelPattern` (if deterministic model selection matters)
-	- `settings` (if you need isolated/test config)
+    - `sessionManager` (if you need in-memory or custom location)
+    - `authStorage` + `modelRegistry` (if you own credential/model lifecycle)
+    - `model` or `modelPattern` (if deterministic model selection matters)
+    - `settings` (if you need isolated/test config)
 
 ## Session manager behavior (persistent vs in-memory)
 
@@ -93,7 +93,7 @@ Typically you must provide only what you want to control:
 import { createAgentSession, SessionManager } from "@f5xc-salesdemos/xcsh";
 
 const { session } = await createAgentSession({
-	sessionManager: SessionManager.create(process.cwd()),
+ sessionManager: SessionManager.create(process.cwd()),
 });
 
 console.log(session.sessionFile); // absolute .jsonl path
@@ -109,7 +109,7 @@ console.log(session.sessionFile); // absolute .jsonl path
 import { createAgentSession, SessionManager } from "@f5xc-salesdemos/xcsh";
 
 const { session } = await createAgentSession({
-	sessionManager: SessionManager.inMemory(),
+ sessionManager: SessionManager.inMemory(),
 });
 
 console.log(session.sessionFile); // undefined
@@ -137,10 +137,10 @@ const opened = listed[0] ? await SessionManager.open(listed[0].path) : null;
 
 ```ts
 import {
-	createAgentSession,
-	discoverAuthStorage,
-	ModelRegistry,
-	SessionManager,
+ createAgentSession,
+ discoverAuthStorage,
+ ModelRegistry,
+ SessionManager,
 } from "@f5xc-salesdemos/xcsh";
 
 const authStorage = await discoverAuthStorage();
@@ -151,11 +151,11 @@ const available = modelRegistry.getAvailable();
 if (available.length === 0) throw new Error("No authenticated models available");
 
 const { session } = await createAgentSession({
-	authStorage,
-	modelRegistry,
-	model: available[0],
-	thinkingLevel: "medium",
-	sessionManager: SessionManager.inMemory(),
+ authStorage,
+ modelRegistry,
+ model: available[0],
+ thinkingLevel: "medium",
+ sessionManager: SessionManager.inMemory(),
 });
 ```
 
@@ -184,17 +184,17 @@ Subscribe with `session.subscribe(listener)`; it returns an unsubscribe function
 
 ```ts
 const unsubscribe = session.subscribe(event => {
-	switch (event.type) {
-		case "agent_start":
-		case "turn_start":
-		case "tool_execution_start":
-			break;
-		case "message_update":
-			if (event.assistantMessageEvent.type === "text_delta") {
-				process.stdout.write(event.assistantMessageEvent.delta);
-			}
-			break;
-	}
+ switch (event.type) {
+  case "agent_start":
+  case "turn_start":
+  case "tool_execution_start":
+   break;
+  case "message_update":
+   if (event.assistantMessageEvent.type === "text_delta") {
+    process.stdout.write(event.assistantMessageEvent.delta);
+   }
+   break;
+ }
 });
 ```
 
@@ -213,12 +213,12 @@ Behavior:
 
 1. optional command/template expansion (`/` commands, custom commands, file slash commands, prompt templates)
 2. if currently streaming:
-	- requires `streamingBehavior: "steer" | "followUp"`
-	- queues instead of throwing work away
+    - requires `streamingBehavior: "steer" | "followUp"`
+    - queues instead of throwing work away
 3. if idle:
-	- validates model + API key
-	- appends user message
-	- starts agent turn
+    - validates model + API key
+    - appends user message
+    - starts agent turn
 
 Related APIs:
 
@@ -239,8 +239,8 @@ Related APIs:
 
 ```ts
 const { session } = await createAgentSession({
-	toolNames: ["read", "grep", "find", "write"],
-	requireSubmitResultTool: true,
+ toolNames: ["read", "grep", "find", "write"],
+ requireSubmitResultTool: true,
 });
 ```
 
@@ -291,12 +291,12 @@ These are optional for normal single-agent embedding.
 
 ```ts
 type CreateAgentSessionResult = {
-	session: AgentSession;
-	extensionsResult: LoadExtensionsResult;
-	setToolUIContext: (uiContext: ExtensionUIContext, hasUI: boolean) => void;
-	mcpManager?: MCPManager;
-	modelFallbackMessage?: string;
-	lspServers?: Array<{ name: string; status: "ready" | "error"; fileTypes: string[]; error?: string }>;
+ session: AgentSession;
+ extensionsResult: LoadExtensionsResult;
+ setToolUIContext: (uiContext: ExtensionUIContext, hasUI: boolean) => void;
+ mcpManager?: MCPManager;
+ modelFallbackMessage?: string;
+ lspServers?: Array<{ name: string; status: "ready" | "error"; fileTypes: string[]; error?: string }>;
 };
 ```
 
@@ -306,11 +306,11 @@ Use `setToolUIContext(...)` only if your embedder provides UI capabilities that 
 
 ```ts
 import {
-	createAgentSession,
-	discoverAuthStorage,
-	ModelRegistry,
-	SessionManager,
-	Settings,
+ createAgentSession,
+ discoverAuthStorage,
+ ModelRegistry,
+ SessionManager,
+ Settings,
 } from "@f5xc-salesdemos/xcsh";
 
 const authStorage = await discoverAuthStorage();
@@ -318,24 +318,24 @@ const modelRegistry = new ModelRegistry(authStorage);
 await modelRegistry.refresh();
 
 const settings = Settings.isolated({
-	"compaction.enabled": true,
-	"retry.enabled": true,
+ "compaction.enabled": true,
+ "retry.enabled": true,
 });
 
 const { session } = await createAgentSession({
-	authStorage,
-	modelRegistry,
-	settings,
-	sessionManager: SessionManager.inMemory(),
-	toolNames: ["read", "grep", "find", "edit", "write"],
-	enableMCP: false,
-	enableLsp: true,
+ authStorage,
+ modelRegistry,
+ settings,
+ sessionManager: SessionManager.inMemory(),
+ toolNames: ["read", "grep", "find", "edit", "write"],
+ enableMCP: false,
+ enableLsp: true,
 });
 
 session.subscribe(event => {
-	if (event.type === "message_update" && event.assistantMessageEvent.type === "text_delta") {
-		process.stdout.write(event.assistantMessageEvent.delta);
-	}
+ if (event.type === "message_update" && event.assistantMessageEvent.type === "text_delta") {
+  process.stdout.write(event.assistantMessageEvent.delta);
+ }
 });
 
 await session.prompt("Find all TODO comments in this repo and propose fixes.");

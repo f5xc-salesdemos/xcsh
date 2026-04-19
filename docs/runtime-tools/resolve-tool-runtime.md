@@ -68,37 +68,37 @@ Custom tools can register resolve-compatible pending actions through `CustomTool
 import type { CustomToolFactory } from "@f5xc-salesdemos/xcsh";
 
 const factory: CustomToolFactory = pi => ({
-	name: "batch_rename_preview",
-	label: "Batch Rename Preview",
-	description: "Previews renames and defers commit to resolve",
-	parameters: pi.typebox.Type.Object({
-		files: pi.typebox.Type.Array(pi.typebox.Type.String()),
-	}),
+ name: "batch_rename_preview",
+ label: "Batch Rename Preview",
+ description: "Previews renames and defers commit to resolve",
+ parameters: pi.typebox.Type.Object({
+  files: pi.typebox.Type.Array(pi.typebox.Type.String()),
+ }),
 
-	async execute(_toolCallId, params) {
-		const previewSummary = `Prepared rename plan for ${params.files.length} files`;
+ async execute(_toolCallId, params) {
+  const previewSummary = `Prepared rename plan for ${params.files.length} files`;
 
-		pi.pushPendingAction({
-			label: `Batch rename: ${params.files.length} files`,
-			sourceToolName: "batch_rename_preview",
-			apply: async (reason) => {
-				// apply writes here
-				return {
-					content: [{ type: "text", text: `Applied batch rename. Reason: ${reason}` }],
-				};
-			},
-			reject: async (reason) => {
-				// optional: cleanup or notify on discard
-				return {
-					content: [{ type: "text", text: `Discarded batch rename. Reason: ${reason}` }],
-				};
-			},
-		});
+  pi.pushPendingAction({
+   label: `Batch rename: ${params.files.length} files`,
+   sourceToolName: "batch_rename_preview",
+   apply: async (reason) => {
+    // apply writes here
+    return {
+     content: [{ type: "text", text: `Applied batch rename. Reason: ${reason}` }],
+    };
+   },
+   reject: async (reason) => {
+    // optional: cleanup or notify on discard
+    return {
+     content: [{ type: "text", text: `Discarded batch rename. Reason: ${reason}` }],
+    };
+   },
+  });
 
-		return {
-			content: [{ type: "text", text: `${previewSummary}. Call resolve to apply or discard.` }],
-		};
-	},
+  return {
+   content: [{ type: "text", text: `${previewSummary}. Call resolve to apply or discard.` }],
+  };
+ },
 });
 
 export default factory;

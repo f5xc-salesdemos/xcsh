@@ -14,6 +14,7 @@ This document defines the current contract for the shared filesystem scan cache 
 The cache stores full directory-scan entry lists (`GlobMatch[]`) keyed by scan scope and traversal policy, then lets higher-level operations (glob filtering, fuzzy scoring, grep file selection) run against those cached entries.
 
 Primary goals:
+
 - avoid repeated filesystem walks for repeated discovery/search calls
 - keep consistency across `glob`, `fuzzyFind`, and `grep` when they share the same scan policy
 - allow explicit staleness recovery for empty results and explicit invalidation after file mutations
@@ -35,11 +36,13 @@ Primary goals:
 ## Cache key partitioning (hard contract)
 
 Each entry is keyed by:
+
 - canonicalized `root` directory path
 - `include_hidden` boolean
 - `use_gitignore` boolean
 
 Implications:
+
 - Hidden and non-hidden scans do **not** share entries.
 - Gitignore-respecting and ignore-disabled scans do **not** share entries.
 - Consumers must pass stable semantics for hidden/gitignore behavior; changing either flag creates a different cache partition.
@@ -49,6 +52,7 @@ Implications:
 ## Scan collection behavior
 
 Cache population uses a deterministic walker (`ignore::WalkBuilder`) configured by `include_hidden` and `use_gitignore`:
+
 - `follow_links(false)`
 - sorted by file path
 - `.git` is always skipped
@@ -56,6 +60,7 @@ Cache population uses a deterministic walker (`ignore::WalkBuilder`) configured 
 - entry file type + `mtime` are captured via `symlink_metadata`
 
 Search roots are resolved by `resolve_search_path`:
+
 - relative paths are resolved against current cwd
 - target must be an existing directory
 - root is canonicalized when possible
@@ -63,11 +68,13 @@ Search roots are resolved by `resolve_search_path`:
 ## Freshness and eviction policy
 
 Global policy (environment-overridable):
+
 - `FS_SCAN_CACHE_TTL_MS` (default `1000`)
 - `FS_SCAN_EMPTY_RECHECK_MS` (default `200`)
 - `FS_SCAN_CACHE_MAX_ENTRIES` (default `16`)
 
 Behavior:
+
 - `get_or_scan(...)`
   - if TTL is `0`: bypass cache entirely, always fresh scan (`cache_age_ms = 0`)
   - on cache hit within TTL: return cached entries + non-zero `cache_age_ms`
@@ -77,14 +84,17 @@ Behavior:
 ## Empty-result fast recheck (separate from normal hits)
 
 Normal cache hit:
+
 - a cache hit inside TTL returns cached entries and does nothing else.
 
 Empty-result fast recheck:
+
 - this is a **caller-side** policy using `ScanResult.cache_age_ms`
 - if filtered/query result is empty and cached scan age is at least `empty_recheck_ms()`, caller performs one `force_rescan(...)` and retries
 - intended to reduce stale-negative results when files were recently added but cache is still within TTL
 
 Current consumers:
+
 - `glob`: rechecks when filtered matches are empty and scan age exceeds threshold
 - `fuzzyFind` (`fd.rs`): rechecks only when query is non-empty and scored matches are empty
 - `grep`: rechecks when selected candidate file list is empty
@@ -94,11 +104,13 @@ Current consumers:
 Cache is opt-in on all exposed APIs (`cache?: boolean`, default `false`).
 
 Current defaults in native APIs:
+
 - `glob`: `hidden=false`, `gitignore=true`, `cache=false`
 - `fuzzyFind`: `hidden=false`, `gitignore=true`, `cache=false`
 - `grep`: `hidden=true`, `cache=false`, and cache scan always uses `use_gitignore=true`
 
 Coding-agent callers today:
+
 - High-volume mention candidate discovery enables cache:
   - `packages/coding-agent/src/utils/file-mentions.ts`
   - profile: `hidden=true`, `gitignore=true`, `includeNodeModules=true`, `cache=true`
@@ -108,11 +120,13 @@ Coding-agent callers today:
 ## Invalidation contract
 
 Native invalidation entrypoint:
+
 - `invalidateFsScanCache(path?: string)`
   - with `path`: remove cache entries whose root is a prefix of target path
   - without path: clear all scan cache entries
 
 Path handling details:
+
 - relative invalidation paths are resolved against cwd
 - invalidation attempts canonicalization
 - if target does not exist (e.g., delete), fallback canonicalizes parent and reattaches filename when possible
@@ -123,11 +137,13 @@ Path handling details:
 Coding-agent code must invalidate after successful filesystem mutations.
 
 Central helpers:
+
 - `invalidateFsScanAfterWrite(path)`
 - `invalidateFsScanAfterDelete(path)`
 - `invalidateFsScanAfterRename(oldPath, newPath)` (invalidates both sides when paths differ)
 
 Current mutation tool callsites:
+
 - `packages/coding-agent/src/tools/write.ts`
 - `packages/coding-agent/src/patch/index.ts` (hashline/patch/replace flows)
 
