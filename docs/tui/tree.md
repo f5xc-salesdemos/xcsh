@@ -1,3 +1,10 @@
+---
+title: Tree Command Reference
+sidebar:
+  order: 4
+  label: /tree command
+---
+
 # `/tree` Command Reference
 
 `/tree` opens the interactive **Session Tree** navigator. It lets you jump to any entry in the current session file and continue from that point.

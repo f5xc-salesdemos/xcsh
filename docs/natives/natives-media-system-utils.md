@@ -1,3 +1,10 @@
+---
+title: Natives Media and System Utilities
+sidebar:
+  order: 7
+  label: Media & system utils
+---
+
 # Natives media + system utilities
 
 This document is a subsystem deep-dive for the **system/media/conversion primitives** layer described in [`docs/natives-architecture.md`](./natives-architecture.md): `image`, `html`, `clipboard`, and `work` profiling.

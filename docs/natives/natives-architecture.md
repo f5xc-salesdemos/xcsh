@@ -1,3 +1,10 @@
+---
+title: Natives Architecture
+sidebar:
+  order: 1
+  label: Architecture
+---
+
 # Natives Architecture
 
 `@f5xc-salesdemos/pi-natives` is a three-layer stack:

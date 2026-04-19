@@ -1,3 +1,10 @@
+---
+title: Session Storage and Entry Model
+sidebar:
+  order: 1
+  label: Storage & entry model
+---
+
 # Session Storage and Entry Model
 
 This document is the source of truth for how coding-agent sessions are represented, persisted, migrated, and reconstructed at runtime.

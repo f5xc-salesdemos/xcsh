@@ -1,3 +1,10 @@
+---
+title: Notebook Tool Runtime Internals
+sidebar:
+  order: 2
+  label: Notebook tool
+---
+
 # Notebook tool runtime internals
 
 This document describes the current `notebook` tool implementation and its relationship to the kernel-backed Python runtime.

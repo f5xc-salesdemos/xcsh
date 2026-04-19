@@ -1,3 +1,10 @@
+---
+title: Custom Tools
+sidebar:
+  order: 4
+  label: Custom tools
+---
+
 # Custom Tools
 
 Custom tools are model-callable functions that plug into the same tool execution pipeline as built-in tools.

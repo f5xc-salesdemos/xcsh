@@ -1,3 +1,10 @@
+---
+title: Extensions
+sidebar:
+  order: 1
+  label: Overview
+---
+
 # Extensions
 
 Primary guide for authoring runtime extensions in `packages/coding-agent`.

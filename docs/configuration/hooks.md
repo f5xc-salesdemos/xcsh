@@ -1,3 +1,10 @@
+---
+title: Hooks
+sidebar:
+  order: 4
+  label: Hooks
+---
+
 # Hooks
 
 This document describes the **current hook subsystem code** in `src/extensibility/hooks/*`.

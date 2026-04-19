@@ -1,3 +1,10 @@
+---
+title: Gemini Manifest Extensions
+sidebar:
+  order: 7
+  label: Gemini manifest
+---
+
 # Gemini Manifest Extensions (`gemini-extension.json`)
 
 This document covers how the coding-agent discovers and parses Gemini-style manifest extensions (`gemini-extension.json`) into the `extensions` capability.

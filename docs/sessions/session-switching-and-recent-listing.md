@@ -1,3 +1,10 @@
+---
+title: Session Switching and Recent Session Listing
+sidebar:
+  order: 4
+  label: Switching & recent
+---
+
 # Session switching and recent session listing
 
 This document describes how coding-agent discovers recent sessions, resolves `--resume` targets, presents session pickers, and switches the active runtime session.

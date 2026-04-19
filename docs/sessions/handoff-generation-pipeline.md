@@ -1,3 +1,10 @@
+---
+title: Handoff Generation Pipeline
+sidebar:
+  order: 8
+  label: Handoff pipeline
+---
+
 # `/handoff` generation pipeline
 
 This document describes how the coding-agent implements `/handoff` today: trigger path, generation prompt, completion capture, session switch, and context reinjection.

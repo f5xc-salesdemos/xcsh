@@ -1,3 +1,10 @@
+---
+title: Porting to pi-natives (N-API) — Field Notes
+sidebar:
+  order: 9
+  label: Porting to pi-natives
+---
+
 # Porting to pi-natives (N-API) — Field Notes
 
 This is a practical guide for moving hot paths into `crates/pi-natives` and wiring them through the JS bindings. It exists to avoid the same failures happening twice.

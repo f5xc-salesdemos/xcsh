@@ -1,3 +1,10 @@
+---
+title: MCP Server and Tool Authoring
+sidebar:
+  order: 4
+  label: Server & tool authoring
+---
+
 # MCP server and tool authoring
 
 This document explains how MCP server definitions become callable `mcp_*` tools in coding-agent, and what operators should expect when configs are invalid, duplicated, disabled, or auth-gated.

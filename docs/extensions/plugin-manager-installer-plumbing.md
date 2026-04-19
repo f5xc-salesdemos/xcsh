@@ -1,3 +1,10 @@
+---
+title: Plugin Manager and Installer Plumbing
+sidebar:
+  order: 5
+  label: Plugin manager
+---
+
 # Plugin manager and installer plumbing
 
 This document describes how `xcsh plugin` operations mutate plugin state on disk and how installed plugins become runtime capabilities (tools today, hooks/commands path resolution available).

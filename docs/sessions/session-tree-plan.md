@@ -1,3 +1,10 @@
+---
+title: Session Tree Architecture
+sidebar:
+  order: 2
+  label: Tree architecture
+---
+
 # Session tree architecture (current)
 
 Reference: [session.md](./session.md)

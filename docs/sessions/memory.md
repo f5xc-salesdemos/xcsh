@@ -1,3 +1,10 @@
+---
+title: Autonomous Memory
+sidebar:
+  order: 7
+  label: Autonomous memory
+---
+
 # Autonomous Memory
 
 When enabled, the agent automatically extracts durable knowledge from past sessions and injects a compact summary into each new session. Over time it builds a project-scoped memory store — technical decisions, recurring workflows, pitfalls — that carries forward without manual effort.

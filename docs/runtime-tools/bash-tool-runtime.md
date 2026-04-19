@@ -1,3 +1,10 @@
+---
+title: Bash Tool Runtime
+sidebar:
+  order: 1
+  label: Bash tool
+---
+
 # Bash tool runtime
 
 This document describes the **`bash` tool** runtime path used by agent tool calls, from command normalization to execution, truncation/artifacts, and rendering.

@@ -1,3 +1,10 @@
+---
+title: TUI Runtime Internals
+sidebar:
+  order: 2
+  label: Runtime internals
+---
+
 # TUI runtime internals
 
 This document maps the non-theme runtime path from terminal input to rendered output in interactive mode. It focuses on behavior in `packages/tui` and its integration from `packages/coding-agent` controllers.

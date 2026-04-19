@@ -1,3 +1,10 @@
+---
+title: Python Tool and IPython Runtime
+sidebar:
+  order: 3
+  label: Python & IPython
+---
+
 # Python Tool and IPython Runtime
 
 This document describes the current Python execution stack in `packages/coding-agent`.

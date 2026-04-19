@@ -1,3 +1,10 @@
+---
+title: Model and Provider Configuration
+sidebar:
+  order: 1
+  label: Models & providers
+---
+
 # Model and Provider Configuration (`models.yml`)
 
 This document describes how the coding-agent currently loads models, applies overrides, resolves credentials, and chooses models at runtime.

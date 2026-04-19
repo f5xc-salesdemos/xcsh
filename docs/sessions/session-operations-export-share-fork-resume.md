@@ -1,3 +1,10 @@
+---
+title: Session Operations: Export, Dump, Share, Fork, Resume
+sidebar:
+  order: 3
+  label: Operations
+---
+
 # Session Operations: export, dump, share, fork, resume/continue
 
 This document describes operator-visible behavior for session export/share/fork/resume operations as currently implemented.

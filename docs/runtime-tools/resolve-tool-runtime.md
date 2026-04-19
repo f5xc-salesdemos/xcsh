@@ -1,3 +1,10 @@
+---
+title: Resolve Tool Runtime Internals
+sidebar:
+  order: 3
+  label: Resolve tool
+---
+
 # Resolve tool runtime internals
 
 This document explains how preview/apply workflows are modeled in coding-agent and how custom tools can participate via `pushPendingAction`.

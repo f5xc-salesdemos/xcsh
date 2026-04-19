@@ -1,3 +1,10 @@
+---
+title: Theming Reference
+sidebar:
+  order: 3
+  label: Theming
+---
+
 # Theming Reference
 
 This document describes how theming works in the coding-agent today: schema, loading, runtime behavior, and failure modes.

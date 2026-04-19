@@ -1,3 +1,10 @@
+---
+title: Natives Text and Search Pipeline
+sidebar:
+  order: 6
+  label: Text & search pipeline
+---
+
 # Natives Text/Search Pipeline
 
 This document maps the `@f5xc-salesdemos/pi-natives` text/search surface (`grep`, `glob`, `text`, `highlight`) from TypeScript wrappers to Rust N-API exports and back to JS result objects.

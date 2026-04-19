@@ -1,3 +1,10 @@
+---
+title: TUI Integration for Extensions and Custom Tools
+sidebar:
+  order: 1
+  label: Extension integration
+---
+
 # TUI integration for extensions and custom tools
 
 This document covers the **current** TUI contract used by `packages/coding-agent` and `packages/tui` for extension UI, custom tool UI, and custom renderers.

@@ -1,3 +1,10 @@
+---
+title: RPC Protocol Reference
+sidebar:
+  order: 5
+  label: RPC protocol
+---
+
 # RPC Protocol Reference
 
 RPC mode runs the coding agent as a newline-delimited JSON protocol over stdio.

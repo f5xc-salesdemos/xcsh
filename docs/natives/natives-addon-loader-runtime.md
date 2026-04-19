@@ -1,3 +1,10 @@
+---
+title: Natives Addon Loader Runtime
+sidebar:
+  order: 3
+  label: Addon loader
+---
+
 # Natives Addon Loader Runtime
 
 This document deep-dives the addon loading/validation layer in `@f5xc-salesdemos/pi-natives`: how `native.ts` decides which `.node` file to load, when embedded payload extraction runs, and how startup failures are reported.

@@ -1,3 +1,10 @@
+---
+title: Task Agent Discovery and Selection
+sidebar:
+  order: 6
+  label: Task agent discovery
+---
+
 # Task Agent Discovery and Selection
 
 This document describes how the task subsystem discovers agent definitions, merges multiple sources, and resolves a requested agent at execution time.

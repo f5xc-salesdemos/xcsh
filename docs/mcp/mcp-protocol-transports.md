@@ -1,3 +1,10 @@
+---
+title: MCP Protocol and Transport Internals
+sidebar:
+  order: 2
+  label: Protocol & transports
+---
+
 # MCP Protocol and Transport Internals
 
 This document describes how coding-agent implements MCP JSON-RPC messaging and how protocol concerns are split from transport concerns.

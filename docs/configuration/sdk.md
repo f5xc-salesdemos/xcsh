@@ -1,3 +1,10 @@
+---
+title: SDK
+sidebar:
+  order: 6
+  label: SDK
+---
+
 # SDK
 
 The SDK is the in-process integration surface for `@f5xc-salesdemos/xcsh`.

@@ -1,3 +1,10 @@
+---
+title: Natives Binding Contract (TypeScript Side)
+sidebar:
+  order: 2
+  label: Binding contract
+---
+
 # Natives Binding Contract (TypeScript Side)
 
 This document defines the TypeScript-side contract that sits between `@f5xc-salesdemos/pi-natives` callers and the loaded N-API addon.

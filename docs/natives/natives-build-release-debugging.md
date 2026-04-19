@@ -1,3 +1,10 @@
+---
+title: Natives Build, Release, and Debugging Runbook
+sidebar:
+  order: 8
+  label: Build, release & debugging
+---
+
 # Natives Build, Release, and Debugging Runbook
 
 This runbook describes how the `@f5xc-salesdemos/pi-natives` build pipeline produces `.node` addons, how compiled distributions load them, and how to debug loader/build failures.

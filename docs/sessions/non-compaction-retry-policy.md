@@ -1,3 +1,10 @@
+---
+title: Non-Compaction Auto-Retry Policy
+sidebar:
+  order: 6
+  label: Retry policy
+---
+
 # Non-compaction auto-retry policy
 
 This document describes the standard API-error retry path in `AgentSession`.

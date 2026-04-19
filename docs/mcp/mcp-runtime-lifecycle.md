@@ -1,3 +1,10 @@
+---
+title: MCP Runtime Lifecycle
+sidebar:
+  order: 3
+  label: Runtime lifecycle
+---
+
 # MCP runtime lifecycle
 
 This document describes how MCP servers are discovered, connected, exposed as tools, refreshed, and torn down in the coding-agent runtime.

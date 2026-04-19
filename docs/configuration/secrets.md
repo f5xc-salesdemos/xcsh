@@ -1,3 +1,10 @@
+---
+title: Secret Obfuscation
+sidebar:
+  order: 3
+  label: Secrets
+---
+
 # Secret Obfuscation
 
 Prevents sensitive values (API keys, tokens, passwords) from being sent to LLM providers. When enabled, secrets are replaced with deterministic placeholders before leaving the process, and restored in tool call arguments returned by the model.

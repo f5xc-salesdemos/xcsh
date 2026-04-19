@@ -1,3 +1,10 @@
+---
+title: Provider Streaming Internals
+sidebar:
+  order: 2
+  label: Streaming internals
+---
+
 # Provider streaming internals
 
 This document explains how token/tool streaming is normalized in `@f5xc-salesdemos/pi-ai`, then propagated through `@f5xc-salesdemos/pi-agent-core` and `coding-agent` session events.

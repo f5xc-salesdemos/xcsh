@@ -1,3 +1,10 @@
+---
+title: Native Rust Task Execution and Cancellation
+sidebar:
+  order: 5
+  label: Task cancellation
+---
+
 # Native Rust task execution and cancellation (`pi-natives`)
 
 This document describes how `crates/pi-natives` schedules native work and how cancellation flows from JS options (`timeoutMs`, `AbortSignal`) to Rust execution.

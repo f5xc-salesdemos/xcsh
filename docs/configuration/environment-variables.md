@@ -1,3 +1,10 @@
+---
+title: Environment Variables
+sidebar:
+  order: 2
+  label: Environment variables
+---
+
 # Environment Variables (Current Runtime Reference)
 
 This reference is derived from current code paths in:

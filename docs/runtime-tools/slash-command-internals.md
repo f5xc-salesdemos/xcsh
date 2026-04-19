@@ -1,3 +1,10 @@
+---
+title: Slash Command Internals
+sidebar:
+  order: 5
+  label: Slash commands
+---
+
 # Slash command internals
 
 This document describes how slash commands are discovered, deduplicated, surfaced in interactive mode, and expanded at prompt time in `coding-agent`.

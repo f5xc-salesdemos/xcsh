@@ -1,3 +1,10 @@
+---
+title: Skills
+sidebar:
+  order: 3
+  label: Skills
+---
+
 # Skills
 
 Skills are file-backed capability packs discovered at startup and exposed to the model as:

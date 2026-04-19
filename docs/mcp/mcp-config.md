@@ -1,3 +1,10 @@
+---
+title: MCP Configuration
+sidebar:
+  order: 1
+  label: Configuration
+---
+
 # MCP configuration in OMP
 
 This guide explains how to add, edit, and validate MCP servers for the OMP coding agent.

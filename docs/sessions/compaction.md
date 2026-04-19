@@ -1,3 +1,10 @@
+---
+title: Compaction and Branch Summaries
+sidebar:
+  order: 5
+  label: Compaction
+---
+
 # Compaction and Branch Summaries
 
 Compaction and branch summaries are the two mechanisms that keep long sessions usable without losing prior work context.

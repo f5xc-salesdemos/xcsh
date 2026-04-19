@@ -1,3 +1,10 @@
+---
+title: Marketplace Plugin System
+sidebar:
+  order: 4
+  label: Marketplace
+---
+
 # Marketplace plugin system
 
 The marketplace system lets you discover, install, and manage plugins from Git-hosted catalogs. It is compatible with the Claude Code plugin registry format.

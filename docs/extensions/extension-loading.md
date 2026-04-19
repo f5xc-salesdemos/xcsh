@@ -1,3 +1,10 @@
+---
+title: Extension Loading (TypeScript/JavaScript Modules)
+sidebar:
+  order: 2
+  label: Extension loading
+---
+
 # Extension Loading (TypeScript/JavaScript Modules)
 
 This document covers how the coding agent discovers and loads **extension modules** (`.ts`/`.js`) at startup.
