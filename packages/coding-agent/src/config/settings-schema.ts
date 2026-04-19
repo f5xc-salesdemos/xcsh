@@ -662,12 +662,6 @@ export const SETTINGS_SCHEMA = {
 		},
 	},
 
-	collapseChangelog: {
-		type: "boolean",
-		default: true,
-		ui: { tab: "interaction", label: "Collapse Changelog", description: "Show condensed changelog after updates" },
-	},
-
 	// Notifications
 	"completion.notify": {
 		type: "enum",

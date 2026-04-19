@@ -933,7 +933,6 @@ interruptMode: immediate
 
 shellPath: C:\\path\\to\\bash.exe
 hideThinkingBlock: false
-collapseChangelog: false
 
 disabledProviders: []
 disabledExtensions: []
