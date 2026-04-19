@@ -178,8 +178,9 @@ do_analyze() {
   info "Upstream commits we're behind: $upstream_commits"
 
   # Get file lists
+  local upstream_ref="${UPSTREAM_REMOTE}/${UPSTREAM_BRANCH}"
   git diff --name-only "$MERGE_BASE"..HEAD | sort > "$WORK_DIR/our-files.txt"
-  git diff --name-only "$MERGE_BASE".."$UPSTREAM_REMOTE/$UPSTREAM_BRANCH" | sort > "$WORK_DIR/upstream-files.txt"
+  git diff --name-only "${MERGE_BASE}..${upstream_ref}" | sort > "$WORK_DIR/upstream-files.txt"
 
   comm -12 "$WORK_DIR/our-files.txt" "$WORK_DIR/upstream-files.txt" > "$WORK_DIR/both-files.txt"
   comm -23 "$WORK_DIR/our-files.txt" "$WORK_DIR/upstream-files.txt" > "$WORK_DIR/our-only-files.txt"
@@ -394,7 +395,7 @@ do_build() {
   # git diff --name-only doesn't track rename sources, so they persist on the new branch
   info "Checking for renamed files (old paths to delete)..."
   local rename_count=0
-  while IFS=$'\t' read -r status old_path new_path; do
+  while IFS=$'\t' read -r status old_path _new_path; do
     case "$status" in
       R*)
         if git cat-file -t "$REBASE_BRANCH:$old_path" &>/dev/null 2>&1; then
