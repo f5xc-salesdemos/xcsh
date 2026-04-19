@@ -1,0 +1,18 @@
+# xcsh fork-faithful ruff configuration.
+#
+# xcsh is a fork of badlogic/pi-mono. The ecosystem-wide ruff.toml
+# distributed by f5xc-salesdemos/docs-control is intentionally strict
+# (pydocstyle, tryceratops, errmsg, pytest-style, etc.) for greenfield
+# Python projects. Applying that ruleset to this fork would require
+# extensive reformatting and constant merge conflicts against upstream.
+#
+# xcsh is therefore opted out of docs-control's ruff.toml sync via
+# managed_files.skip_files.xcsh in docs-control's repo-settings.json,
+# and ships this minimal correctness-only config instead.
+line-length = 120
+
+[lint]
+select = ["E", "W", "F"]
+# Tolerate long prompt strings in benchmark / integration scripts;
+# re-enable per-file if needed.
+ignore = ["E501"]

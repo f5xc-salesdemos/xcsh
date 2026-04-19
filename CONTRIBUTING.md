@@ -177,6 +177,7 @@ bun run check:ts
 ```
 
 **Rules:**
+
 - Never skip the red step -- if you cannot write a failing test first, you do not understand the requirement.
 - One behaviour per cycle. Commit after each green.
 - Minimum implementation only; extra code is untested code.
@@ -271,6 +272,7 @@ bun test --max-concurrency 2 --bail 1
 ```
 
 **Rules for AI agents and CI:**
+
 - Never run `bun test` without `--max-concurrency`. The default of 20 will crash
   containers with less than 16 GB RAM.
 - Prefer targeted tests (`--filter` or `--cwd`) over full-suite runs.
@@ -412,6 +414,7 @@ Closes #<N>
 ```
 
 **Rules:**
+
 - PR title follows conventional commit format.
 - PR body must include What, Why, and Testing sections.
 - Branch must target `main`.
@@ -455,6 +458,7 @@ createAgentSession(...)
 ```
 
 **Layers:**
+
 1. **Command router** (`cli.ts`) -- argv normalization, subcommand dispatch, Bun runtime guard.
 2. **Orchestration** (`main.ts`) -- theme/settings/model init, session creation, mode dispatch.
 3. **Mode runtime** (`modes/`) -- interactive TUI, print (text/json), RPC (JSONL protocol).

@@ -844,7 +844,6 @@ def apply_todo_ops(progress: ModelProgress, args: Any) -> None:
             next_status = raw_op.get("status") if isinstance(raw_op.get("status"), str) else status
             progress.todo_items[task_id] = (next_content, next_status)
         elif op == "add_task":
-            phase = raw_op.get("phase")
             task_payload = raw_op.get("task")
             if not isinstance(task_payload, dict):
                 continue

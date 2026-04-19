@@ -1,0 +1,11 @@
+# xcsh pylint configuration.
+#
+# Opts out of docs-control's strict .python-lint to preserve fork fidelity
+# to upstream badlogic/pi-mono. Disables the Convention (C) and Refactor
+# (R) categories so complexity/naming/docstring prescriptors do not block
+# CI; keeps Errors (E), Warnings (W), Fatal (F), and Information (I).
+[MASTER]
+ignore=.git,node_modules,dist,target,crates,packages/*/dist
+
+[MESSAGES CONTROL]
+disable=C,R
