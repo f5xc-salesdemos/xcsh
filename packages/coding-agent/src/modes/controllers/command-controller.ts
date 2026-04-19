@@ -739,7 +739,7 @@ export class CommandController {
 			// Update CWD if the shell changed directory (e.g. via cd)
 			if (result.newCwd && result.newCwd !== this.ctx.sessionManager.getCwd()) {
 				setShellPwd(result.newCwd);
-				this.ctx.statusLine.invalidate();
+				this.ctx.statusLine.setCwd(result.newCwd);
 				this.ctx.ui.requestRender();
 			}
 

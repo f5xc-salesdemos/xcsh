@@ -61,6 +61,7 @@ export class StatusLineComponent implements Component {
 	#subagentCount: number = 0;
 	#sessionStartTime: number = Date.now();
 	#planModeStatus: { enabled: boolean; paused: boolean } | null = null;
+	#cwd: string = getShellPwd();
 
 	// Git status caching (1s TTL)
 	#cachedGitStatus: {
@@ -134,7 +135,8 @@ export class StatusLineComponent implements Component {
 
 	watchCwd(eventBus: EventBus): void {
 		this.#cwdUnsubscribe?.();
-		this.#cwdUnsubscribe = eventBus.on("cwd:changed", () => {
+		this.#cwdUnsubscribe = eventBus.on("cwd:changed", newCwd => {
+			if (typeof newCwd === "string") this.#cwd = newCwd;
 			this.#invalidateGitCaches();
 			this.#setupGitWatcher();
 			this.#onStatusChanged?.();
@@ -147,7 +149,7 @@ export class StatusLineComponent implements Component {
 			this.#gitWatcher = null;
 		}
 
-		const gitHeadPath = git.repo.resolveSync(getShellPwd())?.headPath ?? null;
+		const gitHeadPath = git.repo.resolveSync(this.#cwd)?.headPath ?? null;
 		if (!gitHeadPath) return;
 
 		try {
@@ -177,13 +179,20 @@ export class StatusLineComponent implements Component {
 		this.#invalidateGitCaches();
 	}
 
+	/** Update the displayed working directory (e.g. after a user !cd command). */
+	setCwd(cwd: string): void {
+		this.#cwd = cwd;
+		this.#invalidateGitCaches();
+		this.#setupGitWatcher();
+	}
+
 	#invalidateGitCaches(): void {
 		this.#cachedBranch = undefined;
 		this.#cachedBranchRepoId = undefined;
 		this.#cachedPrContext = undefined;
 	}
 	#getCurrentBranch(): string | null {
-		const head = git.head.resolveSync(getShellPwd());
+		const head = git.head.resolveSync(this.#cwd);
 		const gitHeadPath = head?.headPath ?? null;
 		if (this.#cachedBranch !== undefined && this.#cachedBranchRepoId === gitHeadPath) {
 			return this.#cachedBranch;
@@ -204,7 +213,7 @@ export class StatusLineComponent implements Component {
 		if (this.#defaultBranch === undefined) {
 			this.#defaultBranch = "main";
 			(async () => {
-				const resolved = await git.branch.default(getShellPwd());
+				const resolved = await git.branch.default(this.#cwd);
 				if (resolved) {
 					this.#defaultBranch = resolved;
 					if (this.#onBranchChange) {
@@ -235,7 +244,7 @@ export class StatusLineComponent implements Component {
 		(async () => {
 			try {
 				// Prefer gitstatusd daemon (10x faster than git CLI)
-				const gsResult = await queryGitStatus(getShellPwd());
+				const gsResult = await queryGitStatus(this.#cwd);
 				if (gsResult) {
 					this.#cachedGitStatus = {
 						staged: gsResult.staged,
@@ -249,7 +258,7 @@ export class StatusLineComponent implements Component {
 					};
 				} else {
 					// Fallback to git CLI
-					const summary = await git.status.summary(getShellPwd());
+					const summary = await git.status.summary(this.#cwd);
 					this.#cachedGitStatus = summary
 						? { ...summary, conflicted: 0, ahead: 0, behind: 0, stashes: 0, action: "" }
 						: null;
@@ -299,7 +308,7 @@ export class StatusLineComponent implements Component {
 			};
 			try {
 				// Requires `gh repo set-default` to be configured; fails gracefully if not
-				const result = await $`gh pr view --json number,url`.cwd(getShellPwd()).quiet().nothrow();
+				const result = await $`gh pr view --json number,url`.cwd(this.#cwd).quiet().nothrow();
 				if (result.exitCode !== 0) {
 					setCachedPr(null);
 					return;
@@ -383,7 +392,7 @@ export class StatusLineComponent implements Component {
 		return {
 			session: this.session,
 			width,
-			cwd: getShellPwd(),
+			cwd: this.#cwd,
 			options: this.#resolveSettings().segmentOptions ?? {},
 			planMode: this.#planModeStatus,
 			usageStats,
