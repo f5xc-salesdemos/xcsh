@@ -4,12 +4,12 @@ This document explains how preview/apply workflows are modeled in coding-agent a
 
 ## Scope and key files
 
-- [`src/tools/resolve.ts`](../packages/coding-agent/src/tools/resolve.ts)
-- [`src/tools/pending-action.ts`](../packages/coding-agent/src/tools/pending-action.ts)
-- [`src/tools/ast-edit.ts`](../packages/coding-agent/src/tools/ast-edit.ts)
-- [`src/extensibility/custom-tools/types.ts`](../packages/coding-agent/src/extensibility/custom-tools/types.ts)
-- [`src/extensibility/custom-tools/loader.ts`](../packages/coding-agent/src/extensibility/custom-tools/loader.ts)
-- [`src/sdk.ts`](../packages/coding-agent/src/sdk.ts)
+- [`src/tools/resolve.ts`](../../packages/coding-agent/src/tools/resolve.ts)
+- [`src/tools/pending-action.ts`](../../packages/coding-agent/src/tools/pending-action.ts)
+- [`src/tools/ast-edit.ts`](../../packages/coding-agent/src/tools/ast-edit.ts)
+- [`src/extensibility/custom-tools/types.ts`](../../packages/coding-agent/src/extensibility/custom-tools/types.ts)
+- [`src/extensibility/custom-tools/loader.ts`](../../packages/coding-agent/src/extensibility/custom-tools/loader.ts)
+- [`src/sdk.ts`](../../packages/coding-agent/src/sdk.ts)
 
 ## What `resolve` does
 
