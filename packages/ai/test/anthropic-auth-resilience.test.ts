@@ -33,12 +33,14 @@ beforeEach(() => {
 	// Without this, a developer with real models.yml on disk would have tier 6
 	// resolve before the litellm/error tiers are tested.
 	const originalReadFileSync = fs.readFileSync.bind(fs);
-	vi.spyOn(fs, "readFileSync").mockImplementation((...args: Parameters<typeof fs.readFileSync>) => {
+	// Cast is required because `mockImplementation` expects the overload union of
+	// `fs.readFileSync`, which no single function signature can express.
+	vi.spyOn(fs, "readFileSync").mockImplementation(((...args: Parameters<typeof fs.readFileSync>) => {
 		if (typeof args[0] === "string" && args[0].endsWith("models.yml")) {
 			throw new Error("ENOENT: mocked for test isolation");
 		}
 		return originalReadFileSync(...args);
-	});
+	}) as typeof fs.readFileSync);
 });
 
 afterEach(() => {
