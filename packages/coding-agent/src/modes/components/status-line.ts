@@ -1,13 +1,14 @@
 import * as fs from "node:fs";
 import type { AssistantMessage } from "@f5xc-salesdemos/pi-ai";
 import { type Component, truncateToWidth, visibleWidth } from "@f5xc-salesdemos/pi-tui";
-import { formatCount, getProjectDir } from "@f5xc-salesdemos/pi-utils";
+import { formatCount, getProjectDir, getShellPwd } from "@f5xc-salesdemos/pi-utils";
 import { $ } from "bun";
 import { settings } from "../../config/settings";
 import type { StatusLinePreset, StatusLineSegmentId, StatusLineSeparatorStyle } from "../../config/settings-schema";
 import { theme } from "../../modes/theme/theme";
 import type { AgentSession } from "../../session/agent-session";
 import { calculatePromptTokens } from "../../session/compaction/compaction";
+import type { EventBus } from "../../utils/event-bus";
 import * as git from "../../utils/git";
 import { queryGitStatus } from "../../utils/gitstatus";
 import { sanitizeStatusText } from "../shared";
@@ -52,6 +53,7 @@ export class StatusLineComponent implements Component {
 	#cachedBranch: string | null | undefined = undefined;
 	#cachedBranchRepoId: string | null | undefined = undefined;
 	#gitWatcher: fs.FSWatcher | null = null;
+	#cwdUnsubscribe: (() => void) | null = null;
 	#onBranchChange: (() => void) | null = null;
 	#onStatusChanged: (() => void) | null = null;
 	#autoCompactEnabled: boolean = true;
@@ -130,6 +132,15 @@ export class StatusLineComponent implements Component {
 		this.#setupGitWatcher();
 	}
 
+	watchCwd(eventBus: EventBus): void {
+		this.#cwdUnsubscribe?.();
+		this.#cwdUnsubscribe = eventBus.on("cwd:changed", () => {
+			this.#invalidateGitCaches();
+			this.#setupGitWatcher();
+			this.#onStatusChanged?.();
+		});
+	}
+
 	#setupGitWatcher(): void {
 		if (this.#gitWatcher) {
 			this.#gitWatcher.close();
@@ -155,6 +166,10 @@ export class StatusLineComponent implements Component {
 		if (this.#gitWatcher) {
 			this.#gitWatcher.close();
 			this.#gitWatcher = null;
+		}
+		if (this.#cwdUnsubscribe) {
+			this.#cwdUnsubscribe();
+			this.#cwdUnsubscribe = null;
 		}
 	}
 
@@ -368,6 +383,7 @@ export class StatusLineComponent implements Component {
 		return {
 			session: this.session,
 			width,
+			cwd: getShellPwd(),
 			options: this.#resolveSettings().segmentOptions ?? {},
 			planMode: this.#planModeStatus,
 			usageStats,
