@@ -1,5 +1,5 @@
 ---
-title: Porting From pi-mono: A Practical Merge Guide
+title: "Porting From pi-mono: A Practical Merge Guide"
 sidebar:
   order: 9
   label: Porting from pi-mono

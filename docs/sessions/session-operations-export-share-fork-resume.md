@@ -1,5 +1,5 @@
 ---
-title: Session Operations: Export, Dump, Share, Fork, Resume
+title: "Session Operations: Export, Dump, Share, Fork, Resume"
 sidebar:
   order: 3
   label: Operations
