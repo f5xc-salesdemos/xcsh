@@ -30,19 +30,39 @@ import { SearchProviderError } from "./types";
 
 /** Web search tool parameters schema */
 export const webSearchSchema = Type.Object({
-	query: Type.String({ description: "Search query" }),
+	query: Type.String({ description: "Search query (non-empty, whitespace-only is rejected)" }),
 	recency: Type.Optional(
 		StringEnum(["day", "week", "month", "year"], {
-			description: "Recency filter (Brave, Perplexity)",
+			description: "Recency filter. Exhaustive enum — one of: day, week, month, year.",
 		}),
 	),
-	limit: Type.Optional(Type.Number({ description: "Max results to return" })),
-	max_tokens: Type.Optional(Type.Number({ description: "Maximum output tokens" })),
-	temperature: Type.Optional(Type.Number({ description: "Sampling temperature" })),
-	num_search_results: Type.Optional(Type.Number({ description: "Number of search results to retrieve" })),
-	allowed_domains: Type.Optional(Type.Array(Type.String(), { description: "Only return results from these domains" })),
-	blocked_domains: Type.Optional(Type.Array(Type.String(), { description: "Exclude results from these domains" })),
-	max_uses: Type.Optional(Type.Number({ description: "Maximum number of web searches per request" })),
+	limit: Type.Optional(
+		Type.Number({
+			description:
+				"Post-processing cap on the number of sources surfaced in the tool result. Positive integer. Controls output verbosity; see num_search_results for backend fetch count.",
+		}),
+	),
+	max_tokens: Type.Optional(Type.Number({ description: "Maximum output tokens. Positive integer." })),
+	temperature: Type.Optional(Type.Number({ description: "Sampling temperature between 0 and 2." })),
+	num_search_results: Type.Optional(
+		Type.Number({
+			description:
+				"Number of sources the backend should fetch. Positive integer. Controls provider fetch count; see limit for output-side trimming.",
+		}),
+	),
+	allowed_domains: Type.Optional(
+		Type.Array(Type.String(), {
+			description: "Only return results from these domains. Entries must be non-empty strings.",
+		}),
+	),
+	blocked_domains: Type.Optional(
+		Type.Array(Type.String(), {
+			description: "Exclude results from these domains. Entries must be non-empty strings.",
+		}),
+	),
+	max_uses: Type.Optional(
+		Type.Number({ description: "Maximum number of web searches per request. Positive integer." }),
+	),
 	user_location: Type.Optional(
 		Type.Object(
 			{
