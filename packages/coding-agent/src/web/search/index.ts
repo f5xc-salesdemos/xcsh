@@ -21,6 +21,7 @@ import webSearchSystemPrompt from "../../prompts/system/web-search.md" with { ty
 import webSearchDescription from "../../prompts/tools/web-search.md" with { type: "text" };
 import type { ToolSession } from "../../tools";
 import { formatAge } from "../../tools/render-utils";
+import { parseWebSearchError } from "./errors";
 import { normalizeUserLocation, validateWebSearchParams, type WebSearchParams } from "./params";
 import { getSearchProvider, resolveProviderChain, type SearchProvider } from "./provider";
 import { renderSearchCall, renderSearchResult, type SearchRenderDetails } from "./render";
@@ -103,9 +104,9 @@ function formatProviderError(error: unknown, provider: SearchProvider): string {
 			}
 			return `${getSearchProvider(error.provider).label} authorization failed (${error.status}). Check API key or base URL.`;
 		}
-		return error.message;
+		return parseWebSearchError(error).userMessage;
 	}
-	if (error instanceof Error) return error.message;
+	if (error instanceof Error) return parseWebSearchError(error).userMessage;
 	return `Unknown error from ${provider.label}`;
 }
 
