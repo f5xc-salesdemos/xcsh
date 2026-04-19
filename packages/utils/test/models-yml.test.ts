@@ -184,4 +184,86 @@ describe("readProviderFromModelsYml", () => {
 		write(["providers:", "  anthropic:", "    notes: nothing useful here", ""].join("\n"));
 		expect(readProviderFromModelsYml("anthropic", modelsPath)).toBeNull();
 	});
+
+	it("classifies bare all-caps tokens without underscores as literals", () => {
+		// Env-var references in this codebase (LITELLM_API_KEY, ANTHROPIC_API_KEY, …)
+		// all contain at least one underscore. A short all-caps string like "SK12345"
+		// almost certainly denotes a hand-edited literal, not an env var.
+		write(
+			[
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://proxy.example.com/anthropic"',
+				"    apiKey: SK12345",
+				"",
+			].join("\n"),
+		);
+
+		const block = readProviderFromModelsYml("anthropic", modelsPath);
+		expect(block?.apiKey).toEqual({ kind: "literal", value: "SK12345", wasQuoted: false });
+	});
+
+	it("does not confuse a nested anthropic: inside another provider with the target block", () => {
+		// A sub-map under a different provider that happens to contain the target
+		// provider's name must not pollute the read. Only the real top-level
+		// `providers.anthropic` block should be returned.
+		write(
+			[
+				"providers:",
+				"  someProvider:",
+				"    anthropic:",
+				'      baseUrl: "https://ignored.example.com/anthropic"',
+				"      apiKey: SHOULD_NOT_LEAK",
+				"  anthropic:",
+				'    baseUrl: "https://correct.example.com/anthropic"',
+				"    apiKey: CORRECT_KEY",
+				"",
+			].join("\n"),
+		);
+
+		const block = readProviderFromModelsYml("anthropic", modelsPath);
+		expect(block?.baseUrl).toBe("https://correct.example.com/anthropic");
+		expect(block?.apiKey).toEqual({ kind: "envVar", name: "CORRECT_KEY" });
+	});
+
+	it("ignores keys inside nested sub-maps of the target block", () => {
+		// A `discovery:` sub-map (as used for the litellm provider) or any other
+		// nested map must not overwrite the target block's baseUrl / apiKey even
+		// if the nested map contains keys with the same name.
+		write(
+			[
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://correct.example.com/anthropic"',
+				"    apiKey: REAL_KEY",
+				"    discovery:",
+				'      baseUrl: "https://nested-should-not-leak"',
+				"      apiKey: NESTED_SHOULD_NOT_LEAK",
+				"",
+			].join("\n"),
+		);
+
+		const block = readProviderFromModelsYml("anthropic", modelsPath);
+		expect(block?.baseUrl).toBe("https://correct.example.com/anthropic");
+		expect(block?.apiKey).toEqual({ kind: "envVar", name: "REAL_KEY" });
+	});
+
+	it("exits the target block cleanly on a sibling provider", () => {
+		write(
+			[
+				"providers:",
+				"  anthropic:",
+				'    baseUrl: "https://correct.example.com/anthropic"',
+				"    apiKey: CORRECT_KEY",
+				"  litellm:",
+				'    baseUrl: "https://correct.example.com/v1"',
+				"    apiKey: LITELLM_KEY",
+				"",
+			].join("\n"),
+		);
+
+		const anthropic = readProviderFromModelsYml("anthropic", modelsPath);
+		expect(anthropic?.baseUrl).toBe("https://correct.example.com/anthropic");
+		expect(anthropic?.apiKey).toEqual({ kind: "envVar", name: "CORRECT_KEY" });
+	});
 });

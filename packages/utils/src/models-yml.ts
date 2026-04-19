@@ -29,6 +29,16 @@ export interface ProviderYmlEntry {
 /**
  * Read a named provider block from models.yml.
  * Returns null if the file is unreadable or the named block is absent.
+ *
+ * The parser pins two indent levels once it enters the `providers:` section:
+ *
+ *   - `providersChildIndent` — the column where provider names live. A line
+ *     only qualifies as a provider header when its indent matches this level,
+ *     so a nested `anthropic:` inside another provider's sub-map is ignored.
+ *   - `fieldIndent` — the column of the first key-value line inside the
+ *     target block. Only lines at exactly this indent are considered for
+ *     `baseUrl` / `apiKey`, so deeper nested maps (e.g. `discovery:`) cannot
+ *     leak values back into the target block.
  */
 export function readProviderFromModelsYml(providerName: string, modelsYmlPath?: string): ProviderYmlEntry | null {
 	const resolvedPath = resolveModelsYmlPath(modelsYmlPath);
@@ -42,10 +52,12 @@ export function readProviderFromModelsYml(providerName: string, modelsYmlPath?: 
 	}
 
 	const lines = content.split("\n");
-	const providerHeaderRe = new RegExp(`^(\\s*)${escapeRegex(providerName)}\\s*:\\s*$`);
+	const providerHeaderRe = new RegExp(`^\\s*${escapeRegex(providerName)}\\s*:\\s*$`);
 
 	let inProviders = false;
+	let providersChildIndent = -1;
 	let providerIndent = -1;
+	let fieldIndent = -1;
 	let inTargetBlock = false;
 	let baseUrl: string | undefined;
 	let apiKey: ApiKeyValue | undefined;
@@ -59,24 +71,31 @@ export function readProviderFromModelsYml(providerName: string, modelsYmlPath?: 
 		if (indent === 0) {
 			inProviders = /^providers\s*:/.test(line);
 			inTargetBlock = false;
+			providersChildIndent = -1;
 			providerIndent = -1;
+			fieldIndent = -1;
 			continue;
 		}
 
 		if (!inProviders) continue;
 
-		if (!inTargetBlock) {
-			const headerMatch = providerHeaderRe.exec(line);
-			if (headerMatch) {
-				inTargetBlock = true;
-				providerIndent = headerMatch[1].length;
-			}
+		// First indented child fixes the provider-name indent level.
+		if (providersChildIndent === -1) providersChildIndent = indent;
+
+		// A line at the provider-name indent is always a provider header,
+		// and it ends the previous target block (if any).
+		if (indent === providersChildIndent) {
+			inTargetBlock = providerHeaderRe.test(line);
+			providerIndent = inTargetBlock ? indent : -1;
+			fieldIndent = -1;
 			continue;
 		}
 
-		// Inside the target block. A key at the provider level (same indent)
-		// or shallower means we've exited — stop scanning.
-		if (indent <= providerIndent) break;
+		if (!inTargetBlock) continue;
+
+		// Pin field indent on the first in-block line; reject anything deeper.
+		if (fieldIndent === -1) fieldIndent = indent;
+		if (indent !== fieldIndent) continue;
 
 		const kvMatch = line.match(/^\s+(baseUrl|apiKey)\s*:\s*(.*)$/);
 		if (!kvMatch) continue;
@@ -118,6 +137,17 @@ function stripQuotes(s: string): string {
 	return s;
 }
 
+/**
+ * Env-var reference heuristic: all-caps identifier with at least one
+ * underscore. The underscore requirement is what distinguishes a reference
+ * like `LITELLM_API_KEY` from a hand-edited unquoted literal such as
+ * `SK12345`, which would otherwise be silently resolved via `process.env`
+ * and almost always come back undefined.
+ */
+function looksLikeEnvVarName(s: string): boolean {
+	return /^[A-Z][A-Z0-9_]*$/.test(s) && s.includes("_");
+}
+
 function parseApiKeyValue(raw: string): ApiKeyValue {
 	if (raw.startsWith("!")) return { kind: "shellSecret", raw };
 	if (raw.length >= 2 && raw.startsWith('"') && raw.endsWith('"')) {
@@ -127,6 +157,6 @@ function parseApiKeyValue(raw: string): ApiKeyValue {
 	if (raw.length >= 2 && raw.startsWith("'") && raw.endsWith("'")) {
 		return { kind: "literal", value: raw.slice(1, -1), wasQuoted: true };
 	}
-	if (/^[A-Z][A-Z0-9_]+$/.test(raw)) return { kind: "envVar", name: raw };
+	if (looksLikeEnvVarName(raw)) return { kind: "envVar", name: raw };
 	return { kind: "literal", value: raw, wasQuoted: false };
 }

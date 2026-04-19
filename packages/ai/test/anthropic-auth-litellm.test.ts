@@ -166,6 +166,66 @@ describe("findAnthropicAuth litellm passthrough", () => {
 		);
 	});
 
+	it("strips an /api/v1 suffix before appending /anthropic", async () => {
+		await withEnv(
+			{
+				ANTHROPIC_API_KEY: undefined,
+				ANTHROPIC_BASE_URL: undefined,
+				ANTHROPIC_SEARCH_API_KEY: undefined,
+				ANTHROPIC_SEARCH_BASE_URL: undefined,
+				ANTHROPIC_OAUTH_TOKEN: undefined,
+				ANTHROPIC_FOUNDRY_API_KEY: undefined,
+				CLAUDE_CODE_USE_FOUNDRY: undefined,
+				LITELLM_BASE_URL: "https://proxy.example.com/api/v1",
+				LITELLM_API_KEY: "sk-litellm-test-key",
+			},
+			async () => {
+				const auth = await findAnthropicAuth();
+				expect(auth?.baseUrl).toBe("https://proxy.example.com/anthropic");
+			},
+		);
+	});
+
+	it("strips both /anthropic and /v1 suffixes regardless of order", async () => {
+		await withEnv(
+			{
+				ANTHROPIC_API_KEY: undefined,
+				ANTHROPIC_BASE_URL: undefined,
+				ANTHROPIC_SEARCH_API_KEY: undefined,
+				ANTHROPIC_SEARCH_BASE_URL: undefined,
+				ANTHROPIC_OAUTH_TOKEN: undefined,
+				ANTHROPIC_FOUNDRY_API_KEY: undefined,
+				CLAUDE_CODE_USE_FOUNDRY: undefined,
+				LITELLM_BASE_URL: "https://proxy.example.com/anthropic/v1",
+				LITELLM_API_KEY: "sk-litellm-test-key",
+			},
+			async () => {
+				const auth = await findAnthropicAuth();
+				expect(auth?.baseUrl).toBe("https://proxy.example.com/anthropic");
+			},
+		);
+	});
+
+	it("iteratively strips mixed /v1/anthropic/v1 suffixes until stable", async () => {
+		await withEnv(
+			{
+				ANTHROPIC_API_KEY: undefined,
+				ANTHROPIC_BASE_URL: undefined,
+				ANTHROPIC_SEARCH_API_KEY: undefined,
+				ANTHROPIC_SEARCH_BASE_URL: undefined,
+				ANTHROPIC_OAUTH_TOKEN: undefined,
+				ANTHROPIC_FOUNDRY_API_KEY: undefined,
+				CLAUDE_CODE_USE_FOUNDRY: undefined,
+				LITELLM_BASE_URL: "https://proxy.example.com/v1/anthropic/v1",
+				LITELLM_API_KEY: "sk-litellm-test-key",
+			},
+			async () => {
+				const auth = await findAnthropicAuth();
+				expect(auth?.baseUrl).toBe("https://proxy.example.com/anthropic");
+			},
+		);
+	});
+
 	it("requires both LITELLM_BASE_URL and LITELLM_API_KEY for litellm tier", async () => {
 		// Only base URL, no key
 		await withEnv(
