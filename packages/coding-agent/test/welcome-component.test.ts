@@ -1,5 +1,9 @@
 import { beforeAll, describe, expect, it } from "bun:test";
-import { WelcomeComponent } from "@f5xc-salesdemos/xcsh/modes/components/welcome";
+import {
+	type ChangelogStatus,
+	type UpdateStatus,
+	WelcomeComponent,
+} from "@f5xc-salesdemos/xcsh/modes/components/welcome";
 import type { ModelStatus, WelcomeProfileStatus } from "@f5xc-salesdemos/xcsh/modes/components/welcome-checks";
 import { initTheme } from "@f5xc-salesdemos/xcsh/modes/theme/theme";
 
@@ -137,6 +141,96 @@ describe("WelcomeComponent", () => {
 			expect(width).toBeLessThanOrEqual(98);
 			// But should still render (not empty)
 			expect(width).toBeGreaterThan(0);
+		});
+	});
+
+	describe("update and changelog sections", () => {
+		const model: ModelStatus = { state: "connected", provider: "anthropic", latencyMs: 100 };
+		const profile: WelcomeProfileStatus = { state: "connected", name: "prod", latencyMs: 42 };
+
+		it("renders Update Available section when updateStatus is available", () => {
+			const update: UpdateStatus = { available: true, latestVersion: "17.5.0" };
+			const c = new WelcomeComponent("17.4.1", model, profile, update);
+			const out = renderPlain(c).join("\n");
+			expect(out).toContain("Update Available");
+			expect(out).toContain("17.5.0");
+			expect(out).toContain("xcsh update");
+		});
+
+		it("hides Update Available section when updateStatus is omitted", () => {
+			const c = new WelcomeComponent("17.4.1", model, profile);
+			expect(renderPlain(c).join("\n")).not.toContain("Update Available");
+		});
+
+		it("hides Update Available section when updateStatus.available is false", () => {
+			const update: UpdateStatus = { available: false };
+			const c = new WelcomeComponent("17.4.1", model, profile, update);
+			expect(renderPlain(c).join("\n")).not.toContain("Update Available");
+		});
+
+		it("renders What's New section when changelogStatus.hasNew is true", () => {
+			const changelog: ChangelogStatus = { hasNew: true, version: "17.4.1" };
+			const c = new WelcomeComponent("17.4.1", model, profile, undefined, changelog);
+			const out = renderPlain(c).join("\n");
+			expect(out).toContain("What's New");
+			expect(out).toContain("17.4.1");
+			expect(out).toContain("/changelog");
+		});
+
+		it("hides What's New section when changelogStatus is omitted", () => {
+			const c = new WelcomeComponent("17.4.1", model, profile);
+			expect(renderPlain(c).join("\n")).not.toContain("What's New");
+		});
+
+		it("hides What's New section when changelogStatus.hasNew is false", () => {
+			const changelog: ChangelogStatus = { hasNew: false, version: "17.4.1" };
+			const c = new WelcomeComponent("17.4.1", model, profile, undefined, changelog);
+			expect(renderPlain(c).join("\n")).not.toContain("What's New");
+		});
+
+		it("setUpdateStatus reflects in the next render", () => {
+			const c = new WelcomeComponent("17.4.1", model, profile);
+			expect(renderPlain(c).join("\n")).not.toContain("Update Available");
+			c.setUpdateStatus({ available: true, latestVersion: "17.5.0" });
+			const out = renderPlain(c).join("\n");
+			expect(out).toContain("Update Available");
+			expect(out).toContain("17.5.0");
+		});
+
+		it("setChangelogStatus reflects in the next render", () => {
+			const c = new WelcomeComponent("17.4.1", model, profile);
+			expect(renderPlain(c).join("\n")).not.toContain("What's New");
+			c.setChangelogStatus({ hasNew: true, version: "17.4.1" });
+			const out = renderPlain(c).join("\n");
+			expect(out).toContain("What's New");
+			expect(out).toContain("/changelog");
+		});
+
+		it("renders both update and changelog sections together", () => {
+			const update: UpdateStatus = { available: true, latestVersion: "17.5.0" };
+			const changelog: ChangelogStatus = { hasNew: true, version: "17.4.1" };
+			const c = new WelcomeComponent("17.4.1", model, profile, update, changelog);
+			const out = renderPlain(c).join("\n");
+			expect(out).toContain("Update Available");
+			expect(out).toContain("What's New");
+		});
+
+		it("Update Available hint is not truncated at 80 columns", () => {
+			const update: UpdateStatus = { available: true, latestVersion: "17.5.0" };
+			const c = new WelcomeComponent("17.4.1", model, profile, update);
+			const lines = renderPlain(c, 80);
+			const hintLine = lines.find(l => l.includes("xcsh update"));
+			expect(hintLine).toBeDefined();
+			expect(hintLine).not.toContain("\u2026");
+		});
+
+		it("What's New hint is not truncated at 80 columns", () => {
+			const changelog: ChangelogStatus = { hasNew: true, version: "17.4.1" };
+			const c = new WelcomeComponent("17.4.1", model, profile, undefined, changelog);
+			const lines = renderPlain(c, 80);
+			const hintLine = lines.find(l => l.includes("/changelog"));
+			expect(hintLine).toBeDefined();
+			expect(hintLine).not.toContain("\u2026");
 		});
 	});
 });

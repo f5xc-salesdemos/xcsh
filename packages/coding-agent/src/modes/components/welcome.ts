@@ -3,11 +3,23 @@ import { APP_NAME } from "@f5xc-salesdemos/pi-utils";
 import { theme } from "../../modes/theme/theme";
 import type { ModelStatus, WelcomeProfileStatus } from "./welcome-checks";
 
+export interface UpdateStatus {
+	available: boolean;
+	latestVersion?: string;
+}
+
+export interface ChangelogStatus {
+	hasNew: boolean;
+	version: string;
+}
+
 export class WelcomeComponent implements Component {
 	constructor(
 		private readonly version: string,
 		private modelStatus: ModelStatus,
 		private profileStatus?: WelcomeProfileStatus,
+		private updateStatus?: UpdateStatus,
+		private changelogStatus?: ChangelogStatus,
 	) {}
 	invalidate(): void {}
 	setModelStatus(status: ModelStatus): void {
@@ -15,6 +27,12 @@ export class WelcomeComponent implements Component {
 	}
 	setProfileStatus(status: WelcomeProfileStatus | undefined): void {
 		this.profileStatus = status;
+	}
+	setUpdateStatus(status: UpdateStatus | undefined): void {
+		this.updateStatus = status;
+	}
+	setChangelogStatus(status: ChangelogStatus | undefined): void {
+		this.changelogStatus = status;
 	}
 
 	render(termWidth: number): string[] {
@@ -111,24 +129,70 @@ export class WelcomeComponent implements Component {
 		if (this.profileStatus) {
 			lines.push(" F5 XC Profile", ...this.#renderProfileStatus());
 		}
+		if (this.#showUpdateSection()) {
+			lines.push(" Update Available", ...this.#renderUpdateStatus());
+		}
+		if (this.#showChangelogSection()) {
+			lines.push(" What's New", ...this.#renderChangelogStatus());
+		}
 		return Math.max(...lines.map(l => visibleWidth(l)));
 	}
 
 	#buildStatusLines(rightCol: number): string[] {
 		const lines: string[] = [];
 		const separatorWidth = Math.max(0, rightCol - 2);
+		const separator = ` ${theme.fg("muted", theme.boxRound.horizontal.repeat(separatorWidth))}`;
 		lines.push("");
 		lines.push(` ${theme.bold(theme.fg("contentAccent", "Model Provider"))}`);
 		lines.push(...this.#renderModelStatus());
 		lines.push("");
 		if (this.profileStatus) {
-			lines.push(` ${theme.fg("muted", theme.boxRound.horizontal.repeat(separatorWidth))}`);
+			lines.push(separator);
 			lines.push("");
 			lines.push(` ${theme.bold(theme.fg("contentAccent", "F5 XC Profile"))}`);
 			lines.push(...this.#renderProfileStatus());
 			lines.push("");
 		}
+		if (this.#showUpdateSection()) {
+			lines.push(separator);
+			lines.push("");
+			lines.push(` ${theme.bold(theme.fg("contentAccent", "Update Available"))}`);
+			lines.push(...this.#renderUpdateStatus());
+			lines.push("");
+		}
+		if (this.#showChangelogSection()) {
+			lines.push(separator);
+			lines.push("");
+			lines.push(` ${theme.bold(theme.fg("contentAccent", "What's New"))}`);
+			lines.push(...this.#renderChangelogStatus());
+			lines.push("");
+		}
 		return lines;
+	}
+
+	#showUpdateSection(): boolean {
+		return this.updateStatus?.available === true;
+	}
+
+	#showChangelogSection(): boolean {
+		return this.changelogStatus?.hasNew === true;
+	}
+
+	#renderUpdateStatus(): string[] {
+		const latest = this.updateStatus?.latestVersion;
+		const label = latest ? `v${latest}` : "new version";
+		return [
+			` ${theme.fg("warning", "\u2191")} ${theme.fg("muted", label)}`,
+			`   ${theme.fg("dim", "Run")} ${theme.fg("contentAccent", "xcsh update")}`,
+		];
+	}
+
+	#renderChangelogStatus(): string[] {
+		const v = this.changelogStatus?.version ?? this.version;
+		return [
+			` ${theme.fg("success", "\u2605")} ${theme.fg("muted", `v${v}`)}`,
+			`   ${theme.fg("dim", "Run")} ${theme.fg("contentAccent", "/changelog")}`,
+		];
 	}
 
 	#renderModelStatus(): string[] {

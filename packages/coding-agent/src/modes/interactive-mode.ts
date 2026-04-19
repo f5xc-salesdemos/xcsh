@@ -49,7 +49,7 @@ import type { HookSelectorComponent } from "./components/hook-selector";
 import type { PythonExecutionComponent } from "./components/python-execution";
 import { StatusLineComponent } from "./components/status-line";
 import type { ToolExecutionHandle } from "./components/tool-execution";
-import { WelcomeComponent } from "./components/welcome";
+import { type ChangelogStatus, type UpdateStatus, WelcomeComponent } from "./components/welcome";
 import { runWelcomeChecks } from "./components/welcome-checks";
 import { BtwController } from "./controllers/btw-controller";
 import { CommandController } from "./controllers/command-controller";
@@ -161,7 +161,8 @@ export class InteractiveMode implements InteractiveModeContext {
 	#pendingSlashCommands: SlashCommand[] = [];
 	#cleanupUnsubscribe?: () => void;
 	readonly #version: string;
-	readonly #changelogMarkdown: string | undefined;
+	readonly #changelogStatus: ChangelogStatus | undefined;
+	readonly #initialUpdateStatus: UpdateStatus | undefined;
 	#planModePreviousTools: string[] | undefined;
 	#planModePreviousModelState: { model: Model; thinkingLevel?: ThinkingLevel } | undefined;
 	#pendingModelSwitch: { model: Model; thinkingLevel?: ThinkingLevel } | undefined;
@@ -192,7 +193,8 @@ export class InteractiveMode implements InteractiveModeContext {
 	constructor(
 		session: AgentSession,
 		version: string,
-		changelogMarkdown: string | undefined = undefined,
+		changelogStatus: ChangelogStatus | undefined = undefined,
+		initialUpdateStatus: UpdateStatus | undefined = undefined,
 		setToolUIContext: (uiContext: ExtensionUIContext, hasUI: boolean) => void = () => {},
 		lspServers?: import("../tools").LspStartupServerInfo[],
 		mcpManager?: import("../mcp").MCPManager,
@@ -204,7 +206,8 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.keybindings = KeybindingsManager.inMemory();
 		this.agent = session.agent;
 		this.#version = version;
-		this.#changelogMarkdown = changelogMarkdown;
+		this.#changelogStatus = changelogStatus;
+		this.#initialUpdateStatus = initialUpdateStatus;
 		this.#toolUiContextSetter = setToolUIContext;
 		this.lspServers = lspServers;
 		this.mcpManager = mcpManager;
@@ -321,28 +324,19 @@ export class InteractiveMode implements InteractiveModeContext {
 		}
 
 		if (!startupQuiet) {
-			// Add welcome header
-			this.#welcomeComponent = new WelcomeComponent(this.#version, welcomeResult.model, welcomeResult.profile);
+			// Welcome box owns all startup notifications (model, profile, update, changelog)
+			this.#welcomeComponent = new WelcomeComponent(
+				this.#version,
+				welcomeResult.model,
+				welcomeResult.profile,
+				this.#initialUpdateStatus,
+				this.#changelogStatus,
+			);
 
 			// Setup UI layout
 			this.ui.addChild(new Spacer(1));
 			this.ui.addChild(this.#welcomeComponent);
 			this.ui.addChild(new Spacer(1));
-
-			// Add changelog if provided
-			if (this.#changelogMarkdown) {
-				this.ui.addChild(new DynamicBorder());
-				if (settings.get("collapseChangelog")) {
-					const condensedText = `Updated to v${this.#version}. Use ${theme.bold("/changelog")} to view full changelog.`;
-					this.ui.addChild(new Text(condensedText, 1, 0));
-				} else {
-					this.ui.addChild(new Text(theme.bold(theme.fg("contentAccent", "What's New")), 1, 0));
-					this.ui.addChild(new Spacer(1));
-					this.ui.addChild(new Markdown(this.#changelogMarkdown.trim(), 1, 0, getMarkdownTheme()));
-					this.ui.addChild(new Spacer(1));
-				}
-				this.ui.addChild(new DynamicBorder());
-			}
 		}
 
 		this.ui.addChild(this.chatContainer);
@@ -1130,8 +1124,9 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.setWorkingMessage(message);
 	}
 
-	showNewVersionNotification(newVersion: string): void {
-		this.#uiHelpers.showNewVersionNotification(newVersion);
+	setUpdateStatus(status: UpdateStatus | undefined): void {
+		this.#welcomeComponent?.setUpdateStatus(status);
+		this.ui.requestRender();
 	}
 
 	clearEditor(): void {

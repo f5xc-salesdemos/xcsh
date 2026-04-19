@@ -67,10 +67,6 @@ describe("fork settings schema defaults (PRs #48, #68, theme commits)", () => {
 		expect(SETTINGS_SCHEMA["inspect_image.enabled"].default).toBe(true);
 	});
 
-	it("changelog collapsed by default (PR #48)", () => {
-		expect(SETTINGS_SCHEMA.collapseChangelog.default).toBe(true);
-	});
-
 	// PR #68 — "powerline defaults, handoff save"
 	it("compaction handoff saves to disk by default (PR #68)", () => {
 		expect(SETTINGS_SCHEMA["compaction.handoffSaveToDisk"].default).toBe(true);

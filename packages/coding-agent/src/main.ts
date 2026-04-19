@@ -144,10 +144,12 @@ export async function submitInteractiveInput(
 	}
 }
 
+const INITIAL_UPDATE_CHECK_TIMEOUT_MS = 500;
+
 async function runInteractiveMode(
 	session: AgentSession,
 	version: string,
-	changelogMarkdown: string | undefined,
+	changelogStatus: { hasNew: boolean; version: string } | undefined,
 	notifs: (InteractiveModeNotify | null)[],
 	versionCheckPromise: Promise<string | undefined>,
 	initialMessages: string[],
@@ -158,10 +160,19 @@ async function runInteractiveMode(
 	initialMessage?: string,
 	initialImages?: ImageContent[],
 ): Promise<void> {
+	const initialUpdateVersion = await Promise.race([
+		versionCheckPromise.catch(() => undefined),
+		new Promise<string | undefined>(resolve => setTimeout(() => resolve(undefined), INITIAL_UPDATE_CHECK_TIMEOUT_MS)),
+	]);
+	const initialUpdateStatus = initialUpdateVersion
+		? { available: true, latestVersion: initialUpdateVersion }
+		: undefined;
+
 	const mode = new InteractiveMode(
 		session,
 		version,
-		changelogMarkdown,
+		changelogStatus,
+		initialUpdateStatus,
 		setExtensionUIContext,
 		lspServers,
 		mcpManager,
@@ -170,16 +181,18 @@ async function runInteractiveMode(
 
 	await mode.init();
 
-	versionCheckPromise
-		.then(newVersion => {
-			if (!settings.get("startup.checkUpdate")) {
-				return;
-			}
-			if (newVersion) {
-				mode.showNewVersionNotification(newVersion);
-			}
-		})
-		.catch(() => {});
+	if (!initialUpdateVersion) {
+		versionCheckPromise
+			.then(newVersion => {
+				if (!settings.get("startup.checkUpdate")) {
+					return;
+				}
+				if (newVersion) {
+					mode.setUpdateStatus({ available: true, latestVersion: newVersion });
+				}
+			})
+			.catch(() => {});
+	}
 
 	mode.renderInitialMessages();
 
@@ -243,7 +256,7 @@ async function promptForkSession(session: SessionInfo): Promise<boolean> {
 	}
 }
 
-async function getChangelogForDisplay(parsed: Args): Promise<string | undefined> {
+async function getChangelogForDisplay(parsed: Args): Promise<{ hasNew: boolean; version: string } | undefined> {
 	if (parsed.continue || parsed.resume) {
 		return undefined;
 	}
@@ -255,13 +268,13 @@ async function getChangelogForDisplay(parsed: Args): Promise<string | undefined>
 	if (!lastVersion) {
 		if (entries.length > 0) {
 			settings.set("lastChangelogVersion", VERSION);
-			return entries.map(e => e.content).join("\n\n");
+			return { hasNew: true, version: VERSION };
 		}
 	} else {
 		const newEntries = getNewEntries(entries, lastVersion);
 		if (newEntries.length > 0) {
 			settings.set("lastChangelogVersion", VERSION);
-			return newEntries.map(e => e.content).join("\n\n");
+			return { hasNew: true, version: VERSION };
 		}
 	}
 
@@ -877,7 +890,7 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 	} else if (isInteractive) {
 		const versionCheckPromise = checkForNewVersion(VERSION).catch(() => undefined);
 		logger.time("main:getChangelogForDisplay");
-		const changelogMarkdown = await getChangelogForDisplay(parsedArgs);
+		const changelogStatus = await getChangelogForDisplay(parsedArgs);
 
 		const scopedModelsForDisplay = sessionOptions.scopedModels ?? scopedModels;
 		if (scopedModelsForDisplay.length > 0) {
@@ -901,7 +914,7 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 		await runInteractiveMode(
 			session,
 			VERSION,
-			changelogMarkdown,
+			changelogStatus,
 			notifs,
 			versionCheckPromise,
 			parsedArgs.messages,
