@@ -1,15 +1,16 @@
 /**
  * Anthropic Authentication
  *
- * 6-tier auth resolution:
+ * 7-tier auth resolution:
  *   1. ANTHROPIC_SEARCH_API_KEY / ANTHROPIC_SEARCH_BASE_URL env vars
  *   2. ANTHROPIC_FOUNDRY_API_KEY override when Foundry mode is enabled
  *   3. OAuth credentials in ~/.xcsh/agent/agent.db (with expiry check)
  *   4. API key credentials in ~/.xcsh/agent/agent.db
  *   5. Generic Anthropic fallback (ANTHROPIC_API_KEY / ANTHROPIC_BASE_URL)
- *   6. LiteLLM passthrough (LITELLM_BASE_URL / LITELLM_API_KEY)
+ *   6. Anthropic provider credentials from models.yml
+ *   7. LiteLLM passthrough (LITELLM_BASE_URL / LITELLM_API_KEY)
  */
-import { $env, getAgentDbPath } from "@f5xc-salesdemos/pi-utils";
+import { $env, getAgentDbPath, readProviderFromModelsYml } from "@f5xc-salesdemos/pi-utils";
 import { type AuthCredential, AuthCredentialStore } from "../auth-storage";
 import {
 	buildAnthropicHeaders as buildProviderAnthropicHeaders,
@@ -107,13 +108,55 @@ async function readAnthropicOAuthCredentials(store?: AuthCredentialStore): Promi
 }
 
 /**
+ * Resolves Anthropic provider credentials from models.yml (written by LiteLLM auto-config).
+ * Skips shell-backed secrets, which this tier cannot resolve.
+ * @returns AnthropicAuthConfig or null if unavailable
+ */
+function readAnthropicAuthFromModelsYml(): AnthropicAuthConfig | null {
+	const block = readProviderFromModelsYml("anthropic");
+	if (!block?.baseUrl || !block.apiKey) return null;
+
+	let apiKey: string | undefined;
+	switch (block.apiKey.kind) {
+		case "envVar":
+			apiKey = process.env[block.apiKey.name];
+			break;
+		case "literal":
+			apiKey = block.apiKey.value;
+			break;
+		case "shellSecret":
+			return null;
+	}
+
+	if (!apiKey) return null;
+	return { apiKey, baseUrl: block.baseUrl, isOAuth: false };
+}
+
+/**
+ * Strips known suffixes (`/` repeats, `/anthropic`, `/api/v1`, `/v1`) from a
+ * LiteLLM base URL until no further suffix matches. Handles inputs like
+ * `https://proxy/api/v1/anthropic` in any order.
+ */
+function normalizeLitellmBase(url: string): string {
+	const suffixes = [/\/+$/, /\/anthropic$/, /\/api\/v\d+$/, /\/v\d+$/];
+	let prev: string;
+	let current = url;
+	do {
+		prev = current;
+		for (const re of suffixes) current = current.replace(re, "");
+	} while (current !== prev);
+	return current;
+}
+
+/**
  * Finds Anthropic auth config using priority:
  *   1. ANTHROPIC_SEARCH_API_KEY / ANTHROPIC_SEARCH_BASE_URL
  *   2. ANTHROPIC_FOUNDRY_API_KEY override when Foundry mode is enabled
  *   3. OAuth in agent.db (with 5-minute expiry buffer)
  *   4. API key in agent.db
  *   5. ANTHROPIC_API_KEY / ANTHROPIC_BASE_URL fallback
- *   6. LiteLLM passthrough (LITELLM_BASE_URL / LITELLM_API_KEY)
+ *   6. Anthropic provider credentials from models.yml
+ *   7. LiteLLM passthrough (LITELLM_BASE_URL / LITELLM_API_KEY)
  * @param store - Optional credential store (creates one from default db path if not provided)
  * @returns The first valid auth configuration found, or null if none available
  */
@@ -193,14 +236,21 @@ export async function findAnthropicAuth(store?: AuthCredentialStore): Promise<An
 		};
 	}
 
-	// 6. Derive from litellm passthrough credentials
+	// 6. Anthropic provider credentials from models.yml
+	try {
+		const modelsYmlAuth = readAnthropicAuthFromModelsYml();
+		if (modelsYmlAuth) return modelsYmlAuth;
+	} catch {
+		/* Best-effort — don't block env-var fallback */
+	}
+
+	// 7. Derive from litellm passthrough credentials
 	const litellmBaseUrl = $env.LITELLM_BASE_URL;
 	const litellmApiKey = $env.LITELLM_API_KEY;
 	if (litellmBaseUrl && litellmApiKey) {
-		const normalized = litellmBaseUrl.replace(/\/+$/, "").replace(/\/anthropic$/, "");
 		return {
 			apiKey: litellmApiKey,
-			baseUrl: `${normalized}/anthropic`,
+			baseUrl: `${normalizeLitellmBase(litellmBaseUrl)}/anthropic`,
 			isOAuth: false,
 		};
 	}
